@@ -1,0 +1,21 @@
+body {
+  font-family: "Lato", sans-serif;
+  color: white;
+  margin: 0;
+  padding: 0;
+  background-color: rgba(0, 0, 0, 0.822);
+}
+
+.container {
+  position: relative;
+  display: flex;
+  border-radius: 10px;
+  box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.15);
+  margin: 1rem;
+  background-color: rgba(255, 255, 255, 0.048);
+  overflow: hidden;
+}
+
+.container.grid {
+  display: grid;
+}

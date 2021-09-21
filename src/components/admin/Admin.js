@@ -2,15 +2,17 @@ import React, { useState, useEffect } from "react";
 import useApi from "../../hooks/useApi";
 import ItemInput from "./ItemInput";
 import ItemList from "./ItemList.";
+import EditItem from "./EditItem";
 import "../../stylesheets/Main.css";
 
 const Admin = () => {
   const [items, setItems] = useState([]);
+  const [editItem, setEditItem] = useState(null);
+  const [rect, setRect] = useState(null);
   const data = useApi();
   useEffect(() => {
     setItems(data);
   }, [data]);
-  // const ironIngot = recipes.find(recipe => recipe.title === "Iron Ingot");
 
   // const getRecipe = () => {
   //   const recipe = recipes.reduce((result, recipe) => {
@@ -36,13 +38,31 @@ const Admin = () => {
   //   }, {});
   // };
 
-  const addNewItem = item => {
-    setItems(prevState => [...prevState, item]);
-
-    console.log("items - Admin", items);
+  const setActive = (activeItem, active, rect) => {
+    setItems(prevState => {
+      return prevState.map(item => ({
+        ...item,
+        active: activeItem?.itemId === item.itemId ? active : false,
+      }));
+    });
+    setRect(rect);
+    setEditItem(null);
+    setTimeout(() => setEditItem(activeItem), 100);
   };
 
-  console.log(items);
+  const addNewItem = item => {
+    setItems(prevState => [...prevState, item]);
+  };
+
+  const editExistingItem = editItem => {
+    setItems(prevState =>
+      prevState.map(item => {
+        return editItem.itemId === item.itemId ? editItem : item;
+      })
+    );
+    setTimeout(() => setEditItem(null), 1500);
+  };
+
   return (
     <div className={"admin"}>
       {/* <input
@@ -51,7 +71,11 @@ const Admin = () => {
         value={textInput}
       /> */}
       <ItemInput addNewItem={addNewItem} />
-      <ItemList items={items} />
+      <ItemList items={items} setActive={setActive} />
+      {editItem && (
+        <EditItem item={editItem} rect={rect} editExistingItem={editExistingItem} />
+      )}
+      {/* <ItemInput item={editItem} editItem={editExistingItem} /> */}
     </div>
   );
 };

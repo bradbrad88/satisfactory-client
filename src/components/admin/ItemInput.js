@@ -1,34 +1,38 @@
 import React, { useState, useEffect, useRef } from "react";
+import { Grid } from "react-spinners-css";
 // import ItemSuccess from "./ItemSuccess";
 import Item from "./Item";
 import "../../stylesheets/Admin.css";
+import "../../stylesheets/EditItem.css";
 
-const ItemInput = ({ addNewItem }) => {
+const ItemInput = ({ item, addNewItem, editExistingItem, className }) => {
   const [itemName, setItemName] = useState({
-    value: "",
+    value: item ? item.itemName : "",
     error: null,
-    valid: false,
+    valid: item ? true : false,
   });
   const [category, setCategory] = useState({
-    value: "ore",
+    value: item ? item.category : "ore",
   });
   const [stackSize, setStackSize] = useState({
-    value: "100",
+    value: item ? item.stackSize : "100",
     error: null,
     valid: true,
   });
   const [points, setPoints] = useState({
-    value: "",
+    value: item ? item.points : "",
     error: null,
-    valid: false,
+    valid: item ? true : false,
   });
-  const [posting, setPosting] = useState(false);
+  const [working, setWorking] = useState(false);
   const [success, setSuccess] = useState(false);
   const [failure, setFailure] = useState(false);
   const itemField = useRef();
   useEffect(() => {
     setFailure(false);
   }, [itemName, category, stackSize, points]);
+
+  console.log("item", item);
 
   const postItem = async () => {
     if (!enableSubmit()) return;
@@ -47,7 +51,7 @@ const ItemInput = ({ addNewItem }) => {
     };
 
     try {
-      setPosting(true);
+      setWorking(true);
       const response = await fetch(
         `${process.env.REACT_APP_API_HOST}/item/new`,
         options
@@ -66,7 +70,7 @@ const ItemInput = ({ addNewItem }) => {
         setTimeout(() => {
           setSuccess(false);
         }, 2000);
-        setPosting(false);
+        setWorking(false);
         resetFields();
         addNewItem(data);
       } else {
@@ -75,7 +79,49 @@ const ItemInput = ({ addNewItem }) => {
     } catch (error) {
       console.log("error in catch", error);
       setFailure(error);
-      setPosting(false);
+      setWorking(false);
+    }
+  };
+
+  const putItem = async () => {
+    if (!enableSubmit()) return;
+    const itemData = JSON.stringify({
+      itemId: item.itemId,
+      itemName: itemName.value,
+      category: category.value,
+      stackSize: stackSize.value,
+      points: points.value,
+    });
+    const options = {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "PUT",
+      body: itemData,
+    };
+
+    try {
+      setWorking(true);
+      const response = await fetch(
+        `${process.env.REACT_APP_API_HOST}/item/edit`,
+        options
+      );
+
+      const { data, error } = await response.json();
+      if (error) {
+        setFailure(error);
+      }
+
+      if (response.status === 201) {
+        setSuccess(data[1]);
+        setWorking(false);
+        editExistingItem(data[1]);
+      } else {
+        setFailure(true);
+      }
+    } catch (error) {
+      setFailure(error);
+      setWorking(false);
     }
   };
 
@@ -112,11 +158,18 @@ const ItemInput = ({ addNewItem }) => {
     return true;
   };
 
+  const handleSubmit = () => {
+    if (!enableSubmit()) return;
+    if (item) return putItem();
+    postItem();
+  };
+
   const onKeyUp = e => {
+    // on enter button either move to next field or on final field, submit request
     if (e.key === "Enter") {
       const inputs = Array.from(e.currentTarget.querySelectorAll("input,select"));
       const position = inputs.indexOf(e.target);
-      inputs[position + 1] ? inputs[position + 1].focus() : postItem();
+      inputs[position + 1] ? inputs[position + 1].focus() : handleSubmit();
     }
   };
 
@@ -135,9 +188,9 @@ const ItemInput = ({ addNewItem }) => {
   };
 
   return (
-    <div className={"container"}>
+    <div className={`container ${className && className}`}>
       <div className={"form"} onKeyUp={onKeyUp}>
-        <h2>ITEM DETAILS</h2>
+        <h2>{item ? item.itemName : "ITEM DETAILS"}</h2>
         <div className="field">
           <label for={"itemName"}>ITEM</label>
           <input
@@ -190,7 +243,7 @@ const ItemInput = ({ addNewItem }) => {
           <label for={"points"}>POINTS</label>
           <input
             type={"number"}
-            placeholder={"RESOURCE SINK POINT VALUE..."}
+            placeholder={"RESOURCE SINK POINTS..."}
             onChange={e => handleChange(e.target.value, setPoints, validateInteger)}
             onBlur={e => handleChange(e.target.value, setPoints, validateInteger)}
             value={points.value}
@@ -199,21 +252,10 @@ const ItemInput = ({ addNewItem }) => {
           {points.error && <p>{points.error}</p>}
         </div>
         <div className="field">
-          <button onClick={postItem} disabled={!enableSubmit()}>
-            Submit
+          <button onClick={handleSubmit} disabled={!enableSubmit()}>
+            {item ? "Submit Changes" : "Add Item"}
           </button>
         </div>
-        {/* <Item
-          details={{
-            category: "liquid",
-            createdAt: "2021-09-18T21:51:51.222Z",
-            itemId: 23,
-            itemName: "Alumina Solution",
-            points: 20,
-            stackSize: 0,
-            updatedAt: "2021-09-18T21:51:51.222Z",
-          }}
-        /> */}
         {success && (
           <div className={"success"}>
             <span>Successfully added</span>

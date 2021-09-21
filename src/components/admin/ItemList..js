@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import Category from "./Category";
 import "../../stylesheets/Admin.css";
 
-const ItemList = ({ items }) => {
+const ItemList = ({ items, setActive }) => {
   console.log("Item List Props", items);
   const renderCategories = () => {
     if (!items) return null;
@@ -13,7 +13,14 @@ const ItemList = ({ items }) => {
       return groups;
     }, {});
     return Object.entries(groupedItems).map(category => {
-      return <Category category={category[0]} items={category[1]} />;
+      return (
+        <Category
+          category={category[0]}
+          items={category[1]}
+          setActive={setActive}
+          key={category[0]}
+        />
+      );
     });
   };
   renderCategories();

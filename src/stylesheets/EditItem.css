@@ -1,0 +1,64 @@
+.item-box {
+  width: 100%;
+  height: 100%;
+  font-size: 1.5rem;
+  border: white 1px solid;
+  border-radius: 10px;
+  background-color: rgb(88, 88, 88);
+  transition: visibility;
+  transition-delay: 110ms;
+}
+
+.item-box.active {
+  visibility: hidden;
+}
+
+.item-box > span {
+  padding: 0 0.5rem;
+}
+
+.edit-scene {
+  perspective: 1000px;
+  transition: all ease 0.5s;
+  z-index: 100;
+}
+
+.edit-item {
+  height: 100%;
+  width: 100%;
+  border-radius: 10px;
+  transform-origin: center right;
+  transition: all ease 0.5s;
+  transform-style: preserve-3d;
+}
+
+.edit-item.active {
+  transform: translateX(-100%) rotateY(180deg);
+  height: 650px;
+  width: 600px;
+}
+
+.face {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border: white 1px solid;
+  border-radius: 10px;
+  overflow: hidden;
+  backface-visibility: hidden;
+}
+
+.face.front {
+  height: 100%;
+  width: 100%;
+  font-size: 1.5rem;
+  padding: 0 0.5rem;
+  background-color: rgb(88, 88, 88);
+}
+
+.face.back {
+  height: 100%;
+  width: 100%;
+  background-color: rgb(39, 39, 39);
+  transform: rotateY(180deg);
+}

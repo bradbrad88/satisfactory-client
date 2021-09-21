@@ -109,40 +109,6 @@
   margin-bottom: 1rem;
 }
 
-.item-box {
-  /* height: 6rem; */
-  /* padding: 1rem; */
-  width: 60%;
-  height: 3rem;
-  /* min-width: fit-content; */
-  min-height: fit-content;
-  border: rgb(255, 255, 255) solid 1px;
-  font-size: 1.5rem;
-  border-radius: 0.5rem;
-  box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.2);
-  background-color: rgba(255, 255, 255, 0.089);
-}
-
-.item-box > .front-face {
-  /* display: grid;
-  grid-template-columns: 1fr 3fr;
-  padding: 1rem; */
-}
-
-.item-box > .front-face > span {
-  /* margin: auto 0; */
-}
-
-.item-box > .front-face > span.field {
-  color: rgba(255, 255, 255, 0.527);
-  text-align: right;
-  padding: 0 0.5rem;
-}
-
-.item-box > .front-face > span.value {
-  padding: 0 0.5rem;
-}
-
 .item-list {
   min-width: 20rem;
   width: 100rem;
@@ -162,6 +128,7 @@
   /* margin-bottom: 1rem; */
   padding-left: 2rem;
   cursor: pointer;
+  z-index: 1;
 }
 
 .category-header:hover {
@@ -170,9 +137,9 @@
 
 .category-collapsible {
   max-height: 50rem;
-  overflow: hidden;
+  /* overflow: hidden; */
   transition: max-height ease 0.5s;
-  overflow-y: auto;
+  /* overflow-y: auto; */
 }
 
 .category-collapsible.collapse {
@@ -186,11 +153,12 @@
   grid-auto-rows: 1fr;
   padding: 0.5rem;
   gap: 10px;
-  overflow: hidden;
+  /* overflow: hidden; */
   padding: 1rem;
   /* max-height: 500px; */
   /* box-sizing: border-box; */
-  transform-origin: top;
+  perspective: 500px;
+  perspective-origin: 50%;
   transition-property: transform;
   transition-duration: 0.5s;
   transition-timing-function: ease;

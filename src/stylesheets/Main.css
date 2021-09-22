@@ -4,18 +4,119 @@ body {
   margin: 0;
   padding: 0;
   background-color: rgba(0, 0, 0, 0.822);
+  margin-top: 4rem;
+}
+
+body::-webkit-scrollbar {
+  width: 8px;
+}
+
+body::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.103);
+  border-radius: 4px;
+  width: 10px;
+}
+
+body::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.13);
+  border-radius: 4px;
+}
+
+body {
+  scrollbar-face-color: #eec800;
+  scrollbar-shadow-color: #006cb4;
+  scrollbar-highlight-color: #006cb4;
+  scrollbar-3dlight-color: #006cb4;
+  scrollbar-darkshadow-color: #006cb4;
+  scrollbar-track-color: #006cb4;
+  scrollbar-arrow-color: #c1c1d1;
+}
+
+body.noscroll {
+  overflow-y: hidden;
 }
 
 .container {
   position: relative;
   display: flex;
-  border-radius: 10px;
+  /* border-radius: 10px; */
   box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.15);
-  /* margin: 1rem; */
   background-color: rgba(255, 255, 255, 0.048);
   overflow: hidden;
 }
 
 .container.grid {
   display: grid;
+}
+
+.main-header-container {
+  position: relative;
+}
+
+.main-header {
+  position: fixed;
+  height: 4rem;
+  top: 0;
+  width: 100vw;
+  overflow: hidden;
+  /* position: relative; */
+  display: flex;
+  background-color: rgb(29, 29, 29);
+
+  /* background-blend-mode: luminosity; */
+  z-index: 9999;
+  flex-direction: row;
+  gap: 1rem;
+  /* transform: translateX(-13vw); */
+  transition: all ease 0.5s;
+  /* border-radius: 10px; */
+  background-clip: padding-box;
+}
+
+.main-header > button {
+  height: fit-content;
+  width: fit-content;
+  position: relative;
+  background: none;
+  border: none;
+  align-self: flex-start;
+  margin-right: 1rem;
+}
+
+.main-header > button > .icon {
+  transition: all ease 0.3s;
+}
+
+.main-header > button > .icon:hover {
+  fill: rgb(255, 115, 0);
+}
+
+.main-header > .title {
+  text-decoration: none;
+  color: white;
+  font-family: inherit;
+  font-size: 3rem;
+  text-transform: uppercase;
+  font-weight: bold;
+  transition: all ease 0.3s;
+  cursor: pointer;
+}
+
+.main-header > .title:hover {
+  color: rgb(255, 102, 0);
+}
+
+@media only screen and (max-width: 1223px) {
+  body {
+    margin-top: 0;
+  }
+
+  .main-header {
+    position: relative;
+    top: 0;
+  }
+
+  .main-header > .title {
+    font-size: 1.5rem;
+  }
 }

@@ -10,6 +10,48 @@
   max-width: 100vw;
 }
 
+button.close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  color: rgb(0, 0, 0);
+  font-family: inherit;
+  font-weight: bold;
+  font-size: 1rem;
+  text-align: center;
+  transition: all ease 0.3s;
+}
+
+button.delete {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  width: 5rem;
+  height: 2rem;
+  border-radius: 1rem;
+  font-family: inherit;
+  border: none;
+  cursor: pointer;
+  color: black;
+  background-color: brown;
+  font-weight: bold;
+  font-size: 1rem;
+  transition: all ease 0.3s;
+}
+
+button.close:hover {
+  background-color: rgb(172, 91, 91);
+}
+
+button.delete:hover {
+  background-color: rgb(163, 79, 79);
+}
+
 .form > h2 {
   text-align: center;
 }
@@ -139,7 +181,22 @@
   max-height: 50rem;
   /* overflow: hidden; */
   transition: max-height ease 0.5s;
-  /* overflow-y: auto; */
+  overflow-y: auto;
+}
+
+.category-collapsible::-webkit-scrollbar {
+  width: 8px;
+}
+
+.category-collapsible::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.103);
+  border-radius: 4px;
+  width: 10px;
+}
+
+.category-collapsible::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.13);
+  border-radius: 4px;
 }
 
 .category-collapsible.collapse {
@@ -149,7 +206,7 @@
 
 .items-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, 250px);
+  grid-template-columns: repeat(auto-fit, 15rem);
   grid-auto-rows: 1fr;
   padding: 0.5rem;
   gap: 10px;
@@ -165,7 +222,20 @@
   height: fit-content;
 }
 
-@media only screen and (max-width: 600px) {
+button.add-item {
+  position: fixed;
+  left: 50vw;
+  bottom: 1.5rem;
+  transform: translateX(-50%);
+  border-radius: 50%;
+}
+
+@media only screen and (max-width: 1223px) {
+  .container.new-item {
+    position: relative;
+    width: 100vw;
+  }
+
   .form > .field {
     margin: 0.25rem;
     padding: 0;
@@ -193,5 +263,13 @@
     left: 50%;
     transform: translateX(-50%);
     margin: 1rem 0;
+  }
+
+  .category-collapsible {
+    max-height: fit-content;
+  }
+
+  .items-container {
+    grid-template-columns: repeat(auto-fit, 12rem);
   }
 }

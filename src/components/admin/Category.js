@@ -8,7 +8,12 @@ const Category = ({ category, items, setActive }) => {
   const container = useRef();
   useEffect(() => {
     window.addEventListener("resize", handleResize);
+    window.addEventListener("click", cancelActive);
     handleResize();
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("click", cancelActive);
+    };
   }, []);
   const renderItems = () => {
     return items
@@ -33,7 +38,7 @@ const Category = ({ category, items, setActive }) => {
 
   const cancelActive = e => {
     e.stopPropagation();
-    setActive(null, false);
+    setActive(null, false, null);
   };
 
   // pass function on to parent to handle state - add property to {items} to indicate Active

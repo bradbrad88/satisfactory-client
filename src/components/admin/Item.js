@@ -25,14 +25,15 @@ const Item = ({ details, setActive }) => {
   // }, [containerSize, itemRef.current]);
 
   return (
-    <div className={`item-box-scene`} ref={itemRef}>
-      <div
-        className={`item-box ${details.active && "active"}`}
-        onClick={handleClick}
-      >
-        <span className={"value"}>{details.itemName}</span>
-      </div>
+    // <div className={`item-box-scene`} ref={itemRef}>
+    <div
+      ref={itemRef}
+      className={`item-box ${details.active && "active"}`}
+      onClick={handleClick}
+    >
+      <span className={"value"}>{details.itemName}</span>
     </div>
+    // </div>
   );
 };
 

@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useMediaQuery } from "react-responsive";
 import { Grid } from "react-spinners-css";
 // import ItemSuccess from "./ItemSuccess";
 import Item from "./Item";
+import DeleteButton from "../system/DeleteButton";
 import "../../stylesheets/Admin.css";
 import "../../stylesheets/EditItem.css";
 
-const ItemInput = ({ item, addNewItem, editExistingItem, className }) => {
+const ItemInput = ({ item, addNewItem, editItem, deleteItem, className, close }) => {
   const [itemName, setItemName] = useState({
     value: item ? item.itemName : "",
     error: null,
@@ -27,7 +29,9 @@ const ItemInput = ({ item, addNewItem, editExistingItem, className }) => {
   const [working, setWorking] = useState(false);
   const [success, setSuccess] = useState(false);
   const [failure, setFailure] = useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState(false);
   const itemField = useRef();
+  const isDesktopOrLaptop = useMediaQuery({ query: "(min-width: 1224px)" });
   useEffect(() => {
     setFailure(false);
   }, [itemName, category, stackSize, points]);
@@ -115,7 +119,47 @@ const ItemInput = ({ item, addNewItem, editExistingItem, className }) => {
       if (response.status === 201) {
         setSuccess(data[1]);
         setWorking(false);
-        editExistingItem(data[1]);
+        editItem(data[1]);
+      } else {
+        setFailure(true);
+      }
+    } catch (error) {
+      setFailure(error);
+      setWorking(false);
+    }
+  };
+
+  const handleDeleteItem = async () => {
+    // put in confirmation test
+    // no need for whole screen overlay - just conditional component
+    //
+    const itemData = JSON.stringify({
+      itemId: item.itemId,
+    });
+    const options = {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "DELETE",
+      body: itemData,
+    };
+
+    try {
+      setWorking(true);
+      const response = await fetch(
+        `${process.env.REACT_APP_API_HOST}/item/delete`,
+        options
+      );
+
+      const { data, error } = await response.json();
+      if (error) {
+        setFailure(error);
+      }
+
+      if (response.status === 200) {
+        setWorking(false);
+        deleteItem(item.itemId);
+        close();
       } else {
         setFailure(true);
       }
@@ -187,31 +231,44 @@ const ItemInput = ({ item, addNewItem, editExistingItem, className }) => {
     itemField.current.focus();
   };
 
+  // A lot of conditionals as to whether this is a New Item or Update form
+  // Be careful editing anything with 'item &&'
   return (
-    <div className={`container ${className && className}`}>
+    <div
+      className={`container ${className && className}`}
+      onClick={e => item && e.stopPropagation()}
+    >
       <div className={"form"} onKeyUp={onKeyUp}>
-        <h2>{item ? item.itemName : "ITEM DETAILS"}</h2>
+        {(!isDesktopOrLaptop || item) && (
+          <button className={"close"} onClick={close}>
+            X
+          </button>
+        )}
+        {item && (
+          <DeleteButton className={"delete"} handleDelete={handleDeleteItem} />
+        )}
+        <h2>{item ? item.itemName : "NEW ITEM DETAILS"}</h2>
         <div className="field">
-          <label for={"itemName"}>ITEM</label>
+          <label for={`itemname${item && "update"}`}>ITEM</label>
           <input
             autoFocus
             type={"text"}
             placeholder={"ITEM NAME..."}
             onChange={e => handleChange(e.target.value, setItemName, validateName)}
             value={itemName.value}
-            onBlur={e => handleChange(e.target.value, setItemName, validateName)}
-            id={"itemName"}
+            // onBlur={e => handleChange(e.target.value, setItemName, validateName)}
+            id={`itemname${item && "update"}`}
             enterKeyHint={"next"}
             ref={itemField}
           />
           {itemName.error && <p>{itemName.error}</p>}
         </div>
         <div className="field">
-          <label for={"category"}>CATEGORY</label>
+          <label for={`category${item && "update"}`}>CATEGORY</label>
           <select
             value={category.value}
             onChange={e => setCategory({ value: e.target.value })}
-            id={"category"}
+            id={`category${item && "update"}`}
           >
             <option value={"ore"}>ore</option>
             <option value={"liquid"}>liquid</option>
@@ -225,7 +282,7 @@ const ItemInput = ({ item, addNewItem, editExistingItem, className }) => {
           </select>
         </div>
         <div className="field">
-          <label for={"stackSize"}>STACK SIZE</label>
+          <label for={`stacksize${item && "update"}`}>STACK SIZE</label>
           <input
             type={"number"}
             step={50}
@@ -235,19 +292,19 @@ const ItemInput = ({ item, addNewItem, editExistingItem, className }) => {
             }
             onBlur={e => handleChange(e.target.value, setStackSize, validateInteger)}
             value={stackSize.value}
-            id={"stackSize"}
+            id={`stacksize${item && "update"}`}
           />
           {stackSize.error && <p>{stackSize.error}</p>}
         </div>
         <div className="field">
-          <label for={"points"}>POINTS</label>
+          <label for={`points${item && "update"}`}>POINTS</label>
           <input
             type={"number"}
             placeholder={"RESOURCE SINK POINTS..."}
             onChange={e => handleChange(e.target.value, setPoints, validateInteger)}
             onBlur={e => handleChange(e.target.value, setPoints, validateInteger)}
             value={points.value}
-            id={"points"}
+            id={`points${item && "update"}`}
           />
           {points.error && <p>{points.error}</p>}
         </div>
@@ -258,7 +315,7 @@ const ItemInput = ({ item, addNewItem, editExistingItem, className }) => {
         </div>
         {success && (
           <div className={"success"}>
-            <span>Successfully added</span>
+            <span>Successfully {item ? "updated" : "added"}</span>
             <Item details={success} />
           </div>
         )}

@@ -4,36 +4,21 @@ import "../../stylesheets/Admin.css";
 
 const Category = ({ category, items, setActive }) => {
   const [collapse, setCollapse] = useState(false);
-  const [containerSize, setContainerSize] = useState({ height: 0, width: 0 });
+
   const container = useRef();
   useEffect(() => {
-    window.addEventListener("resize", handleResize);
     window.addEventListener("click", cancelActive);
-    handleResize();
     return () => {
-      window.removeEventListener("resize", handleResize);
       window.removeEventListener("click", cancelActive);
     };
   }, []);
+
   const renderItems = () => {
     return items
       .sort((a, b) => a.points - b.points)
       .map(item => {
-        return (
-          <Item
-            details={item}
-            key={item.itemId}
-            setActive={setActive}
-            containerSize={containerSize}
-          />
-        );
+        return <Item details={item} key={item.itemId} setActive={setActive} />;
       });
-  };
-  const handleResize = () => {
-    // console.log(container);
-    if (!container.current) return;
-    const { clientHeight, clientWidth } = container.current;
-    setContainerSize({ height: clientHeight, width: clientWidth });
   };
 
   const cancelActive = e => {
@@ -42,7 +27,6 @@ const Category = ({ category, items, setActive }) => {
   };
 
   // pass function on to parent to handle state - add property to {items} to indicate Active
-
   return (
     <div className={"category-container"}>
       <div className={"category-header"} onClick={() => setCollapse(!collapse)}>

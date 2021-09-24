@@ -6,6 +6,8 @@ import ItemList from "./ItemList.";
 import EditItem from "./EditItem";
 import { add } from "../../utils/SvgIcons";
 
+const ANIMATION_TIME = 800;
+
 const Items = () => {
   const [items, setItems] = useState([]);
   const [editItem, setEditItem] = useState(null);
@@ -25,25 +27,31 @@ const Items = () => {
     });
     setRect(rect);
     setEditItem(null);
-    setTimeout(() => setEditItem(activeItem), 100);
+    setTimeout(() => setEditItem(activeItem), 0);
   };
 
   const addNewItem = item => {
     setItems(prevState => [...prevState, item]);
   };
 
-  const editExistingItem = editItem => {
-    setItems(prevState =>
-      prevState.map(item => {
-        return editItem.itemId === item.itemId ? editItem : item;
-      })
-    );
-    setTimeout(() => setEditItem(null), 1500);
+  const editExistingItem = editItemResponse => {
+    console.log("edit item", editItemResponse);
+    const editItem = editItemResponse[1];
+
+    setTimeout(() => {
+      setItems(prevState =>
+        prevState.map(item => {
+          return editItem.itemId === item.itemId ? editItem : item;
+        })
+      );
+    }, ANIMATION_TIME);
+    // setTimeout(() => setEditItem(null), 1500);
   };
 
   const deleteItem = deleteItem => {
     console.log("Items Component - Delete", deleteItem);
     setItems(prevState => prevState.filter(item => item.itemId !== deleteItem));
+    setEditItem(null);
   };
 
   const handleMobileAddItem = () => {

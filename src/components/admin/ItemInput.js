@@ -1,7 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useMediaQuery } from "react-responsive";
-import { Grid } from "react-spinners-css";
-// import ItemSuccess from "./ItemSuccess";
+import { Ripple } from "react-spinners-css";
+import { useItemApi } from "../../hooks/useItemApi";
+// import { usePutItem } from "../../hooks/usePutItem";
+import Select from "../elements/Select";
+import ItemName from "./fields/ItemName";
+import Category from "./fields/Category";
+import StackSize from "./fields/StackSize";
+import Points from "./fields/Points";
 import Item from "./Item";
 import DeleteButton from "../system/DeleteButton";
 import "../../stylesheets/Admin.css";
@@ -26,147 +32,73 @@ const ItemInput = ({ item, addNewItem, editItem, deleteItem, className, close })
     error: null,
     valid: item ? true : false,
   });
-  const [working, setWorking] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [failure, setFailure] = useState(false);
-  const [deleteConfirmation, setDeleteConfirmation] = useState(false);
+  // const [error, setError] = useState(null)
+  const [response, setResponse] = useState(null);
+  const { working, sendData } = useItemApi();
   const itemField = useRef();
+  const containerRef = useRef();
+  const timeoutRef = useRef();
   const isDesktopOrLaptop = useMediaQuery({ query: "(min-width: 1224px)" });
   useEffect(() => {
-    setFailure(false);
-  }, [itemName, category, stackSize, points]);
+    // console.log("form ref", formRef.current);
+    containerRef.current.scrollTop = 0;
+    return () => clearTimeout(timeoutRef.current);
+  }, []);
+  // useEffect(() => {}, [itemName, category, stackSize, points]);
 
-  console.log("item", item);
-
-  const postItem = async () => {
-    if (!enableSubmit()) return;
-    const itemData = JSON.stringify({
+  const itemData = () => {
+    return {
+      itemId: item?.itemId,
       itemName: itemName.value,
       category: category.value,
       stackSize: stackSize.value,
       points: points.value,
-    });
-    const options = {
-      headers: {
-        "Content-Type": "application/json",
-      },
-      method: "POST",
-      body: itemData,
     };
-
-    try {
-      setWorking(true);
-      const response = await fetch(
-        `${process.env.REACT_APP_API_HOST}/item/new`,
-        options
-      );
-
-      const { data, error } = await response.json();
-
-      if (error) {
-        console.log("error in try", error);
-        setFailure(error);
-      }
-
-      if (response.status === 201) {
-        // have a think about this
-        setSuccess(data);
-        setTimeout(() => {
-          setSuccess(false);
-        }, 2000);
-        setWorking(false);
-        resetFields();
-        addNewItem(data);
-      } else {
-        setFailure(true);
-      }
-    } catch (error) {
-      console.log("error in catch", error);
-      setFailure(error);
-      setWorking(false);
-    }
   };
 
-  const putItem = async () => {
+  const sendItem = async method => {
     if (!enableSubmit()) return;
-    const itemData = JSON.stringify({
-      itemId: item.itemId,
-      itemName: itemName.value,
-      category: category.value,
-      stackSize: stackSize.value,
-      points: points.value,
-    });
-    const options = {
-      headers: {
-        "Content-Type": "application/json",
-      },
-      method: "PUT",
-      body: itemData,
-    };
-
-    try {
-      setWorking(true);
-      const response = await fetch(
-        `${process.env.REACT_APP_API_HOST}/item/edit`,
-        options
-      );
-
-      const { data, error } = await response.json();
-      if (error) {
-        setFailure(error);
-      }
-
-      if (response.status === 201) {
-        setSuccess(data[1]);
-        setWorking(false);
-        editItem(data[1]);
-      } else {
-        setFailure(true);
-      }
-    } catch (error) {
-      setFailure(error);
-      setWorking(false);
+    let updateFunction;
+    let endpoint;
+    switch (method) {
+      case "POST":
+        endpoint = "/item/new";
+        updateFunction = addNewItem;
+        break;
+      case "PUT":
+        endpoint = "/item/edit";
+        updateFunction = editItem;
+        break;
+      case "DELETE":
+        endpoint = "/item/delete";
+        updateFunction = handleDeleteItem;
+        break;
+      default:
+        break;
     }
+    const res = await sendData(itemData(), endpoint, method);
+    setResponse(res);
+    if (res.data) updateFunction(res.data);
   };
 
+  const enableSubmit = () => {
+    if (!itemName.valid) return false;
+    if (!stackSize.valid) return false;
+    if (!points.valid) return false;
+    return true;
+  };
+
+  const handleSubmit = async () => {
+    if (!enableSubmit()) return;
+    await sendItem(item ? "PUT" : "POST");
+    if (close) close();
+    resetFields();
+    timeoutRef.current = setTimeout(() => {
+      setResponse(null);
+    }, 1500);
+  };
   const handleDeleteItem = async () => {
-    // put in confirmation test
-    // no need for whole screen overlay - just conditional component
-    //
-    const itemData = JSON.stringify({
-      itemId: item.itemId,
-    });
-    const options = {
-      headers: {
-        "Content-Type": "application/json",
-      },
-      method: "DELETE",
-      body: itemData,
-    };
-
-    try {
-      setWorking(true);
-      const response = await fetch(
-        `${process.env.REACT_APP_API_HOST}/item/delete`,
-        options
-      );
-
-      const { data, error } = await response.json();
-      if (error) {
-        setFailure(error);
-      }
-
-      if (response.status === 200) {
-        setWorking(false);
-        deleteItem(item.itemId);
-        close();
-      } else {
-        setFailure(true);
-      }
-    } catch (error) {
-      setFailure(error);
-      setWorking(false);
-    }
+    deleteItem(item.itemId);
   };
 
   // Validation functions to return FALSE on passing all tests
@@ -184,7 +116,19 @@ const ItemInput = ({ item, addNewItem, editItem, deleteItem, className, close })
     return false;
   };
 
-  const handleChange = (value, setState, validator) => {
+  const handleNameChange = e => {
+    handleInputChange(e.target.value, setItemName, validateName);
+  };
+
+  const handleStackSizeChange = e => {
+    handleInputChange(e.target.value, setStackSize, validateInteger);
+  };
+
+  const handlePointsChange = e => {
+    handleInputChange(e.target.value, setPoints, validateInteger);
+  };
+
+  const handleInputChange = (value, setState, validator) => {
     const error = validator(value);
     const valid = !error;
     const newState = {
@@ -193,19 +137,6 @@ const ItemInput = ({ item, addNewItem, editItem, deleteItem, className, close })
       valid: valid,
     };
     setState(newState);
-  };
-
-  const enableSubmit = () => {
-    if (!itemName.valid) return false;
-    if (!stackSize.valid) return false;
-    if (!points.valid) return false;
-    return true;
-  };
-
-  const handleSubmit = () => {
-    if (!enableSubmit()) return;
-    if (item) return putItem();
-    postItem();
   };
 
   const onKeyUp = e => {
@@ -231,10 +162,14 @@ const ItemInput = ({ item, addNewItem, editItem, deleteItem, className, close })
     itemField.current.focus();
   };
 
+  // if (data && close) close();
+
   // A lot of conditionals as to whether this is a New Item or Update form
   // Be careful editing anything with 'item &&'
   return (
+    // Stopping propagation here to so that Close() function won't run when clicking on the edit version of the form
     <div
+      ref={containerRef}
       className={`container ${className && className}`}
       onClick={e => item && e.stopPropagation()}
     >
@@ -245,81 +180,56 @@ const ItemInput = ({ item, addNewItem, editItem, deleteItem, className, close })
           </button>
         )}
         {item && (
-          <DeleteButton className={"delete"} handleDelete={handleDeleteItem} />
+          <DeleteButton
+            className={"delete"}
+            handleDelete={() => sendItem("DELETE")}
+          />
         )}
         <h2>{item ? item.itemName : "NEW ITEM DETAILS"}</h2>
-        <div className="field">
-          <label for={`itemname${item && "update"}`}>ITEM</label>
-          <input
-            autoFocus
-            type={"text"}
-            placeholder={"ITEM NAME..."}
-            onChange={e => handleChange(e.target.value, setItemName, validateName)}
-            value={itemName.value}
-            // onBlur={e => handleChange(e.target.value, setItemName, validateName)}
-            id={`itemname${item && "update"}`}
-            enterKeyHint={"next"}
-            ref={itemField}
-          />
-          {itemName.error && <p>{itemName.error}</p>}
-        </div>
-        <div className="field">
-          <label for={`category${item && "update"}`}>CATEGORY</label>
-          <select
-            value={category.value}
-            onChange={e => setCategory({ value: e.target.value })}
-            id={`category${item && "update"}`}
-          >
-            <option value={"ore"}>ore</option>
-            <option value={"liquid"}>liquid</option>
-            <option value={"gas"}>gas</option>
-            <option value={"material"}>material</option>
-            <option value={"component"}>component</option>
-            <option value={"fuel"}>fuel</option>
-            <option value={"ammo"}>ammo</option>
-            <option value={"special"}>special</option>
-            <option value={"waste"}>waste</option>
-          </select>
-        </div>
-        <div className="field">
-          <label for={`stacksize${item && "update"}`}>STACK SIZE</label>
-          <input
-            type={"number"}
-            step={50}
-            placeholder={"STACK SIZE..."}
-            onChange={e =>
-              handleChange(e.target.value, setStackSize, validateInteger)
-            }
-            onBlur={e => handleChange(e.target.value, setStackSize, validateInteger)}
-            value={stackSize.value}
-            id={`stacksize${item && "update"}`}
-          />
-          {stackSize.error && <p>{stackSize.error}</p>}
-        </div>
-        <div className="field">
-          <label for={`points${item && "update"}`}>POINTS</label>
-          <input
-            type={"number"}
-            placeholder={"RESOURCE SINK POINTS..."}
-            onChange={e => handleChange(e.target.value, setPoints, validateInteger)}
-            onBlur={e => handleChange(e.target.value, setPoints, validateInteger)}
-            value={points.value}
-            id={`points${item && "update"}`}
-          />
-          {points.error && <p>{points.error}</p>}
-        </div>
+        <ItemName
+          ref={itemField}
+          item={item}
+          value={itemName.value}
+          error={itemName.error}
+          handleInputChange={handleNameChange}
+        />
+        <Category
+          item={item}
+          value={category.value}
+          onChange={e => setCategory({ value: e.target.value })}
+        />
+        <StackSize
+          item={item}
+          value={stackSize.value}
+          error={stackSize.error}
+          handleInputChange={handleStackSizeChange}
+        />
+        <Points
+          item={item}
+          value={points.value}
+          error={points.error}
+          handleInputChange={handlePointsChange}
+        />
         <div className="field">
           <button onClick={handleSubmit} disabled={!enableSubmit()}>
-            {item ? "Submit Changes" : "Add Item"}
+            {working ? (
+              <Ripple color={"#000"} size={30} />
+            ) : item ? (
+              "Submit Changes"
+            ) : (
+              "Add Item"
+            )}
           </button>
         </div>
-        {success && (
+        {response?.data && (
           <div className={"success"}>
             <span>Successfully {item ? "updated" : "added"}</span>
-            <Item details={success} />
+            <Item details={response.data} />
           </div>
         )}
-        {failure && <div className={"failure"}>Failure!!!!</div>}
+        {response?.error && (
+          <div className={"failure"}>Item was unable to be updated</div>
+        )}
       </div>
     </div>
   );

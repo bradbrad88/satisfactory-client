@@ -4,8 +4,8 @@ const DeleteButton = ({ handleDelete, className }) => {
   const [confirm, setConfirm] = useState(false);
   const timeoutRef = useRef();
   useEffect(() => {
-    return clearTimeout(timeoutRef.current);
-  });
+    return () => clearTimeout(timeoutRef.current);
+  }, []);
   const initConfirm = () => {
     setConfirm(true);
     timeoutRef.current = setTimeout(() => setConfirm(false), 1500);

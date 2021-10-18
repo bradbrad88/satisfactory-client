@@ -7,7 +7,7 @@ const NavBar = ({ navItems, active, handleSelection }) => {
   const renderNavItems = () => {
     return navItems.map(nav => (
       <Link
-        to={nav.to}
+        to={nav.path}
         className={"nav-item"}
         onClick={handleSelection}
         key={nav.title}

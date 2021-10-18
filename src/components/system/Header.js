@@ -4,10 +4,10 @@ import { Link } from "react-router-dom";
 import { useMediaQuery } from "react-responsive";
 import NavBar from "./NavBar";
 import { hamburgerMenu as menuIcon } from "../../utils/SvgIcons";
+import { adminSetup } from "../admin/adminSetup";
 
 const Header = () => {
   const [active, setActive] = useState(false);
-
   const location = useLocation();
   const isDesktopOrLaptop = useMediaQuery({ query: "(min-width: 1224px)" });
   console.log(
@@ -19,12 +19,9 @@ const Header = () => {
     console.log("path array", pathArray[0]);
     switch (pathArray[0]) {
       case undefined:
-        return [{ to: "/admin", title: "Admin" }];
+        return [{ path: "/admin", title: "Admin" }];
       case "admin":
-        return [
-          { to: "/admin/items", title: "Items" },
-          { to: "/admin/recipes", title: "Recipes" },
-        ];
+        return adminSetup;
       default:
         return [];
         break;

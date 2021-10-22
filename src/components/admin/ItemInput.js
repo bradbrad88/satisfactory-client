@@ -4,9 +4,9 @@ import { Ripple } from "react-spinners-css";
 import { useItemApi } from "../../hooks/useItemApi";
 // import { usePutItem } from "../../hooks/usePutItem";
 import Select from "../elements/Select";
-import ItemName from "./fields/ItemName";
+import Text from "./fields/Text";
 import Category from "./fields/Category";
-import StackSize from "./fields/StackSize";
+import Integer from "./fields/Integer";
 import Points from "./fields/Points";
 import Item from "./Item";
 import DeleteButton from "../system/DeleteButton";
@@ -186,7 +186,7 @@ const ItemInput = ({ item, addNewItem, editItem, deleteItem, className, close })
           />
         )}
         <h2>{item ? item.itemName : "NEW ITEM DETAILS"}</h2>
-        <ItemName
+        <Text
           ref={itemField}
           item={item}
           value={itemName.value}
@@ -198,11 +198,14 @@ const ItemInput = ({ item, addNewItem, editItem, deleteItem, className, close })
           value={category.value}
           onChange={e => setCategory({ value: e.target.value })}
         />
-        <StackSize
+        <Integer
           item={item}
           value={stackSize.value}
           error={stackSize.error}
           handleInputChange={handleStackSizeChange}
+          placeholder={"STACK SIZE..."}
+          id={"stacksize"}
+          step={50}
         />
         <Points
           item={item}

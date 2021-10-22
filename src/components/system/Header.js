@@ -33,7 +33,7 @@ const Header = () => {
   };
 
   const handleSelection = () => {
-    // setActive(false);
+    setActive(false);
   };
 
   return (

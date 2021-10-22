@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 
-const useApi = () => {
-  const [items, setItems] = useState();
+const useApi = ({ endpoint }) => {
+  const [items, setItems] = useState([]);
   useEffect(() => {
     fetchItems();
   }, []);
@@ -9,7 +9,7 @@ const useApi = () => {
   const fetchItems = async () => {
     console.log("Fetching Items");
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_HOST}/item`);
+      const response = await fetch(`${process.env.REACT_APP_API_HOST}${endpoint}`);
       console.log(response);
       if (response.status === 200) {
         const { data } = await response.json();

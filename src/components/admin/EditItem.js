@@ -40,7 +40,7 @@ const EditItem = ({ item, rect, editItem, deleteItem, close, smallScreen }) => {
     <div className={`edit-scene ${animate && "active"}`} style={style}>
       <div className={`edit-item ${animate && "active"}`}>
         <div className="face front">
-          <p>{nameChange ? nameChange : item.itemName}</p>
+          <p>{nameChange ? nameChange : item?.itemName}</p>
         </div>
         <ItemInput
           item={item}

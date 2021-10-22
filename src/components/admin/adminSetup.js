@@ -1,14 +1,14 @@
 import Items from "./Items";
-import Recipes from "./Recipes";
 import Buildings from "./Buildings";
 import { building, item, recipe } from "../../utils/SvgIcons";
+import EditRecipe from "./EditRecipe";
 const ICON_SIZE = 150;
 export const adminSetup = [
   { title: "Items", path: "/admin/items", component: Items, icon: item(ICON_SIZE) },
   {
     title: "Recipes",
     path: "/admin/recipes",
-    component: Recipes,
+    component: EditRecipe,
     icon: recipe(ICON_SIZE),
   },
   {

@@ -20,6 +20,7 @@ export const useItemApi = () => {
         `${process.env.REACT_APP_API_HOST}${endpoint}`,
         options
       );
+      // console.log(await response.json());
       const { data, error } = await response.json();
       if (error) {
         console.log("error in try", error);
@@ -46,7 +47,7 @@ export const useItemApi = () => {
     // setData(null);
     // setError(false);
   };
-  return { working, sendData, putData, deleteData, reset };
+  return { working, sendData };
 };
 
 // export default useItemApi;

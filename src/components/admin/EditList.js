@@ -2,11 +2,12 @@ import React, { useMemo } from "react";
 import Category from "./Category";
 import "../../stylesheets/Admin.css";
 
-const ItemList = ({ items, setActive }) => {
+const EditList = ({ items, setActive, closeDelay }) => {
   const groupedItems = useMemo(() => {
     // Convert items to an object that contains each category as a property
     // Each category contains an array of its items
     if (!items) return [];
+    console.log("items", items);
     return items.reduce((groups, item) => {
       const group = groups[item.category] || [];
       group.push(item);
@@ -23,12 +24,13 @@ const ItemList = ({ items, setActive }) => {
           items={category[1]}
           setActive={setActive}
           key={category[0]}
+          closeDelay={closeDelay}
         />
       );
     });
   };
-  renderCategories();
+
   return <div className={"container item-list"}>{renderCategories()}</div>;
 };
 
-export default ItemList;
+export default EditList;

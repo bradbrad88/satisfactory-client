@@ -10,7 +10,11 @@ const AdminDashboard = () => {
 
   const renderButtons = () => {
     return adminSetup.map(section => (
-      <button className={"admin-sections"} onClick={() => handleClick(section.path)}>
+      <button
+        key={section.title}
+        className={"admin-sections"}
+        onClick={() => handleClick(section.path)}
+      >
         {section.icon}
         <h3>{section.title}</h3>
       </button>

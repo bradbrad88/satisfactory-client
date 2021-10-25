@@ -3,7 +3,6 @@ import { useMediaQuery } from "react-responsive";
 import { Ripple } from "react-spinners-css";
 import { useItemApi } from "../../hooks/useItemApi";
 // import { usePutItem } from "../../hooks/usePutItem";
-import Select from "../elements/Select";
 import Text from "./fields/Text";
 import Category from "./fields/Category";
 import Integer from "./fields/Integer";
@@ -12,6 +11,18 @@ import Item from "./Item";
 import DeleteButton from "../system/DeleteButton";
 import "../../stylesheets/Admin.css";
 import "../../stylesheets/EditItem.css";
+
+const CATEGORY_OPTIONS = [
+  "ore",
+  "liquid",
+  "gas",
+  "material",
+  "component",
+  "fuel",
+  "ammo",
+  "special",
+  "waste",
+];
 
 const ItemInput = ({ item, addNewItem, editItem, deleteItem, className, close }) => {
   const [itemName, setItemName] = useState({
@@ -197,6 +208,7 @@ const ItemInput = ({ item, addNewItem, editItem, deleteItem, className, close })
           item={item}
           value={category.value}
           onChange={e => setCategory({ value: e.target.value })}
+          options={CATEGORY_OPTIONS}
         />
         <Integer
           item={item}

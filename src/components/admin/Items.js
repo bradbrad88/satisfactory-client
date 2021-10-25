@@ -13,7 +13,7 @@ const Items = () => {
   const [editItem, setEditItem] = useState(null);
   const [rect, setRect] = useState(null);
   const [mobileItemEntry, setMobileItemEntry] = useState(false);
-  const data = useApi("/item");
+  const { data } = useApi("/item");
   useEffect(() => {
     setItems(data);
   }, [data]);

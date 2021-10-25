@@ -31,6 +31,7 @@
   /* background-color: red; */
   /* transform: translate(-50%, -50%); */
   animation: transform-centre 0.8s ease 0s 1 normal both;
+  /* transform-style: preserve-3d; */
 }
 
 .edit-scene.active {

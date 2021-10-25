@@ -6,21 +6,54 @@ import Integer from "./fields/Integer";
 import Category from "./fields/Category";
 import BuildingInputs from "./BuildingInputs";
 
-const CATEGORY_OPTIONS = ["extractors", "production", "generators"];
-
-const EditBuilding = ({ building }) => {
-  const [name, setName] = useState("");
-  const [power, setPower] = useState(0);
-  const [category, setCategory] = useState("");
-  const [inputs, setInputs] = useState({ pipes: 0, conveyors: 0 });
-  const [outputs, setOutputs] = useState({ pipes: 0, conveyors: 0 });
-  const { working, sendData } = useItemApi();
-
-  const handleSubmit = async () => {
+const CATEGORY_OPTIONS = [
+  { title: "extractors", id: 1 },
+  { title: "production", id: 2 },
+  { title: "generators", id: 3 },
+];
+const formatInputsObject = (inputs, direction) => {
+  if (!inputs) return;
+  // console.log("inputs", inputs);
+  return inputs
+    .filter(input => input.direction === direction)
+    .reduce((obj, input) => {
+      obj[input.type] = input.amount;
+      return obj;
+    }, {});
+};
+const EditBuildingForm = ({ building }) => {
+  const [name, setName] = useState({
+    value: building ? building.title : "",
+    error: null,
+    valid: building ? true : false,
+  });
+  const [power, setPower] = useState({
+    value: building ? building.power : 0,
+    error: null,
+    valid: building ? true : false,
+  });
+  const [category, setCategory] = useState({
+    value: building ? building.category : "",
+  });
+  const [inputs, setInputs] = useState(
+    building
+      ? formatInputsObject(building.BuildingInputs, "input")
+      : { pipe: 0, conveyor: 0 }
+  );
+  const [outputs, setOutputs] = useState(
+    building
+      ? formatInputsObject(building.BuildingInputs, "output")
+      : { pipe: 0, conveyor: 0 }
+  );
+  const { sendData } = useItemApi();
+  // console.log(formatInputsObject(building?.BuildingInputs, "input"));
+  const handleSubmit = async e => {
+    e.stopPropagation();
     const buildingData = createBuildingObject();
     const endpoint = building ? "/building/edit" : "/building/new";
     const method = building ? "PUT" : "POST";
     const result = await sendData(buildingData, endpoint, method);
+    console.log("result", result);
   };
 
   const createBuildingObject = () => {
@@ -30,10 +63,10 @@ const EditBuilding = ({ building }) => {
       category,
       power: power.value,
       BuildingInputs: [
-        { direction: "input", amount: inputs.pipes, type: "pipe" },
-        { direction: "input", amount: inputs.conveyors, type: "conveyor" },
-        { direction: "output", amount: outputs.pipes, type: "pipe" },
-        { direction: "output", amount: outputs.conveyors, type: "conveyor" },
+        { direction: "input", amount: inputs.pipe, type: "pipe" },
+        { direction: "input", amount: inputs.conveyor, type: "conveyor" },
+        { direction: "output", amount: outputs.pipe, type: "pipe" },
+        { direction: "output", amount: outputs.conveyor, type: "conveyor" },
       ],
     };
   };
@@ -48,9 +81,9 @@ const EditBuilding = ({ building }) => {
 
   const handleInputsChange = (direction, newState) => {
     switch (direction) {
-      case "inputs":
+      case "input":
         return setInputs(newState);
-      case "outputs":
+      case "output":
         return setOutputs(newState);
 
       default:
@@ -95,15 +128,15 @@ const EditBuilding = ({ building }) => {
       />
       <div className={"building-inputs"}>
         <BuildingInputs
-          pipes={inputs.pipes}
-          conveyors={inputs.conveyors}
-          type={"inputs"}
+          pipe={inputs.pipe}
+          conveyor={inputs.conveyor}
+          type={"input"}
           handleChange={handleInputsChange}
         />
         <BuildingInputs
-          pipes={outputs.pipes}
-          conveyors={outputs.conveyors}
-          type={"outputs"}
+          pipe={outputs.pipe}
+          conveyor={outputs.conveyor}
+          type={"output"}
           handleChange={handleInputsChange}
         />
       </div>
@@ -114,4 +147,4 @@ const EditBuilding = ({ building }) => {
   );
 };
 
-export default EditBuilding;
+export default EditBuildingForm;

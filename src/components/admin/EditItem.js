@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useRef } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import ItemInput from "./ItemInput";
 import "../../stylesheets/EditItem.css";
 
@@ -6,7 +6,7 @@ import "../../stylesheets/EditItem.css";
 const EditItem = ({ item, rect, editItem, deleteItem, close, smallScreen }) => {
   const [nameChange, setNameChange] = useState("");
   const [animate, setAnimate] = useState(false);
-  const faceRef = useRef();
+
   console.log("screen height", window.screen.height, window.innerHeight);
   useEffect(() => {
     window.onscroll = () => window.scrollTo(0, 0);

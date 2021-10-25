@@ -1,7 +1,6 @@
-import React, { useState } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 import "../../stylesheets/NavBar.css";
-import { hamburgerMenu as menuIcon } from "../../utils/SvgIcons";
 
 const NavBar = ({ navItems, active, handleSelection }) => {
   const renderNavItems = () => {
@@ -17,12 +16,7 @@ const NavBar = ({ navItems, active, handleSelection }) => {
     ));
   };
 
-  return (
-    <div className={`nav-bar ${active && "active"}`}>
-      {/* <button onClick={() => setActive(!active)}>{menuIcon}</button> */}
-      {renderNavItems()}
-    </div>
-  );
+  return <div className={`nav-bar ${active && "active"}`}>{renderNavItems()}</div>;
 };
 
 export default NavBar;

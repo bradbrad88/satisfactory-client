@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from "react";
-import useAdmin from "../../hooks/useAdmin";
+import React from "react";
 import EditList from "./EditList";
 
 const EditScreen = ({ component }) => {

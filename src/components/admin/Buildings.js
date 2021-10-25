@@ -1,88 +1,53 @@
-import React, { useState, useEffect } from "react";
-import { useMediaQuery } from "react-responsive";
-import useApi from "../../hooks/useApi";
-import ItemInput from "./ItemInput";
-import ItemList from "./ItemList.";
-import EditItem from "./EditItem";
-import { add } from "../../utils/SvgIcons";
+import React, { useCallback, useState } from "react";
+import { useEffect } from "react/cjs/react.development";
 
-const ANIMATION_TIME = 800;
+import useApi from "../../hooks/useApi";
+import EditBuildingForm from "./EditBuildingForm";
+import EditList from "./EditList";
+import PopOutHOC from "./PopOutHOC";
+
+const ANIMATION_TIMER = 800;
 
 const Buildings = () => {
-  // const [buildings, setBuildings] = useState([]);
-  // const [editBuilding, setEditBuilding] = useState(null);
-  // const [rect, setRect] = useState(null);
-  // const [mobileItemEntry, setMobileItemEntry] = useState(false);
-  // const data = useApi();
-  // useEffect(() => {
-  //   setItems(data);
-  // }, [data]);
-  // const isDesktopOrLaptop = useMediaQuery({ query: "(min-width: 1224px)" });
-  // const setActive = (activeItem, active, rect) => {
-  //   setItems(prevState => {
-  //     return prevState.map(item => ({
-  //       ...item,
-  //       active: activeItem?.itemId === item.itemId ? active : false,
-  //     }));
-  //   });
-  //   setRect(rect);
-  //   setEditItem(null);
-  //   setTimeout(() => setEditItem(activeItem), 0);
-  // };
-  // const addNewItem = item => {
-  //   setItems(prevState => [...prevState, item]);
-  // };
-  // const editExistingItem = editItemResponse => {
-  //   console.log("edit item", editItemResponse);
-  //   const editItem = editItemResponse[1];
-  //   setTimeout(() => {
-  //     setItems(prevState =>
-  //       prevState.map(item => {
-  //         return editItem.itemId === item.itemId ? editItem : item;
-  //       })
-  //     );
-  //   }, ANIMATION_TIME);
-  //   // setTimeout(() => setEditItem(null), 1500);
-  // };
-  // const deleteItem = deleteItem => {
-  //   console.log("Items Component - Delete", deleteItem);
-  //   setItems(prevState => prevState.filter(item => item.itemId !== deleteItem));
-  //   setEditItem(null);
-  // };
-  // const handleMobileAddItem = () => {
-  //   setMobileItemEntry(true);
-  // };
-  // const handleInputClose = () => {
-  //   setMobileItemEntry(false);
-  // };
-  // return (
-  //   <div className={"admin"}>
-  //     {(isDesktopOrLaptop || mobileItemEntry) && (
-  //       <ItemInput
-  //         className={"new-item"}
-  //         addNewItem={addNewItem}
-  //         close={handleInputClose}
-  //       />
-  //     )}
-  //     {!mobileItemEntry && <ItemList items={items} setActive={setActive} />}
-  //     {editItem && (
-  //       <EditItem
-  //         item={editItem}
-  //         rect={rect}
-  //         editItem={editExistingItem}
-  //         deleteItem={deleteItem}
-  //         close={() => setActive(null, false, null)}
-  //         smallScreen={!isDesktopOrLaptop}
-  //       />
-  //     )}
-  //     {!isDesktopOrLaptop && !mobileItemEntry && (
-  //       <button className={"add-item"} onClick={handleMobileAddItem}>
-  //         {add(48)}
-  //       </button>
-  //     )}
-  //   </div>
-  // );
-  return <div>buildings</div>;
+  const [editItem, setEditItem] = useState(null);
+  const [rect, setRect] = useState(null);
+  const [animateClose, setAnimateClose] = useState(false);
+  const { items } = useApi("buildings");
+  const closeEditForm = useCallback(() => {
+    if (!editItem) return;
+    setAnimateClose(true);
+    setTimeout(() => {
+      setEditItem(null);
+      setAnimateClose(false);
+    }, ANIMATION_TIMER);
+  }, [editItem]);
+  useEffect(() => {
+    window.addEventListener("click", closeEditForm);
+    return () => window.removeEventListener("click", closeEditForm);
+  }, [closeEditForm]);
+  const setActive = (activeItem, active, rect) => {
+    console.log(activeItem, active, rect);
+    setRect(rect);
+    setEditItem(null);
+    setTimeout(() => {
+      setEditItem(activeItem);
+    }, 0);
+  };
+  return (
+    <div className={"admin"}>
+      <EditBuildingForm />
+      <EditList
+        items={items}
+        setActive={setActive}
+        closeDelay={editItem ? ANIMATION_TIMER : 0}
+      />
+      {editItem && (
+        <PopOutHOC rect={rect} animate={animateClose} title={editItem.title}>
+          <EditBuildingForm building={editItem} />
+        </PopOutHOC>
+      )}
+    </div>
+  );
 };
 
 export default Buildings;

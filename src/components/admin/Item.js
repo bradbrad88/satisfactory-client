@@ -16,7 +16,9 @@ const Item = ({ details, setActive }) => {
       className={`item-box ${details.active && "active"}`}
       onClick={handleClick}
     >
-      <p className={"value"}>{details.itemName}</p>
+      <p className={"value"}>
+        {details.itemName || details.title || details.recipeName}
+      </p>
     </div>
   );
 };

@@ -58,7 +58,7 @@ export const item = (size = 24) => (
   <svg
     className={"icon item"}
     xmlns="http://www.w3.org/2000/svg"
-    enable-background="new 0 0 20 20"
+    enableBackground="new 0 0 20 20"
     height={`${size}px`}
     viewBox="0 0 20 20"
     width={`${size}px`}

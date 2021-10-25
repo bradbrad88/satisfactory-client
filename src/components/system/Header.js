@@ -10,13 +10,9 @@ const Header = () => {
   const [active, setActive] = useState(false);
   const location = useLocation();
   const isDesktopOrLaptop = useMediaQuery({ query: "(min-width: 1224px)" });
-  console.log(
-    "location",
-    location.pathname.split("/").filter(str => str !== "")
-  );
+
   const navItems = () => {
     const pathArray = location.pathname.split("/").filter(str => str !== "");
-    console.log("path array", pathArray[0]);
     switch (pathArray[0]) {
       case undefined:
         return [{ path: "/admin", title: "Admin" }];
@@ -24,7 +20,6 @@ const Header = () => {
         return adminSetup;
       default:
         return [];
-        break;
     }
   };
 

@@ -25,6 +25,7 @@ export const useItemApi = () => {
       }
       if ([200, 201, 204].includes(response.status)) {
         setWorking(false);
+        if (method === "DELETE") return { data: itemData };
         return { data };
       } else {
         setWorking(false);

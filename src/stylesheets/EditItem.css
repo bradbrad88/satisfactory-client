@@ -2,12 +2,14 @@
   width: 15rem;
   height: 6rem;
   font-size: 1.5rem;
-  border: white 1px solid;
+  border: rgb(255, 255, 255) 1px solid;
   border-radius: 10px;
   background-color: rgb(88, 88, 88);
   /* transition: visibility 0.1s; */
   /* transition-delay: 110ms; */
   cursor: pointer;
+  word-wrap: break-word;
+  overflow: hidden;
   /* padding: 0.5rem; */
 }
 

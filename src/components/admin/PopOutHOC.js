@@ -2,8 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import "../../stylesheets/EditItem.css";
 // import { useMemo } from "react/cjs/react.development";
 
-const PopOutHOC = ({ rect, children, close, animate, title }) => {
-  // const [animate, setAnimate] = useState(false);
+const PopOutHOC = ({ rect, children, animate, title }) => {
   useEffect(() => {
     window.onscroll = () => window.scrollTo(0, 0);
     return () => (window.onscroll = null);
@@ -21,13 +20,6 @@ const PopOutHOC = ({ rect, children, close, animate, title }) => {
     };
     return style;
   }, [rect]);
-
-  const handleClose = () => {
-    // setAnimate(true);
-    setTimeout(() => {
-      close();
-    }, 800);
-  };
 
   return (
     <div

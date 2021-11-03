@@ -18,7 +18,7 @@ export const useItemApi = () => {
         `${process.env.REACT_APP_API_HOST}${endpoint}`,
         options
       );
-      const { data, error } = await response.json();
+      const { error } = await response.json();
       if (error) {
         console.log("error in try", error);
         setWorking(false);
@@ -27,7 +27,7 @@ export const useItemApi = () => {
       if ([200, 201, 204].includes(response.status)) {
         setWorking(false);
         if (method === "DELETE") return { data: itemData };
-        return { data };
+        return { data: itemData };
       } else {
         setWorking(false);
         return { error };

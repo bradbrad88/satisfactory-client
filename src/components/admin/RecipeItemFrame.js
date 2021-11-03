@@ -15,7 +15,7 @@ const RecipeItemFrame = ({ building, value, onChange }) => {
     }
     onChange(newState);
   });
-  console.log("recipe item frame", value);
+
   const discardExcessItems = recipeItems => {
     const newState = value.filter(item => !recipeItems.includes(item));
     if (recipeItems.length > 0) onChange(newState);

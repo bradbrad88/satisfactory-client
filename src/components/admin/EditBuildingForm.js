@@ -75,11 +75,17 @@ const EditBuildingForm = ({
     handleSubmitFail(error);
   };
 
+  function toTitleCase(str) {
+    return str.replace(/\b\w+/g, function (txt) {
+      return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+    });
+  }
+
   // TODO reduce BuildingInputs array to not include 0 amounts
   const createApiObject = () => {
     return {
       buildingId: existingItem?.buildingId,
-      title: name.value,
+      title: toTitleCase(name.value),
       category: category.value,
       power: power.value,
       BuildingInputs: [

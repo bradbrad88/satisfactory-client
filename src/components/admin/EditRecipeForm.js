@@ -23,6 +23,7 @@ const EditRecipeForm = ({
   deleteItem,
   close,
   isDesktopOrLaptop,
+  items,
 }) => {
   const [name, setName] = useState({
     value: existingItem ? existingItem.recipeName : "",
@@ -54,7 +55,7 @@ const EditRecipeForm = ({
 
   useEffect(() => {
     return () => clearTimeout(timeout.current);
-  });
+  }, []);
 
   const handleSubmit = async method => {
     if (!enableSubmit()) return;
@@ -65,10 +66,16 @@ const EditRecipeForm = ({
     handleSubmitFail(error);
   };
 
+  function toTitleCase(str) {
+    return str.replace(/\b\w+/g, function (txt) {
+      return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+    });
+  }
+
   const createApiObject = () => {
     return {
       recipeId: existingItem?.recipeId,
-      recipeName: name.value,
+      recipeName: toTitleCase(name.value),
       category: category.value,
       building: building.value,
       RecipeItems: recipeItems.value,
@@ -99,7 +106,7 @@ const EditRecipeForm = ({
   const handleSubmitSuccess = (data, updateFunction) => {
     setSuccess(data);
     updateFunction(data);
-    resetFields();
+    setTimeout(() => resetFields(), 0);
     timeout.current = setTimeout(() => {
       if (!isDesktopOrLaptop) close();
       setSuccess(null);
@@ -122,7 +129,6 @@ const EditRecipeForm = ({
   };
 
   const handleRecipeItemsChange = recipeItems => {
-    console.log("edit recipe form", recipeItems);
     recipeItems.forEach(item => {
       if (!item.type) item.type = item.Item?.transportType;
     });
@@ -151,6 +157,8 @@ const EditRecipeForm = ({
   const validateName = value => {
     if (typeof value !== "string") return "Must be alpha-numeric";
     if (value.length < 1) return "Building name can not be empty";
+    if (items.some(item => item.recipeName.toUpperCase() === value.toUpperCase()))
+      return "Recipe name must be unique";
     return false;
   };
 
@@ -172,9 +180,12 @@ const EditRecipeForm = ({
       valid: false,
     });
     setCategory({
-      value: CATEGORY_OPTIONS[0],
+      value: CATEGORY_OPTIONS[0].id,
     });
-    firstField.current?.focus();
+    setBuilding({ value: "" });
+    setRecipeItems({ value: [] });
+
+    setTimeout(() => firstField.current?.focus(), 0);
   };
 
   // TODO
@@ -203,11 +214,14 @@ const EditRecipeForm = ({
       </h2>
 
       <Text
+        ref={firstField}
         label={"RECIPE NAME"}
         placeholder={"RECIPE NAME..."}
-        handleInputChange={handleNameChange}
         value={name.value}
-        ref={firstField}
+        handleInputChange={handleNameChange}
+        item={existingItem}
+        id={"recipe-name"}
+        error={name.error}
       />
       <Category
         label={"CATEGORY"}

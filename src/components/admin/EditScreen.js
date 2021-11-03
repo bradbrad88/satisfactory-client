@@ -80,6 +80,7 @@ const EditScreen = () => {
           addNewItem={addNewItem}
           isDesktopOrLaptop={isDesktopOrLaptop}
           close={() => setMobileItemEntry(false)}
+          items={items}
         />
       )}
       {!mobileItemEntry && (
@@ -98,6 +99,7 @@ const EditScreen = () => {
             editItem={handleEdit}
             deleteItem={handleDelete}
             isDesktopOrLaptop={isDesktopOrLaptop}
+            items={items}
           />
         </PopOutHOC>
       )}

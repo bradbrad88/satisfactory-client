@@ -47,7 +47,8 @@ const useApi = (endpoint, key, animationTime) => {
   const processRecipeData = data => {
     data.forEach(recipe => {
       recipe.RecipeItems.forEach(item => {
-        item.type = item.Item.transportType;
+        console.log("item", item);
+        item.type = item.Item?.transportType;
       });
     });
   };

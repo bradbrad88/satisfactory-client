@@ -36,6 +36,7 @@ const EditItemForm = ({
   deleteItem,
   isDesktopOrLaptop,
   close,
+  items,
 }) => {
   const [itemName, setItemName] = useState({
     value: existingItem ? existingItem.itemName : "",
@@ -43,10 +44,10 @@ const EditItemForm = ({
     valid: existingItem ? true : false,
   });
   const [category, setCategory] = useState({
-    value: existingItem ? existingItem.category : CATEGORY_OPTIONS[0].title,
+    value: existingItem ? existingItem.category : CATEGORY_OPTIONS[0].id,
   });
   const [transportType, setTransportType] = useState({
-    value: existingItem ? existingItem.transportType : TRANSPORT_OPTIONS[0].title,
+    value: existingItem ? existingItem.transportType : TRANSPORT_OPTIONS[0].id,
   });
   const [stackSize, setStackSize] = useState({
     value: existingItem ? existingItem.stackSize : "",
@@ -77,10 +78,16 @@ const EditItemForm = ({
     handleSubmitFail(error);
   };
 
+  function toTitleCase(str) {
+    return str.replace(/\b\w+/g, function (txt) {
+      return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+    });
+  }
+
   const createApiObject = () => {
     return {
       itemId: existingItem?.itemId,
-      itemName: itemName.value,
+      itemName: toTitleCase(itemName.value),
       category: category.value,
       transportType: transportType.value,
       stackSize: stackSize.value,
@@ -163,6 +170,8 @@ const EditItemForm = ({
   const validateName = value => {
     if (typeof value !== "string") return "Must be alpha-numeric";
     if (value.length < 1) return "Item name can't be empty";
+    if (items.some(item => item.itemName.toUpperCase() === value.toUpperCase()))
+      return "Item name must be unique";
     return false;
   };
 
@@ -171,7 +180,9 @@ const EditItemForm = ({
     if (e.key === "Enter") {
       const inputs = Array.from(e.currentTarget.querySelectorAll("input,select"));
       const position = inputs.indexOf(e.target);
-      inputs[position + 1] ? inputs[position + 1].focus() : handleSubmit();
+      inputs[position + 1]
+        ? inputs[position + 1].focus()
+        : handleSubmit(existingItem ? "PUT" : "POST");
     }
   };
 
@@ -243,7 +254,10 @@ const EditItemForm = ({
         label={"TRANSPORT TYPE"}
         value={transportType.value}
         options={TRANSPORT_OPTIONS}
-        onChange={e => setTransportType({ value: e.target.value })}
+        onChange={e => {
+          console.log("e", e);
+          setTransportType({ value: e.target.value });
+        }}
         item={existingItem}
         id={"item-transport"}
       />

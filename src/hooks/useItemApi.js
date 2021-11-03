@@ -11,6 +11,7 @@ export const useItemApi = () => {
       method,
       body: JSON.stringify(itemData),
     };
+    console.log("sending data", itemData, endpoint, method);
     try {
       setWorking(true);
       const response = await fetch(

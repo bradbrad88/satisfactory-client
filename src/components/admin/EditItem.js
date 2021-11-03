@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
-import ItemInput from "./ItemInput";
+import ItemInput from "./EditItemForm";
 import "../../stylesheets/EditItem.css";
 
 // Responsible for handling the 3d environment to serve up the ItemInput component on

@@ -7,7 +7,7 @@ const EditList = ({ items, setActive, closeDelay }) => {
     // Convert items to an object that contains each category as a property
     // Each category contains an array of its items
     if (!items) return [];
-    console.log("items", items);
+
     return items.reduce((groups, item) => {
       const group = groups[item.category] || [];
       group.push(item);

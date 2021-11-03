@@ -18,7 +18,6 @@ const Integer = ({
         step={step}
         placeholder={placeholder}
         onChange={handleInputChange}
-        onBlur={handleInputChange}
         value={value}
         id={`${id} ${item && "update"}`}
       />

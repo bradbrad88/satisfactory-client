@@ -11,7 +11,6 @@ const ANIMATION_TIMER = 800;
 
 const Buildings = () => {
   const [popupItem, setPopupItem] = useState(null);
-  // const [popupNewName, setPopupNewName] = useState(null);
   const [rect, setRect] = useState(null);
   const [animateClose, setAnimateClose] = useState(false);
   const [mobileItemEntry, setMobileItemEntry] = useState(false);
@@ -23,6 +22,19 @@ const Buildings = () => {
   );
   const isDesktopOrLaptop = useMediaQuery({ query: "(min-width: 1224px)" });
 
+  const setActive = useCallback(
+    (activeItem, active, rect) => {
+      setActiveItem(activeItem, active, "buildingId");
+      setRect(rect);
+      setPopupItem(null);
+      setTimeout(() => {
+        setPopupItem(activeItem);
+        setAnimateClose(false);
+      }, 0);
+    },
+    [setActiveItem]
+  );
+
   const closeEditForm = useCallback(() => {
     if (!popupItem) return;
     setAnimateClose(true);
@@ -31,7 +43,7 @@ const Buildings = () => {
       setPopupItem(null);
       setAnimateClose(false);
     }, ANIMATION_TIMER);
-  }, [popupItem]);
+  }, [popupItem, setActive]);
 
   useEffect(() => {
     window.addEventListener("click", closeEditForm);
@@ -40,16 +52,6 @@ const Buildings = () => {
       clearTimeout(timeout.current);
     };
   }, [closeEditForm]);
-
-  const setActive = (activeItem, active, rect) => {
-    setActiveItem(activeItem, active, "buildingId");
-    setRect(rect);
-    setPopupItem(null);
-    setTimeout(() => {
-      setPopupItem(activeItem);
-      setAnimateClose(false);
-    }, 0);
-  };
 
   const handleEdit = item => {
     setPopupItem(prevState => ({ ...prevState, title: item.title }));

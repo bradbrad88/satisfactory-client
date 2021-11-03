@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-
+import { Ripple } from "react-spinners-css";
 import { useItemApi } from "../../hooks/useItemApi";
 import Text from "./fields/Text";
 import Integer from "./fields/Integer";
@@ -7,11 +7,12 @@ import Category from "./fields/Category";
 import BuildingInputs from "./BuildingInputs";
 import DeleteButton from "../system/DeleteButton";
 import Item from "./Item";
+import { useEffect } from "react/cjs/react.development";
 
 const CATEGORY_OPTIONS = [
-  { title: "extractors", id: 1 },
-  { title: "production", id: 2 },
-  { title: "generators", id: 3 },
+  { title: "EXTRACTORS", id: "extractors" },
+  { title: "PRODUCTION", id: "production" },
+  { title: "GENERATORS", id: "generators" },
 ];
 
 const formatInputsObject = (inputs, direction) => {
@@ -25,7 +26,7 @@ const formatInputsObject = (inputs, direction) => {
 };
 
 const EditBuildingForm = ({
-  building,
+  existingItem,
   addNewItem,
   editItem,
   deleteItem,
@@ -33,53 +34,61 @@ const EditBuildingForm = ({
   isDesktopOrLaptop,
 }) => {
   const [name, setName] = useState({
-    value: building ? building.title : "",
+    value: existingItem ? existingItem.title : "",
     error: null,
-    valid: building ? true : false,
+    valid: existingItem ? true : false,
   });
   const [power, setPower] = useState({
-    value: building ? building.power : 0,
+    value: existingItem ? existingItem.power : "",
     error: null,
-    valid: building ? true : false,
+    valid: existingItem ? true : false,
   });
   const [category, setCategory] = useState({
-    value: building ? building.category : CATEGORY_OPTIONS[0].title,
+    value: existingItem ? existingItem.category : CATEGORY_OPTIONS[0].title,
   });
   const [inputs, setInputs] = useState(
-    building
-      ? formatInputsObject(building.BuildingInputs, "input")
+    existingItem
+      ? formatInputsObject(existingItem.BuildingInputs, "input")
       : { pipe: 0, conveyor: 0 }
   );
   const [outputs, setOutputs] = useState(
-    building
-      ? formatInputsObject(building.BuildingInputs, "output")
+    existingItem
+      ? formatInputsObject(existingItem.BuildingInputs, "output")
       : { pipe: 0, conveyor: 0 }
   );
-  const [res, setRes] = useState(null);
-  const { sendData } = useItemApi();
+  const [success, setSuccess] = useState(null);
+  const [failure, setFailure] = useState(null);
+  const { sendData, working } = useItemApi();
   const firstField = useRef();
   const timeout = useRef();
 
-  const enableSubmit = () => {
-    if (!name.valid) return false;
-    if (!power.valid) return false;
-    return true;
-  };
+  useEffect(() => {
+    return () => clearTimeout(timeout.current);
+  });
 
   const handleSubmit = async method => {
     if (!enableSubmit()) return;
-    const buildingData = createBuildingObject();
+    const buildingData = createApiObject();
     const { endpoint, updateFunction } = selectApiMethod(method);
-    const result = await sendData(buildingData, endpoint, method);
-    setRes(result);
-    console.log("result", result);
-    if (result.data) updateFunction(result.data);
-    if (method === "DELETE") return;
-    if (!isDesktopOrLaptop) close();
-    resetFields();
-    timeout.current = setTimeout(() => {
-      setRes(null);
-    }, 1500);
+    const { data, error } = await sendData(buildingData, endpoint, method);
+    if (data) return handleSubmitSuccess(data, updateFunction);
+    handleSubmitFail(error);
+  };
+
+  // TODO reduce BuildingInputs array to not include 0 amounts
+  const createApiObject = () => {
+    return {
+      buildingId: existingItem?.buildingId,
+      title: name.value,
+      category: category.value,
+      power: power.value,
+      BuildingInputs: [
+        { direction: "input", amount: inputs.pipe || 0, type: "pipe" },
+        { direction: "input", amount: inputs.conveyor || 0, type: "conveyor" },
+        { direction: "output", amount: outputs.pipe || 0, type: "pipe" },
+        { direction: "output", amount: outputs.conveyor || 0, type: "conveyor" },
+      ],
+    };
   };
 
   const selectApiMethod = method => {
@@ -97,25 +106,28 @@ const EditBuildingForm = ({
       case "DELETE":
         endpoint = "/building/delete";
         updateFunction = deleteItem;
+        break;
       default:
         break;
     }
     return { endpoint, updateFunction };
   };
 
-  const createBuildingObject = () => {
-    return {
-      buildingId: building?.buildingId,
-      title: name.value,
-      category: category.value,
-      power: power.value,
-      BuildingInputs: [
-        { direction: "input", amount: inputs.pipe || 0, type: "pipe" },
-        { direction: "input", amount: inputs.conveyor || 0, type: "conveyor" },
-        { direction: "output", amount: outputs.pipe || 0, type: "pipe" },
-        { direction: "output", amount: outputs.conveyor || 0, type: "conveyor" },
-      ],
-    };
+  const handleSubmitSuccess = (data, updateFunction) => {
+    setSuccess(data);
+    updateFunction(data);
+    resetFields();
+    timeout.current = setTimeout(() => {
+      if (!isDesktopOrLaptop) close();
+      setSuccess(null);
+    }, 1500);
+  };
+
+  const handleSubmitFail = error => {
+    setFailure(error);
+    timeout.current = setTimeout(() => {
+      setFailure(null);
+    }, 1500);
   };
 
   const handleNameChange = e => {
@@ -156,7 +168,7 @@ const EditBuildingForm = ({
   };
 
   const validatePower = value => {
-    let testValue = Number(value);
+    let testValue = parseFloat(value);
     if (!Number.isInteger(testValue)) return "Value must be an integer";
     return false;
   };
@@ -167,7 +179,7 @@ const EditBuildingForm = ({
       const position = inputs.indexOf(e.target);
       inputs[position + 1]
         ? inputs[position + 1].focus()
-        : handleSubmit(building ? "PUT" : "POST");
+        : handleSubmit(existingItem ? "PUT" : "POST");
     }
   };
 
@@ -185,47 +197,67 @@ const EditBuildingForm = ({
     setCategory({
       value: CATEGORY_OPTIONS[0],
     });
+    setInputs({
+      pipe: 0,
+      conveyor: 0,
+    });
+    setOutputs({
+      pipe: 0,
+      conveyor: 0,
+    });
     firstField.current?.focus();
   };
 
-  const handleDelete = () => {
-    handleSubmit("DELETE");
+  const enableSubmit = () => {
+    if (!name.valid) return false;
+    if (!power.valid) return false;
+    return true;
   };
 
   return (
-    <div className={"form building"} onKeyUp={onKeyUp}>
-      {(!isDesktopOrLaptop || building) && (
+    <div className={"form"} onKeyUp={onKeyUp}>
+      {(!isDesktopOrLaptop || existingItem) && (
         <button className={"close"} onClick={close}>
           X
         </button>
       )}
-      {building && (
+      {existingItem && (
         <DeleteButton
           className={"delete"}
           handleDelete={() => handleSubmit("DELETE")}
         />
       )}
-      <h2>{building ? `Edit ${building.title}` : "New Building"}</h2>
+      <h2>
+        {existingItem
+          ? `EDIT ${existingItem.title.toUpperCase()}`
+          : "NEW BUILDING DETAILS"}
+      </h2>
       <Text
         ref={firstField}
-        handleInputChange={handleNameChange}
-        value={name.value}
         label={"BUILDING NAME"}
         placeholder={"BUILDING NAME..."}
+        value={name.value}
+        handleInputChange={handleNameChange}
+        item={existingItem}
+        id={"building-name"}
         error={name.error}
       />
       <Integer
-        handleInputChange={handlePowerChange}
-        value={power.value}
-        placeholder={"POWER..."}
         label={"POWER"}
+        placeholder={"POWER..."}
+        value={power.value}
+        handleInputChange={handlePowerChange}
+        item={existingItem}
         id={"power"}
         error={power.error}
       />
       <Category
+        label={"CATEGORY"}
+        value={category.value}
         options={CATEGORY_OPTIONS}
         onChange={e => setCategory({ value: e.target.value })}
-        value={category.value}
+        item={existingItem}
+        id={"item-category"}
       />
       <div className={"building-inputs"}>
         <BuildingInputs
@@ -242,14 +274,28 @@ const EditBuildingForm = ({
         />
       </div>
       <div className="field">
-        <button onClick={() => handleSubmit(building ? "PUT" : "POST")}>
-          {building ? "Apply Changes" : "Add Building"}
+        <button
+          onClick={() => handleSubmit(existingItem ? "PUT" : "POST")}
+          disabled={!enableSubmit()}
+        >
+          {working ? (
+            <Ripple color={"#000"} size={30} />
+          ) : existingItem ? (
+            "Submit Changes"
+          ) : (
+            "Add Building"
+          )}
         </button>
       </div>
-      {res?.data && (
+      {success && (
         <div className="success">
-          <span>Successfully {building ? "updated" : "added"}</span>
-          <Item details={res.data} />
+          <span>Successfully {existingItem ? "updated" : "added"}</span>
+          <Item details={success} />
+        </div>
+      )}
+      {failure && (
+        <div className="failure">
+          Building was unable to be {existingItem ? "updated" : "added"}
         </div>
       )}
     </div>

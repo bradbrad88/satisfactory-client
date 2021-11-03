@@ -3,7 +3,7 @@ import React from "react";
 const Select = ({ title, className, value, onChange, id, options }) => {
   const renderOptions = () => {
     return options.map(option => (
-      <option key={option.id} value={option.title}>
+      <option key={option.id} value={option.id}>
         {option.title}
       </option>
     ));

@@ -1,6 +1,7 @@
 import React from "react";
 import { Route } from "react-router-dom";
-import { adminSetup } from "./adminSetup";
+// import { adminSetup } from "./adminSetup";
+import EditScreen from "./EditScreen";
 import "../../stylesheets/Main.css";
 
 import AdminDashboard from "./AdminDashboard";
@@ -9,15 +10,9 @@ import AdminDashboard from "./AdminDashboard";
 // Gather item list data
 
 const Admin = () => {
-  const renderRoutes = () => {
-    return adminSetup.map(route => (
-      <Route path={route.path} component={route.component} key={route.title} />
-    ));
-  };
-
   return (
     <>
-      {renderRoutes()}
+      <Route path={"/admin/:section"} component={EditScreen} />
       <Route path={"/admin"} exact component={AdminDashboard} />
     </>
   );

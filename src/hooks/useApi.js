@@ -5,10 +5,13 @@ const useApi = (endpoint, key, animationTime) => {
   const [working, setWorking] = useState(true);
   const fetchItems = useCallback(async () => {
     if (!endpoint) return;
+    setWorking(true);
     try {
       const response = await fetch(`${process.env.REACT_APP_API_HOST}/${endpoint}`);
       if ([200, 201, 304].includes(response.status)) {
         const { data } = await response.json();
+        if (endpoint === "buildings") processBuildingData(data);
+        if (endpoint === "recipes") processRecipeData(data);
         setItems(data);
       }
     } catch (error) {
@@ -16,12 +19,38 @@ const useApi = (endpoint, key, animationTime) => {
     }
   }, [endpoint]);
   useEffect(() => {
-    if (working) {
-      fetchItems().then(() => {
-        setWorking(false);
+    fetchItems().then(() => {
+      setWorking(false);
+    });
+  }, [fetchItems, endpoint]);
+
+  const buildingInputs = (buildingInputs, direction) => {
+    const inputs = buildingInputs.reduce((total, input) => {
+      if (input.direction !== direction) return total;
+      const arr = [];
+      for (let i = 0; i < input.amount; i++) {
+        const { buildingInputId, direction, type } = input;
+        arr.push({ key: `${buildingInputId}${i}`, direction, type });
+      }
+      return total.concat(arr);
+    }, []);
+    return inputs;
+  };
+
+  const processBuildingData = data => {
+    data.forEach(building => {
+      building.input = buildingInputs(building.BuildingInputs, "input");
+      building.output = buildingInputs(building.BuildingInputs, "output");
+    });
+  };
+
+  const processRecipeData = data => {
+    data.forEach(recipe => {
+      recipe.RecipeItems.forEach(item => {
+        item.type = item.Item.transportType;
       });
-    }
-  }, [fetchItems]);
+    });
+  };
 
   const setActiveItem = (activeItem, active) => {
     setItems(prevState => {

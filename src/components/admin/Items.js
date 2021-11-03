@@ -1,89 +1,97 @@
-import React, { useState, useEffect } from "react";
+import React, { useCallback, useState, useRef } from "react";
+import { useEffect } from "react/cjs/react.development";
 import { useMediaQuery } from "react-responsive";
 import useApi from "../../hooks/useApi";
-import ItemInput from "./ItemInput";
-import ItemList from "./ItemList.";
-import EditItem from "./EditItem";
+import EditItemForm from "./EditItemForm";
+import EditList from "./EditList";
+import PopOutHOC from "./PopOutHOC";
 import { add } from "../../utils/SvgIcons";
 
-const ANIMATION_TIME = 800;
+const ANIMATION_TIMER = 800;
 
 const Items = () => {
-  const [items, setItems] = useState([]);
-  const [editItem, setEditItem] = useState(null);
+  const [popupItem, setPopupItem] = useState(null);
   const [rect, setRect] = useState(null);
+  const [animateClose, setAnimateClose] = useState(false);
   const [mobileItemEntry, setMobileItemEntry] = useState(false);
-  const { data } = useApi("item");
-  useEffect(() => {
-    setItems(data);
-  }, [data]);
+  const timeout = useRef();
+  const { items, setActiveItem, addNewItem, editItem, deleteItem } = useApi(
+    "items",
+    "itemId",
+    ANIMATION_TIMER
+  );
   const isDesktopOrLaptop = useMediaQuery({ query: "(min-width: 1224px)" });
+
+  const closeEditForm = useCallback(() => {
+    if (!popupItem) return;
+    setAnimateClose(true);
+    timeout.current = setTimeout(() => {
+      setActive(null, null, null);
+      setPopupItem(null);
+      setAnimateClose(false);
+    }, ANIMATION_TIMER);
+  }, [popupItem]);
+
+  useEffect(() => {
+    window.addEventListener("click", closeEditForm);
+    return () => {
+      window.removeEventListener("click", closeEditForm);
+      clearTimeout(timeout.current);
+    };
+  }, [closeEditForm]);
+
   const setActive = (activeItem, active, rect) => {
-    setItems(prevState => {
-      return prevState.map(item => ({
-        ...item,
-        active: activeItem?.itemId === item.itemId ? active : false,
-      }));
-    });
+    setActiveItem(activeItem, active, "buildingId");
     setRect(rect);
-    setEditItem(null);
-    setTimeout(() => setEditItem(activeItem), 0);
-  };
-
-  const addNewItem = item => {
-    setItems(prevState => [...prevState, item]);
-  };
-
-  const editExistingItem = editItemResponse => {
-    console.log("edit item", editItemResponse);
-    const editItem = editItemResponse[1];
-
+    setPopupItem(null);
     setTimeout(() => {
-      setItems(prevState =>
-        prevState.map(item => {
-          return editItem.itemId === item.itemId ? editItem : item;
-        })
-      );
-    }, ANIMATION_TIME);
-    // setTimeout(() => setEditItem(null), 1500);
+      setPopupItem(activeItem);
+      setAnimateClose(false);
+    }, 0);
   };
 
-  const deleteItem = deleteItem => {
-    console.log("Items Component - Delete", deleteItem);
-    setItems(prevState => prevState.filter(item => item.itemId !== deleteItem));
-    setEditItem(null);
+  const handleEdit = item => {
+    setPopupItem(prevState => ({ ...prevState, title: item.title }));
+    editItem(item);
   };
 
-  const handleMobileAddItem = () => {
-    setMobileItemEntry(true);
-  };
-
-  const handleInputClose = () => {
-    setMobileItemEntry(false);
+  const handleDelete = item => {
+    deleteItem(item);
+    setActive(null, null, null);
   };
 
   return (
     <div className={"admin"}>
       {(isDesktopOrLaptop || mobileItemEntry) && (
-        <ItemInput
-          className={"new-item"}
+        <EditItemForm
           addNewItem={addNewItem}
-          close={handleInputClose}
+          editItem={editItem}
+          deleteItem={deleteItem}
+          isDesktopOrLaptop={isDesktopOrLaptop}
+          close={() => setMobileItemEntry(false)}
         />
       )}
-      {!mobileItemEntry && <ItemList items={items} setActive={setActive} />}
-      {editItem && (
-        <EditItem
-          item={editItem}
-          rect={rect}
-          editItem={editExistingItem}
-          deleteItem={deleteItem}
-          close={() => setActive(null, false, null)}
-          smallScreen={!isDesktopOrLaptop}
+      {!mobileItemEntry && (
+        <EditList
+          items={items}
+          setActive={setActive}
+          closeDelay={popupItem ? ANIMATION_TIMER : 0}
         />
+      )}
+      {popupItem && (
+        <PopOutHOC rect={rect} animate={animateClose} title={popupItem.title}>
+          <EditItemForm
+            building={popupItem}
+            close={closeEditForm}
+            addNewItem={addNewItem}
+            editItem={handleEdit}
+            deleteItem={handleDelete}
+            isDesktopOrLaptop={isDesktopOrLaptop}
+          />
+        </PopOutHOC>
       )}
       {!isDesktopOrLaptop && !mobileItemEntry && (
-        <button className={"add-item"} onClick={handleMobileAddItem}>
+        <button className={"add-item"} onClick={() => setMobileItemEntry(true)}>
           {add(48)}
         </button>
       )}

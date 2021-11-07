@@ -1,22 +1,24 @@
 import React from "react";
 import { useHistory } from "react-router";
-import { adminSetup } from "./adminSetup";
+import useAdminSetup from "hooks/useAdminSetup";
+// import { adminSetup } from "./adminSetup";
 
 const AdminDashboard = () => {
   const history = useHistory();
+  const { sections } = useAdminSetup();
   const handleClick = path => {
     history.push(path);
   };
 
   const renderButtons = () => {
-    return adminSetup.map(section => (
+    return sections.map(section => (
       <button
-        key={section.title}
+        key={section.section}
         className={"admin-sections"}
         onClick={() => handleClick(section.path)}
       >
         {section.icon}
-        <h3>{section.title}</h3>
+        <h3>{section.section.toUpperCase()}</h3>
       </button>
     ));
   };

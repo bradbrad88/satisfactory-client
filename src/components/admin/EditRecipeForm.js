@@ -1,10 +1,9 @@
 import React, { useState, useRef, useMemo } from "react";
 import { Ripple } from "react-spinners-css";
 import { useItemApi } from "../../hooks/useItemApi";
-import Text from "./fields/Text";
-import Integer from "./fields/Integer";
-import Category from "./fields/Category";
-import Building from "./fields/Building";
+import Text from "../elements/fields/Text";
+import Category from "../elements/fields/Category";
+import Building from "../elements/fields/Building";
 import RecipeItemFrame from "./RecipeItemFrame";
 import DeleteButton from "../system/DeleteButton";
 import Item from "./Item";
@@ -42,7 +41,7 @@ const EditRecipeForm = ({
   const [success, setSuccess] = useState(null);
   const [failure, setFailure] = useState(null);
   const { sendData, working } = useItemApi();
-  const { items: buildings, working: buildingsWorking } = useApi("buildings");
+  const { items: buildings } = useApi("buildings");
   const firstField = useRef();
   const timeout = useRef();
 
@@ -97,6 +96,7 @@ const EditRecipeForm = ({
       case "DELETE":
         endpoint = "/recipe/delete";
         updateFunction = deleteItem;
+        break;
       default:
         break;
     }

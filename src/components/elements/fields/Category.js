@@ -1,5 +1,5 @@
 import React from "react";
-import Select from "../../elements/Select";
+import Select from "../Select";
 
 const Category = ({ item, value, onChange, options, label }) => {
   return (

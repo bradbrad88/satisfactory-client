@@ -1,19 +1,19 @@
-import React, { useState, useEffect } from "react";
-import Select from "../../elements/Select";
+import React, { useMemo } from "react";
+import Select from "../Select";
 import conveyor from "../../../assets/conveyor.webp";
 import pipe from "../../../assets/pipe.webp";
 
 const RecipeItem = ({ items, direction, type, onChange, value }) => {
-  const image = () => {
+  const image = useMemo(() => {
     switch (type) {
       case "conveyor":
-        return conveyor;
+        return { image: conveyor, alt: "conveyor item" };
       case "pipe":
-        return pipe;
+        return { image: pipe, alt: "pipe item" };
       default:
         break;
     }
-  };
+  }, [type]);
 
   const handleItemChange = e => {
     const newState = { ...value, itemId: parseInt(e.target.value), direction, type };
@@ -27,7 +27,7 @@ const RecipeItem = ({ items, direction, type, onChange, value }) => {
 
   return (
     <div>
-      <img src={image()} style={{ width: "40px" }} />
+      <img src={image.image} style={{ width: "40px" }} alt={image.alt} />
       <Select
         options={items}
         value={value?.itemId || ""}

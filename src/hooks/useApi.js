@@ -3,6 +3,12 @@ import { useState, useEffect, useCallback } from "react";
 const useApi = (endpoint, key, animationTime) => {
   const [items, setItems] = useState([]);
   const [working, setWorking] = useState(true);
+  const processBuildingData = useCallback(data => {
+    data.forEach(building => {
+      building.input = buildingInputs(building.BuildingInputs, "input");
+      building.output = buildingInputs(building.BuildingInputs, "output");
+    });
+  }, []);
   const fetchItems = useCallback(async () => {
     if (!endpoint) return;
     setWorking(true);
@@ -17,7 +23,7 @@ const useApi = (endpoint, key, animationTime) => {
     } catch (error) {
       console.error("Error using useApi", error);
     }
-  }, [endpoint]);
+  }, [endpoint, processBuildingData]);
   useEffect(() => {
     fetchItems().then(() => {
       setWorking(false);
@@ -37,17 +43,9 @@ const useApi = (endpoint, key, animationTime) => {
     return inputs;
   };
 
-  const processBuildingData = data => {
-    data.forEach(building => {
-      building.input = buildingInputs(building.BuildingInputs, "input");
-      building.output = buildingInputs(building.BuildingInputs, "output");
-    });
-  };
-
   const processRecipeData = data => {
     data.forEach(recipe => {
       recipe.RecipeItems.forEach(item => {
-        console.log("item", item);
         item.type = item.Item?.transportType;
       });
     });
@@ -68,7 +66,6 @@ const useApi = (endpoint, key, animationTime) => {
   };
 
   const editItem = editedItem => {
-    console.log("edited item", editedItem);
     setTimeout(() => {
       setItems(prevState =>
         prevState.map(item => (editedItem[key] === item[key] ? editedItem : item))

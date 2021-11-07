@@ -1,9 +1,7 @@
 import React, { useCallback, useState, useRef } from "react";
-import { useParams } from "react-router";
 import { useEffect } from "react/cjs/react.development";
 import { useMediaQuery } from "react-responsive";
 import useApi from "../../hooks/useApi";
-import EditBuildingForm from "./EditBuildingForm";
 import EditList from "./EditList";
 import PopOutHOC from "./PopOutHOC";
 import { add } from "../../utils/SvgIcons";
@@ -16,9 +14,7 @@ const EditScreen = () => {
   const [rect, setRect] = useState(null);
   const [animateClose, setAnimateClose] = useState(false);
   const [mobileItemEntry, setMobileItemEntry] = useState(false);
-  // const { section } = useParams();
   const { SectionComponent, section, key, title } = useAdminSetup();
-  // console.log("admin setup", test);
   const timeout = useRef();
   const { items, setActiveItem, addNewItem, editItem, deleteItem } = useApi(
     section,
@@ -26,6 +22,19 @@ const EditScreen = () => {
     ANIMATION_TIMER
   );
   const isDesktopOrLaptop = useMediaQuery({ query: "(min-width: 1224px)" });
+
+  const setActive = useCallback(
+    (activeItem, active, rect) => {
+      setActiveItem(activeItem, active);
+      setRect(rect);
+      setPopupItem(null);
+      setTimeout(() => {
+        setPopupItem(activeItem);
+        setAnimateClose(false);
+      }, 0);
+    },
+    [setActiveItem]
+  );
 
   const closeEditForm = useCallback(() => {
     if (!popupItem) return;
@@ -35,7 +44,7 @@ const EditScreen = () => {
       setPopupItem(null);
       setAnimateClose(false);
     }, ANIMATION_TIMER);
-  }, [popupItem]);
+  }, [popupItem, setActive]);
 
   useEffect(() => {
     window.addEventListener("click", closeEditForm);
@@ -44,16 +53,6 @@ const EditScreen = () => {
       clearTimeout(timeout.current);
     };
   }, [closeEditForm]);
-
-  const setActive = (activeItem, active, rect) => {
-    setActiveItem(activeItem, active);
-    setRect(rect);
-    setPopupItem(null);
-    setTimeout(() => {
-      setPopupItem(activeItem);
-      setAnimateClose(false);
-    }, 0);
-  };
 
   const handleEdit = item => {
     setPopupItem(prevState => {

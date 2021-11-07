@@ -1,16 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useMediaQuery } from "react-responsive";
 import { Ripple } from "react-spinners-css";
 import { useItemApi } from "../../hooks/useItemApi";
-// import { usePutItem } from "../../hooks/usePutItem";
-import Text from "./fields/Text";
-import Category from "./fields/Category";
-import Integer from "./fields/Integer";
-import Points from "./fields/Points";
+import Text from "components/elements/fields/Text";
+import Category from "components/elements/fields/Category";
+import NumberInput from "components/elements/fields/NumberInput";
 import Item from "./Item";
-import DeleteButton from "../system/DeleteButton";
-import "../../stylesheets/Admin.css";
-import "../../stylesheets/EditItem.css";
+import DeleteButton from "components/system/DeleteButton";
+import "stylesheets/Admin.css";
+import "stylesheets/EditItem.css";
 
 const CATEGORY_OPTIONS = [
   { title: "ORE", id: "ore" },
@@ -261,7 +258,7 @@ const EditItemForm = ({
         item={existingItem}
         id={"item-transport"}
       />
-      <Integer
+      <NumberInput
         label={"STACK SIZE"}
         placeholder={"STACK SIZE..."}
         value={stackSize.value}
@@ -271,7 +268,7 @@ const EditItemForm = ({
         step={50}
         error={stackSize.error}
       />
-      <Integer
+      <NumberInput
         label={"POINTS"}
         placeholder={"RESOURCE SINK POINTS..."}
         value={points.value}

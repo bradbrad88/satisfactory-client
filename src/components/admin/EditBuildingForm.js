@@ -1,9 +1,9 @@
 import React, { useState, useRef } from "react";
 import { Ripple } from "react-spinners-css";
 import { useItemApi } from "../../hooks/useItemApi";
-import Text from "./fields/Text";
-import Integer from "./fields/Integer";
-import Category from "./fields/Category";
+import Text from "../elements/fields/Text";
+import NumberInput from "../elements/fields/NumberInput";
+import Category from "../elements/fields/Category";
 import BuildingInputs from "./BuildingInputs";
 import DeleteButton from "../system/DeleteButton";
 import Item from "./Item";
@@ -248,7 +248,7 @@ const EditBuildingForm = ({
         id={"building-name"}
         error={name.error}
       />
-      <Integer
+      <NumberInput
         label={"POWER"}
         placeholder={"POWER..."}
         value={power.value}

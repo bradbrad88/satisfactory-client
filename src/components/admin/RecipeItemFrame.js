@@ -1,11 +1,11 @@
-import React, { useEffect, useMemo, useCallback } from "react";
+import React from "react";
 import useGetItems from "../../hooks/useGetItems";
-import RecipeItem from "./fields/RecipeItem";
+import RecipeItem from "../elements/fields/RecipeItem";
 
 const RecipeItemFrame = ({ building, value, onChange }) => {
   const { itemsByTransportType: items } = useGetItems();
 
-  const handleChange = useCallback((recipeItem, oldItem) => {
+  const handleChange = (recipeItem, oldItem) => {
     let newState = [...value];
     const i = value.indexOf(oldItem);
     if (i === -1) {
@@ -14,7 +14,7 @@ const RecipeItemFrame = ({ building, value, onChange }) => {
       newState[i] = recipeItem;
     }
     onChange(newState);
-  });
+  };
 
   const discardExcessItems = recipeItems => {
     const newState = value.filter(item => !recipeItems.includes(item));

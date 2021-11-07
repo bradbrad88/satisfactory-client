@@ -2,22 +2,24 @@ import React, { useState } from "react";
 import { useLocation } from "react-router";
 import { Link } from "react-router-dom";
 import { useMediaQuery } from "react-responsive";
+import useAdminSetup from "hooks/useAdminSetup";
 import NavBar from "./NavBar";
 import { hamburgerMenu as menuIcon } from "../../utils/SvgIcons";
-import { adminSetup } from "../admin/adminSetup";
+// import { adminSetup } from "../admin/adminSetup";
 
 const Header = () => {
   const [active, setActive] = useState(false);
   const location = useLocation();
   const isDesktopOrLaptop = useMediaQuery({ query: "(min-width: 1224px)" });
+  const { sections } = useAdminSetup();
 
   const navItems = () => {
     const pathArray = location.pathname.split("/").filter(str => str !== "");
     switch (pathArray[0]) {
       case undefined:
-        return [{ path: "/admin", title: "Admin" }];
+        return [{ path: "/admin", section: "Admin" }];
       case "admin":
-        return adminSetup;
+        return sections;
       default:
         return [];
     }

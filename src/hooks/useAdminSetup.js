@@ -1,44 +1,55 @@
-import React, { useState, useRef, useMemo } from "react";
+import { useMemo } from "react";
 import { useParams } from "react-router";
 import EditBuildingForm from "../components/admin/EditBuildingForm";
 import EditItemForm from "../components/admin/EditItemForm";
 import EditRecipeForm from "../components/admin/EditRecipeForm";
+import { building, item, recipe } from "utils/SvgIcons";
+
+const ICON_SIZE = 150;
+
+const ADMIN_SECTIONS = [
+  {
+    SectionComponent: EditItemForm,
+    key: "itemId",
+    title: "itemName",
+    section: "items",
+    icon: item(ICON_SIZE),
+    path: "/admin/items",
+  },
+  {
+    SectionComponent: EditBuildingForm,
+    key: "buildingId",
+    title: "title",
+    section: "buildings",
+    icon: building(ICON_SIZE),
+    path: "/admin/buildings",
+  },
+  {
+    SectionComponent: EditRecipeForm,
+    key: "recipeId",
+    title: "recipeName",
+    section: "recipes",
+    icon: recipe(ICON_SIZE),
+    path: "/admin/recipes",
+  },
+];
 
 const useAdminSetup = () => {
-  const buildingForm = useRef(EditBuildingForm);
-  const recipeForm = useRef(EditRecipeForm);
-  const itemForm = useRef(EditItemForm);
   const { section } = useParams();
 
-  const getSection = useMemo(() => {
-    switch (section) {
-      case "buildings":
-        return {
-          SectionComponent: buildingForm.current,
-          key: "buildingId",
-          title: "title",
-          section,
-        };
-      case "items":
-        return {
-          SectionComponent: itemForm.current,
-          key: "itemId",
-          title: "itemName",
-          section,
-        };
-      case "recipes":
-        return {
-          SectionComponent: recipeForm.current,
-          key: "recipeId",
-          title: "recipeName",
-          section,
-        };
-      default:
-        return {};
-    }
+  const currentSection = useMemo(() => {
+    return (
+      ADMIN_SECTIONS.find(adminSection => adminSection.section === section) || {}
+    );
   }, [section]);
 
-  return getSection;
+  return {
+    SectionComponent: currentSection.SectionComponent,
+    key: currentSection.key,
+    title: currentSection.title,
+    section: currentSection.section,
+    sections: ADMIN_SECTIONS,
+  };
 };
 
 export default useAdminSetup;

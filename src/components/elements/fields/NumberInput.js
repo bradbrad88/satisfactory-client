@@ -1,6 +1,6 @@
 import React from "react";
 
-const Integer = ({
+const NumberInput = ({
   item,
   value,
   error,
@@ -26,4 +26,4 @@ const Integer = ({
   );
 };
 
-export default Integer;
+export default NumberInput;

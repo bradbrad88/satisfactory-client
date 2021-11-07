@@ -9,9 +9,9 @@ const NavBar = ({ navItems, active, handleSelection }) => {
         to={nav.path}
         className={"nav-item"}
         onClick={handleSelection}
-        key={nav.title}
+        key={nav.key}
       >
-        {nav.title}
+        {nav.section.toUpperCase()}
       </Link>
     ));
   };

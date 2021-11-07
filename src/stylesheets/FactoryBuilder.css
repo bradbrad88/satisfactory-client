@@ -1,0 +1,17 @@
+.factory-builder {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+}
+
+.ui {
+  border: 1px solid white;
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+.map {
+  border: 1px solid white;
+  border-radius: 0.5rem;
+  padding: 1rem;
+}

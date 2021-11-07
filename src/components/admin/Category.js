@@ -1,17 +1,17 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef } from "react";
 import Item from "./Item";
 import "../../stylesheets/Admin.css";
 
 const Category = ({ category, items, setActive, closeDelay }) => {
   const [collapse, setCollapse] = useState(false);
   const container = useRef();
-  const cancelActive = useCallback(
-    e => {
-      e.stopPropagation();
-      setActive(null, false, null);
-    },
-    [setActive]
-  );
+  // const cancelActive = useCallback(
+  //   e => {
+  //     e.stopPropagation();
+  //     setActive(null, false, null);
+  //   },
+  //   [setActive]
+  // );
   // useEffect(() => {
   //   window.addEventListener("click", cancelActive);
   //   return () => window.removeEventListener("click", cancelActive);

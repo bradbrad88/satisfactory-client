@@ -8,7 +8,7 @@ const Select = ({ title, className, value, onChange, id, options }) => {
       </option>
     ));
   };
-  console.log("options", options);
+
   return (
     <select id={id} onChange={onChange} value={value}>
       {renderOptions()}

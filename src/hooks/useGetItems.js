@@ -22,16 +22,21 @@ const useGetItems = () => {
 
   const itemsByTransportType = useMemo(() => {
     if (!items) return [];
-    const sortedItems = items.reduce((obj, item) => {
+    const groupedItems = items.reduce((obj, item) => {
       const group = obj[item.transportType] || [];
       group.push({ title: item.itemName, id: item.itemId });
       obj[item.transportType] = group;
       return obj;
     }, {});
-    if (!sortedItems.pipe) sortedItems.pipe = [];
-    if (!sortedItems.conveyor) sortedItems.conveyor = [];
-    sortedItems.pipe.push({ title: "SELECT AN ITEM", id: "" });
-    sortedItems.conveyor.push({ title: "SELECT AN ITEM", id: "" });
+    // if (!groupedItems.pipe) groupedItems.pipe = [];
+    // if (!groupedItems.conveyor) groupedItems.conveyor = [];
+    let sortedItems = {};
+    sortedItems.pipe = groupedItems.pipe?.sort((a, b) => b.title < a.title) || [];
+    sortedItems.conveyor =
+      groupedItems.conveyor?.sort((a, b) => b.title < a.title) || [];
+    console.log("sorted items", sortedItems);
+    sortedItems.pipe.unshift({ title: "SELECT AN ITEM", id: "" });
+    sortedItems.conveyor.unshift({ title: "SELECT AN ITEM", id: "" });
     return sortedItems;
   }, [items]);
 

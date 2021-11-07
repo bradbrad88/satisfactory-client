@@ -2,7 +2,14 @@ import React, { useMemo } from "react";
 import Category from "components/elements/fields/Category";
 import NumberInput from "components/elements/fields/NumberInput";
 
-const UserInterface = ({ items, item, handleItem, qty, handleQuantity }) => {
+const UserInterface = ({
+  items,
+  item,
+  handleItem,
+  qty,
+  handleQuantity,
+  newRecipe,
+}) => {
   const itemOptions = useMemo(() => {
     if (!items) return [];
     return items
@@ -15,6 +22,7 @@ const UserInterface = ({ items, item, handleItem, qty, handleQuantity }) => {
 
   const handleStart = () => {
     console.log("start");
+    newRecipe();
   };
 
   return (
@@ -22,7 +30,7 @@ const UserInterface = ({ items, item, handleItem, qty, handleQuantity }) => {
       <Category
         label={"Select an item"}
         options={itemOptions}
-        value={item}
+        value={item?.itemId}
         onChange={handleItem}
       />
       <NumberInput

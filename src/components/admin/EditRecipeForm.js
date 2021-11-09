@@ -33,7 +33,7 @@ const EditRecipeForm = ({
     value: existingItem ? existingItem.category : CATEGORY_OPTIONS[0].id,
   });
   const [building, setBuilding] = useState({
-    value: existingItem ? existingItem.building : "",
+    value: existingItem ? existingItem.buildingId : "",
   });
   const [recipeItems, setRecipeItems] = useState({
     value: existingItem ? existingItem.RecipeItems : [],
@@ -76,7 +76,7 @@ const EditRecipeForm = ({
       recipeId: existingItem?.recipeId,
       recipeName: toTitleCase(name.value),
       category: category.value,
-      building: building.value,
+      buildingId: building.value,
       RecipeItems: recipeItems.value,
     };
   };

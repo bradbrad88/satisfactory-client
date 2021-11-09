@@ -11,7 +11,13 @@ const RecipeItemFrame = ({ building, value, onChange }) => {
     if (i === -1) {
       newState = newState.concat(recipeItem);
     } else {
-      newState[i] = recipeItem;
+      console.log("new state", newState);
+      console.log("recipe item", recipeItem);
+      if (!recipeItem) {
+        newState.splice(i, 1);
+      } else {
+        newState[i] = recipeItem;
+      }
     }
     onChange(newState);
   };

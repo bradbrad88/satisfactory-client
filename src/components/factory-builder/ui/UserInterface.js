@@ -11,6 +11,7 @@ const UserInterface = ({
   newRecipe,
 }) => {
   const itemOptions = useMemo(() => {
+    console.log("items memo", items);
     if (!items) return [];
     return items
       .map(item => ({
@@ -24,6 +25,8 @@ const UserInterface = ({
     console.log("start");
     newRecipe();
   };
+
+  console.log("items ui", items);
 
   return (
     <div className={"ui"}>

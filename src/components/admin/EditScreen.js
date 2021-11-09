@@ -14,6 +14,7 @@ const EditScreen = () => {
   const [rect, setRect] = useState(null);
   const [animateClose, setAnimateClose] = useState(false);
   const [mobileItemEntry, setMobileItemEntry] = useState(false);
+  // const [searchTerm, setSearchTerm] = useState("");
   const { SectionComponent, section, key, title } = useAdminSetup();
   const timeout = useRef();
   const { items, setActiveItem, addNewItem, editItem, deleteItem } = useApi(
@@ -40,19 +41,23 @@ const EditScreen = () => {
     if (!popupItem) return;
     setAnimateClose(true);
     timeout.current = setTimeout(() => {
-      setActive(null, null, null);
+      setActiveItem(null, false);
+      setRect(null);
       setPopupItem(null);
       setAnimateClose(false);
     }, ANIMATION_TIMER);
-  }, [popupItem, setActive]);
+  }, [popupItem, setActiveItem]);
 
   useEffect(() => {
     window.addEventListener("click", closeEditForm);
     return () => {
       window.removeEventListener("click", closeEditForm);
-      clearTimeout(timeout.current);
     };
   }, [closeEditForm]);
+
+  useEffect(() => {
+    return () => clearTimeout(timeout.current);
+  }, []);
 
   const handleEdit = item => {
     setPopupItem(prevState => {

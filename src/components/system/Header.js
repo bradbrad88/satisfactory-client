@@ -1,17 +1,19 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { useLocation } from "react-router";
 import { Link } from "react-router-dom";
 import { useMediaQuery } from "react-responsive";
+import { SearchContext } from "contexts/SearchContext";
 import useAdminSetup from "hooks/useAdminSetup";
 import NavBar from "./NavBar";
 import { hamburgerMenu as menuIcon } from "../../utils/SvgIcons";
-// import { adminSetup } from "../admin/adminSetup";
 
 const Header = () => {
   const [active, setActive] = useState(false);
   const location = useLocation();
   const isDesktopOrLaptop = useMediaQuery({ query: "(min-width: 1224px)" });
   const { sections } = useAdminSetup();
+  const { searchTerm, debouncedSearchTerm, setSearchTerm } =
+    useContext(SearchContext);
 
   const navItems = () => {
     const pathArray = location.pathname.split("/").filter(str => str !== "");
@@ -41,6 +43,12 @@ const Header = () => {
           <Link className={"title"} to={"/"}>
             Satisfactory Planner
           </Link>
+          <input
+            onChange={e => setSearchTerm(e.target.value)}
+            value={searchTerm}
+            placeholder={"search..."}
+          />
+          <p>{debouncedSearchTerm}</p>
           <NavBar
             navItems={navItems()}
             active={active}

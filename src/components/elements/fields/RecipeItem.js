@@ -22,7 +22,7 @@ const RecipeItem = ({ items, direction, type, onChange, value }) => {
   };
 
   const handleQtyChange = e => {
-    if (!parseInt(e.target.value)) return onChange(null, value);
+    if (!parseFloat(e.target.value)) return onChange(null, value);
     const newState = { ...value, qty: e.target.value, direction, type };
     onChange(newState, value);
   };

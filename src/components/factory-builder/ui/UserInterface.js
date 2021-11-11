@@ -13,12 +13,14 @@ const UserInterface = ({
   const itemOptions = useMemo(() => {
     console.log("items memo", items);
     if (!items) return [];
-    return items
+    const itemOptions = items
       .map(item => ({
         title: item.itemName,
         id: item.itemId,
       }))
       .sort((a, b) => b.title < a.title);
+    itemOptions.unshift({ title: "SELECT AN ITEM", id: "" });
+    return itemOptions;
   }, [items]);
 
   const handleStart = () => {

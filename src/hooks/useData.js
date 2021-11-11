@@ -14,6 +14,7 @@ const useData = () => {
       const { data } = await res.json();
       const { recipes, items } = data;
       processItems(data);
+      console.log("data", data);
       setItems(data.items);
       setRecipes(data.recipes);
     } catch (error) {
@@ -34,7 +35,14 @@ const useData = () => {
           item.recipes = [recipe];
         } else {
           item.recipes.push(recipe);
+          item.recipes.sort((a, b) => b.category === "standard");
         }
+      });
+    });
+    recipes.forEach(recipe => {
+      recipe.RecipeItems.forEach(recipeItem => {
+        const item = items.find(item => item.itemId === recipeItem.itemId);
+        recipeItem.item = item;
       });
     });
   };

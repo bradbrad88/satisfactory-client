@@ -35,7 +35,16 @@ const useData = () => {
           item.recipes = [recipe];
         } else {
           item.recipes.push(recipe);
-          item.recipes.sort((a, b) => b.category === "standard");
+          item.recipes.sort((a, b) => {
+            // if (a.RecipeItems.length === b.RecipeItems.length) {
+            //   return b.category === "standard";
+            // }
+            // return b.RecipeItems.length < a.RecipeItems.length;
+            if (a.category === b.category)
+              return b.RecipeItems.length < a.RecipeItems.length;
+
+            return b.category === "standard";
+          });
         }
       });
     });

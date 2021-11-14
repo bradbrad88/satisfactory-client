@@ -1,13 +1,13 @@
 import React, { useState, useRef } from "react";
 
 const Boolean = ({ id, label, item, handleInputChange, value }) => {
-  const [checked, setChecked] = useState(false);
+  // const [checked, setChecked] = useState(false);
   const [hover, setHover] = useState(false);
   const ref = useRef();
   const onClick = e => {
     // window.focus(ref.current);
-    const newValue = !checked;
-    setChecked(newValue);
+    const newValue = !value;
+    // setChecked(newValue);
     handleInputChange(newValue);
   };
 

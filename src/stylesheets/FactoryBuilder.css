@@ -43,6 +43,8 @@
   margin: 1rem;
   border-radius: 0.3rem;
   user-select: none;
+  /* height: 22rem; */
+  /* min-height: auto; */
 }
 
 .item-inputs {
@@ -57,7 +59,20 @@
   padding: 0 1rem;
 }
 
+.item-input.under {
+  border-color: red;
+}
+
 .inputs {
   display: flex;
   flex-direction: row;
+}
+
+.factory-totals {
+  display: block;
+}
+
+.factory-totals > .inputs {
+  display: flex;
+  flex-direction: column;
 }

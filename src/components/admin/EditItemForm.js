@@ -4,6 +4,7 @@ import { useItemApi } from "../../hooks/useItemApi";
 import Text from "components/elements/fields/Text";
 import Category from "components/elements/fields/Category";
 import NumberInput from "components/elements/fields/NumberInput";
+import Boolean from "components/elements/fields/Boolean";
 import Item from "./Item";
 import DeleteButton from "components/system/DeleteButton";
 import "stylesheets/Admin.css";
@@ -56,6 +57,9 @@ const EditItemForm = ({
     error: null,
     valid: existingItem ? true : false,
   });
+  const [rawMaterial, setRawMaterial] = useState({
+    value: existingItem ? existingItem.rawMaterial : false,
+  });
   const [success, setSuccess] = useState(null);
   const [failure, setFailure] = useState(null);
   const { working, sendData } = useItemApi();
@@ -89,6 +93,7 @@ const EditItemForm = ({
       transportType: transportType.value,
       stackSize: stackSize.value,
       points: points.value,
+      rawMaterial: rawMaterial.value,
     };
   };
 
@@ -142,6 +147,11 @@ const EditItemForm = ({
 
   const handlePointsChange = e => {
     handleInputChange(e.target.value, setPoints, validateInteger);
+  };
+
+  const handleRawMaterialChange = e => {
+    console.log("e", e);
+    setRawMaterial({ value: e });
   };
 
   const handleInputChange = (value, setState, validator) => {
@@ -276,6 +286,13 @@ const EditItemForm = ({
         item={existingItem}
         id={"item-points"}
         error={points.error}
+      />
+      <Boolean
+        label={"RAW MATERIAL"}
+        handleInputChange={handleRawMaterialChange}
+        value={rawMaterial.value}
+        item={existingItem}
+        id={"raw-material"}
       />
       <div className="field">
         <button

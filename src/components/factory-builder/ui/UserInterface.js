@@ -9,9 +9,12 @@ const UserInterface = ({
   qty,
   handleQuantity,
   newRecipe,
+  factoryTotals,
+  functions,
 }) => {
+  const { handleNewItem } = functions;
+
   const itemOptions = useMemo(() => {
-    console.log("items memo", items);
     if (!items) return [];
     const itemOptions = items
       .map(item => ({
@@ -23,12 +26,39 @@ const UserInterface = ({
     return itemOptions;
   }, [items]);
 
-  const handleStart = () => {
-    console.log("start");
-    newRecipe();
-  };
+  const renderTotals = useMemo(() => {
+    const renderInputs = () => {
+      const rawMaterial = factoryTotals.inputs.rawMaterials?.map(rawMaterial => (
+        <div>
+          {rawMaterial.item.itemName}: {rawMaterial.qty}
+        </div>
+      ));
+      const imports = factoryTotals.inputs.imported?.map(imported => (
+        <div>
+          {imported.item.itemName}: {imported.qty}
+        </div>
+      ));
+      return (
+        <>
+          <h3>Raw Materials</h3>
+          {rawMaterial}
+          <h3>Imported</h3>
+          {imports}
+        </>
+      );
+    };
 
-  console.log("items ui", items);
+    return (
+      <div className={"factory-totals"}>
+        <div className={"inputs"}>{renderInputs()}</div>
+        <div className={"outputs"}></div>
+      </div>
+    );
+  }, [factoryTotals]);
+
+  const addNewItem = () => {
+    handleNewItem();
+  };
 
   return (
     <div className={"ui"}>
@@ -44,7 +74,8 @@ const UserInterface = ({
         handleInputChange={handleQuantity}
         value={qty}
       />
-      <button onClick={handleStart}>Go!</button>
+      <button onClick={addNewItem}>Add New Item</button>
+      {renderTotals}
     </div>
   );
 };

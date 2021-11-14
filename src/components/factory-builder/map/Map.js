@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 
 import BuildingStep from "./BuildingStep";
 
-const Map = ({ data }) => {
+const Map = ({ data, functions }) => {
   const [dragging, setDragging] = useState(false);
   const [initialMouse, setInitialMouse] = useState({});
   const [mapOffset, setMapOffset] = useState({ v: 0, h: 0 });
@@ -51,9 +51,13 @@ const Map = ({ data }) => {
     }, {});
     return Object.keys(buildingSteps).map(key => {
       const renderSteps = buildingSteps[key].map(step => (
-        <BuildingStep data={step} />
+        <BuildingStep data={step} key={step.id} functions={functions} />
       ));
-      return <div className={"row"}>{renderSteps}</div>;
+      return (
+        <div className={"row"} key={key}>
+          {renderSteps}
+        </div>
+      );
     });
   };
 

@@ -4,10 +4,10 @@ import truncateDecimals from "utils/truncateDecimals";
 
 const BuildingStep = ({ data, functions }) => {
   const [showAutoBuild, setShowAutoBuild] = useState(false);
-  const { handleRecipeChange, setImported, autoBuildRecipe } = functions;
+  const { setRecipe, setImported, autoBuildInputs } = functions;
   const handleAutoBuildRecipe = useCallback(() => {
     // debugger;
-    autoBuildRecipe(data);
+    autoBuildInputs(data);
   }, []);
 
   const renderItemInputs = useMemo(() => {
@@ -41,7 +41,7 @@ const BuildingStep = ({ data, functions }) => {
         )
       );
     });
-  }, [autoBuildRecipe]);
+  }, [data, setImported, setRecipe]);
 
   const handleSetImport = () => {
     const toggle = !data.imported;
@@ -63,13 +63,19 @@ const BuildingStep = ({ data, functions }) => {
     const recipe = data.recipes.find(
       r => parseInt(r.recipeId) === parseInt(e.target.value)
     );
-    handleRecipeChange(data, recipe);
+    const options = { recipe };
+    setRecipe(data, options);
+  };
+
+  const getOutputQty = outputs => {
+    const qty = outputs.reduce((total, output) => parseFloat(output.qty) + total, 0);
+    return qty;
   };
 
   return (
     <div className={"container building-step"}>
       <h2>
-        ({truncateDecimals(data.getTotalOutputQty(), 3)}) {data.item.itemName}
+        ({truncateDecimals(getOutputQty(data.outputs), 3)}) {data.item.itemName}
       </h2>
       {data.imported && !data.item.rawMaterial && (
         <button onClick={handleSetImport}>Build on site</button>
@@ -91,7 +97,7 @@ const BuildingStep = ({ data, functions }) => {
             />
           </div>
           <h3>
-            Requires: ({truncateDecimals(data.buildingCount, 4)})
+            Requires: ({truncateDecimals(data.buildingCount, 4)}){" "}
             {data.building?.title}
           </h3>
           {showAutoBuild && (

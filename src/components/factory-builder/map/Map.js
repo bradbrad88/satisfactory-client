@@ -39,14 +39,17 @@ const Map = ({ data, functions }) => {
       window.removeEventListener("mouseup", onMouseUp);
     };
   }, [onMouseUp, onMouseMove]);
+  // console.log("data", data);
+  // const {} = functions;
+
   if (typeof data !== "object") return null;
   if (data.length < 1) return null;
 
   const renderSteps = () => {
     const buildingSteps = data.reduce((total, buildingStep) => {
-      const arr = total[buildingStep.position] || [];
+      const arr = total[buildingStep.ver] || [];
       arr.push(buildingStep);
-      total[buildingStep.position] = arr;
+      total[buildingStep.ver] = arr;
       return total;
     }, {});
     return Object.keys(buildingSteps).map(key => {

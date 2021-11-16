@@ -12,9 +12,8 @@ const useData = () => {
     try {
       const res = await fetch(`${process.env.REACT_APP_API_HOST}/`);
       const { data } = await res.json();
-      const { recipes, items } = data;
+      // const { recipes, items } = data;
       processItems(data);
-      console.log("data", data);
       setItems(data.items);
       setRecipes(data.recipes);
     } catch (error) {

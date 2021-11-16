@@ -2,17 +2,8 @@ import React, { useMemo } from "react";
 import Category from "components/elements/fields/Category";
 import NumberInput from "components/elements/fields/NumberInput";
 
-const UserInterface = ({
-  items,
-  item,
-  handleItem,
-  qty,
-  handleQuantity,
-  newRecipe,
-  factoryTotals,
-  functions,
-}) => {
-  const { handleNewItem } = functions;
+const UserInterface = ({ items, item, qty, factoryTotals, functions }) => {
+  const { handleQuantity, handleItem, handleAddOutput } = functions;
 
   const itemOptions = useMemo(() => {
     if (!items) return [];
@@ -47,18 +38,29 @@ const UserInterface = ({
         </>
       );
     };
+    console.log("factory totals", factoryTotals);
+
+    const renderOutputs = () => {
+      const store = factoryTotals.outputs.store?.map(item => (
+        <div>
+          {item.item.itemName}: {item.qty}
+        </div>
+      ));
+      return (
+        <>
+          <h3>To Storage</h3>
+          {store}
+        </>
+      );
+    };
 
     return (
       <div className={"factory-totals"}>
         <div className={"inputs"}>{renderInputs()}</div>
-        <div className={"outputs"}></div>
+        <div className={"outputs"}>{renderOutputs()}</div>
       </div>
     );
   }, [factoryTotals]);
-
-  const addNewItem = () => {
-    handleNewItem();
-  };
 
   return (
     <div className={"ui"}>
@@ -74,7 +76,7 @@ const UserInterface = ({
         handleInputChange={handleQuantity}
         value={qty}
       />
-      <button onClick={addNewItem}>Add New Item</button>
+      <button onClick={handleAddOutput}>Add New Item</button>
       {renderTotals}
     </div>
   );

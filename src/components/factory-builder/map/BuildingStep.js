@@ -43,6 +43,20 @@ const BuildingStep = ({ data, functions }) => {
     });
   }, [data, setImported, setRecipe]);
 
+  const renderItemOutputs = useMemo(() => {
+    return data.outputs
+      .filter(output => !output.byProduct)
+      .map(output => {
+        return (
+          <div className={"item-output"}>
+            <p>{output.type}</p>
+            <p>{parseFloat(output.qty)}</p>
+          </div>
+        );
+      });
+    // return <div className={"item-output"}>Output</div>;
+  }, [data, setImported, setRecipe]);
+
   const handleSetImport = () => {
     const toggle = !data.imported;
     setImported(data, toggle);
@@ -74,6 +88,10 @@ const BuildingStep = ({ data, functions }) => {
 
   return (
     <div className={"container building-step"}>
+      <div className={"item-outputs"}>
+        <div className={"main-product"}>{renderItemOutputs}</div>
+        <div className={"by-product"}></div>
+      </div>
       <h2>
         ({truncateDecimals(getOutputQty(data.outputs), 3)}) {data.item.itemName}
       </h2>

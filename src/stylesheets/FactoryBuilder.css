@@ -47,13 +47,15 @@
   /* min-height: auto; */
 }
 
-.item-inputs {
+.item-inputs,
+.item-outputs {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
 }
 
-.item-input {
+.item-input,
+.item-output {
   text-align: center;
   border: rgba(255, 255, 255, 0.452) 1px solid;
   padding: 0 1rem;
@@ -63,7 +65,7 @@
   border-color: red;
 }
 
-.inputs {
+.analysis.inputs {
   display: flex;
   flex-direction: row;
 }

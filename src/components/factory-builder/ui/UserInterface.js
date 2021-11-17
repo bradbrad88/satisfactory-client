@@ -56,8 +56,8 @@ const UserInterface = ({ items, item, qty, factoryTotals, functions }) => {
 
     return (
       <div className={"factory-totals"}>
-        <div className={"inputs"}>{renderInputs()}</div>
-        <div className={"outputs"}>{renderOutputs()}</div>
+        <div className={"analysis inputs"}>{renderInputs()}</div>
+        <div className={"analysis outputs"}>{renderOutputs()}</div>
       </div>
     );
   }, [factoryTotals]);

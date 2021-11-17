@@ -18,6 +18,7 @@ const useApi = (endpoint, key, animationTime) => {
         const { data } = await response.json();
         if (endpoint === "buildings") processBuildingData(data);
         if (endpoint === "recipes") processRecipeData(data);
+        console.log("data", data);
         setItems(data);
       }
     } catch (error) {

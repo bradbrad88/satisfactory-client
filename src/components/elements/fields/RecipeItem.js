@@ -1,9 +1,10 @@
-import React, { useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import Select from "../Select";
 import conveyor from "../../../assets/conveyor.webp";
 import pipe from "../../../assets/pipe.webp";
 
-const RecipeItem = ({ items, direction, type, onChange, value }) => {
+const RecipeItem = ({ items, direction, type, onChange, value, id }) => {
+  // const [recipeItem, setRecipeItem] = useState(value);
   const image = useMemo(() => {
     switch (type) {
       case "conveyor":
@@ -17,14 +18,27 @@ const RecipeItem = ({ items, direction, type, onChange, value }) => {
 
   const handleItemChange = e => {
     if (!parseInt(e.target.value)) return onChange(null, value);
-    const newState = { ...value, itemId: parseInt(e.target.value), direction, type };
+    const newState = {
+      ...value,
+      itemId: parseInt(e.target.value),
+      direction,
+      type,
+      key: id,
+    };
+    // setRecipeItem(newState);
     onChange(newState, value);
   };
 
   const handleQtyChange = e => {
-    if (!parseFloat(e.target.value)) return onChange(null, value);
+    // if (!parseFloat(e.target.value)) return onChange(null, value);
     const newState = { ...value, qty: e.target.value, direction, type };
+    // setRecipeItem(newState);
     onChange(newState, value);
+  };
+
+  const handleChange = () => {
+    // console.log("recipe item", { ...recipeItem });
+    // onChange({ ...recipeItem });
   };
 
   return (

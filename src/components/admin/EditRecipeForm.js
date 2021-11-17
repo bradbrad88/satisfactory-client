@@ -77,7 +77,7 @@ const EditRecipeForm = ({
       recipeName: toTitleCase(name.value),
       category: category.value,
       buildingId: building.value,
-      RecipeItems: recipeItems.value,
+      RecipeItems: recipeItems.value.filter(ri => ri.qty),
     };
   };
 
@@ -129,8 +129,9 @@ const EditRecipeForm = ({
   };
 
   const handleRecipeItemsChange = recipeItems => {
+    console.log("!!!!", [...recipeItems]);
     recipeItems.forEach(item => {
-      if (!item.type) item.type = item.Item?.transportType;
+      if (item && !item.type) item.type = item.Item?.transportType;
     });
 
     setRecipeItems({ value: recipeItems });

@@ -44,11 +44,12 @@ const Header = () => {
             Satisfactory Planner
           </Link>
           <input
+            className={"search"}
             onChange={e => setSearchTerm(e.target.value)}
             value={searchTerm}
-            placeholder={"search..."}
+            placeholder={"Search..."}
           />
-          <p>{debouncedSearchTerm}</p>
+          {/* <p>{debouncedSearchTerm}</p> */}
           <NavBar
             navItems={navItems()}
             active={active}

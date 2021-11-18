@@ -4,19 +4,32 @@
   gap: 1rem;
 }
 
+/* .ui {
+  border: 1px solid white;
+  border-radius: 0.5rem;
+  padding: 1rem;
+} */
+
+.map,
 .ui {
   border: 1px solid white;
   border-radius: 0.5rem;
   padding: 1rem;
+  /* overflow: hidden; */
+  height: 80vh;
+  margin: 2rem 1rem;
+}
+
+.ui {
+  display: inline-block;
+  min-width: 18rem;
+  overflow-y: auto;
 }
 
 .map {
-  border: 1px solid white;
-  border-radius: 0.5rem;
-  padding: 1rem;
   overflow: hidden;
-  height: 80vh;
-  margin: 2rem;
+  margin-left: 0;
+  width: 100vw;
 }
 
 .grid {
@@ -29,13 +42,8 @@
   justify-content: center;
 }
 
-.generation {
-  display: flex;
-  flex-direction: column;
-}
-
 .container.building-step {
-  display: block;
+  display: grid;
   background-color: rgba(255, 255, 255, 0.151);
   width: 25rem;
   align-self: center;
@@ -43,12 +51,39 @@
   margin: 1rem;
   border-radius: 0.3rem;
   user-select: none;
-  /* height: 22rem; */
-  /* min-height: auto; */
 }
 
-.item-inputs,
+.container.building-step > h1 {
+  text-align: center;
+}
+
+.build {
+  font: inherit;
+  font-size: 1rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  max-width: 10rem;
+  justify-self: center;
+  padding: 0.5rem 1rem;
+  outline: none;
+  border: none;
+  cursor: pointer;
+}
+
+.build:hover {
+  background-color: rgb(255, 255, 255);
+  box-shadow: 0 0 6px rgba(161, 220, 255, 0.829);
+}
+
 .item-outputs {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.container.building-step > .item-inputs,
+.main-products,
+.by-products {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -59,6 +94,10 @@
   text-align: center;
   border: rgba(255, 255, 255, 0.452) 1px solid;
   padding: 0 1rem;
+}
+
+.item-output.by-product {
+  border-color: rgb(243, 171, 16);
 }
 
 .item-input.under {
@@ -78,3 +117,80 @@
   display: flex;
   flex-direction: column;
 }
+
+.wrapper {
+  /* pointer-events: all;
+  cursor: pointer; */
+  /* background-color: red; */
+  width: fit-content;
+  justify-self: end;
+  cursor: pointer;
+}
+
+.wrapper:hover > .alt-outputs > .display {
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.5);
+  /* border: solid rgb(255, 255, 255) 1px;
+   */
+  border-color: white;
+  background-color: rgba(0, 0, 0, 0.096);
+  /* font-weight: bold; */
+}
+
+.alt-outputs {
+  margin: 0.5rem;
+  font-size: 1.2rem;
+  /* cursor: pointer; */
+  /* background-color: red; */
+  width: 10rem;
+  justify-self: right;
+}
+
+.alt-outputs.edit-mode {
+  /* pointer-events: none; */
+}
+
+.alt-outputs > label {
+  display: inline-block;
+  padding: 0.5rem;
+  font-family: inherit;
+  text-transform: uppercase;
+  font-weight: bold;
+  min-width: 4rem;
+  cursor: inherit;
+  /* width: 20rem; */
+  /* background-color: white; */
+}
+
+.alt-outputs > input {
+  padding: 0.4rem;
+  background-color: white;
+  outline: none;
+  border: white 1px solid;
+  border-radius: 0.2rem;
+  font-size: inherit;
+  width: 2.5rem;
+}
+
+.alt-outputs > .display {
+  display: inline-block;
+  background-color: rgba(255, 255, 255, 0.123);
+  padding: 0.5rem;
+  font-size: inherit;
+  font-weight: bold;
+  border-radius: 0.2rem;
+  transition: 0.4s;
+  border: solid rgb(112, 112, 112) 1px;
+  min-width: 2rem;
+  text-align: right;
+  /* font-size: 1rem; */
+}
+
+/* .alt-outputs > input:read-only {
+  background-color: rgba(255, 255, 255, 0.123);
+  width: min-content;
+  border: 1px solid white;
+  outline: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  color: white;
+} */

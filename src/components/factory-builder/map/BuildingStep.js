@@ -1,12 +1,13 @@
 import React, { useState, useCallback, useMemo } from "react";
 import Category from "components/elements/fields/Category";
+import InputEditor from "./InputEditor";
+import OutsideAlerter from "utils/OutsideAlerter";
 import truncateDecimals from "utils/truncateDecimals";
 
 const BuildingStep = ({ data, functions }) => {
   const [showAutoBuild, setShowAutoBuild] = useState(false);
-  const { setRecipe, setImported, autoBuildInputs } = functions;
+  const { setRecipe, setImported, autoBuildInputs, setAltOutput } = functions;
   const handleAutoBuildRecipe = useCallback(() => {
-    // debugger;
     autoBuildInputs(data);
   }, []);
 
@@ -45,16 +46,79 @@ const BuildingStep = ({ data, functions }) => {
 
   const renderItemOutputs = useMemo(() => {
     return data.outputs
-      .filter(output => !output.byProduct)
+      .filter(output => !output.byProduct && output.buildingStep)
       .map(output => {
         return (
-          <div className={"item-output"}>
-            <p>{output.type}</p>
+          <div key={output.buildingStep.id} className={"item-output"}>
             <p>{parseFloat(output.qty)}</p>
+            <p>{output.buildingStep.item.itemName}</p>
           </div>
         );
       });
-    // return <div className={"item-output"}>Output</div>;
+  }, [data, setImported, setRecipe]);
+
+  const renderByProducts = useMemo(() => {
+    return (
+      <div className={"item-output by-product"}>
+        <p>Groot</p>
+        <p>12</p>
+      </div>
+    );
+  }, [data, setImported, setRecipe]);
+
+  const handleUpdateStore = e => {
+    const options = {
+      type: "store",
+      qty: parseFloat(e),
+      buildingStep: data,
+    };
+    setAltOutput(options);
+  };
+  const handleUpdateSink = e => {
+    const options = {
+      type: "sink",
+      qty: parseFloat(e),
+      buildingStep: data,
+    };
+    setAltOutput(options);
+  };
+
+  const renderStoreOutput = useMemo(() => {
+    const storeValue = data.outputs.reduce((total, output) => {
+      if (output.type !== "store") return total;
+      return parseFloat(output.qty) + total;
+    }, 0);
+    return (
+      <InputEditor
+        className={"alt-outputs"}
+        value={storeValue}
+        label={"Store"}
+        handleChange={handleUpdateStore}
+        id={`store-${data.id}`}
+      />
+    );
+  }, [data, setImported, setRecipe, setAltOutput]);
+
+  const renderSinkOutput = useMemo(() => {
+    const sinkValue = data.outputs.reduce((total, output) => {
+      if (output.type !== "sink") return total;
+      return parseFloat(output.qty) + total;
+    }, 0);
+    return (
+      <InputEditor
+        className={"alt-outputs"}
+        value={sinkValue}
+        label={"Sink"}
+        handleChange={handleUpdateSink}
+        id={`sink-${data.id}`}
+      />
+      // <div>
+      //   <label>
+      //     Resourse Sink
+      //     <input onKeyDown={handleUpdateSink} type="number" />
+      //   </label>
+      // </div>
+    );
   }, [data, setImported, setRecipe]);
 
   const handleSetImport = () => {
@@ -88,19 +152,34 @@ const BuildingStep = ({ data, functions }) => {
 
   return (
     <div className={"container building-step"}>
+      <h1>{data.item.itemName}</h1>
+
       <div className={"item-outputs"}>
-        <div className={"main-product"}>{renderItemOutputs}</div>
-        <div className={"by-product"}></div>
+        <div className="main-product">
+          <h2>Main Outputs</h2>
+          <div className={"main-products"}>{renderItemOutputs}</div>
+        </div>
+        <div className="by-product">
+          <h2>By Products</h2>
+
+          <div className={"by-products"}>{renderByProducts}</div>
+        </div>
       </div>
-      <h2>
+      {renderStoreOutput}
+      {renderSinkOutput}
+      {/* <h2>
         ({truncateDecimals(getOutputQty(data.outputs), 3)}) {data.item.itemName}
-      </h2>
+      </h2> */}
       {data.imported && !data.item.rawMaterial && (
-        <button onClick={handleSetImport}>Build on site</button>
+        <button className={"build"} onClick={handleSetImport}>
+          Build on site
+        </button>
       )}
       {!data.imported && (
         <>
-          <button onClick={handleSetImport}>Import</button>
+          <button className={"build"} onClick={handleSetImport}>
+            Import
+          </button>
           <h3>
             Recipe:{" "}
             {data.recipe?.category === "standard"
@@ -119,7 +198,9 @@ const BuildingStep = ({ data, functions }) => {
             {data.building?.title}
           </h3>
           {showAutoBuild && (
-            <button onClick={handleAutoBuildRecipe}>Auto Build</button>
+            <button className={"build"} onClick={handleAutoBuildRecipe}>
+              Auto Build
+            </button>
           )}
         </>
       )}

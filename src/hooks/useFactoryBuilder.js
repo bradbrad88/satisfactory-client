@@ -12,7 +12,7 @@ const useFactoryBuilder = () => {
       if (output.byProduct) return total;
       return parseFloat(output.qty) + total;
     }, 0);
-    console.log("building step output qty", outputQty);
+    // console.log("building step output qty", outputQty);
     return outputQty;
   }, []);
   const prevState = useRef();
@@ -21,7 +21,7 @@ const useFactoryBuilder = () => {
   }, [buildingSteps]);
 
   const factoryTotals = useMemo(() => {
-    console.log("factory totals building steps", [...buildingSteps]);
+    // console.log("factory totals building steps", [...buildingSteps]);
     const breakdown = buildingSteps.reduce(
       (total, buildingStep) => {
         const newTotal = { ...total };
@@ -92,12 +92,16 @@ const useFactoryBuilder = () => {
 
   const calcPosition = updatedState => {
     // reduce buildingSteps state down to steps that don't contain outputs with buildingSteps
-    const topLayerBuildingSteps = updatedState
+
+    updatedState
       .filter(
         buildingStep =>
-          !buildingStep.outputs.some(
-            output => output.buildingStep && !output.byProduct
-          )
+          !buildingStep.outputs.some(output => {
+            const sibling = output.buildingStep?.inputs.find(
+              input => input.id === output.id
+            );
+            return output.buildingStep && !output.byProduct && !sibling;
+          })
       )
       .forEach(buildingStep => {
         assignVerticalPosition(buildingStep);
@@ -125,9 +129,7 @@ const useFactoryBuilder = () => {
   };
 
   const addOutput = (updatedState, output, buildingStep) => {
-    // let newState = [...prevState.current];
     if (!updatedState) updatedState = [...prevState.current];
-    console.log("updated state", updatedState);
     let currentBuildingStep;
     if (buildingStep) {
       currentBuildingStep = buildingStep;
@@ -135,6 +137,7 @@ const useFactoryBuilder = () => {
       currentBuildingStep = updatedState.find(bs => bs.item === output.item);
     }
 
+    // If there is a buildingStep that already manufactures the item in question:
     if (currentBuildingStep) {
       const existingOutput = currentBuildingStep.outputs.find(
         existingOutput =>
@@ -149,7 +152,9 @@ const useFactoryBuilder = () => {
       }
       setBuilding(currentBuildingStep);
       setInputs(currentBuildingStep);
-    } else {
+    }
+    // No buidlingStep manufacturing this item in existance:
+    else {
       currentBuildingStep = newBuildingStep(output);
       updatedState.push(currentBuildingStep);
     }
@@ -184,16 +189,16 @@ const useFactoryBuilder = () => {
     const newBuildingSteps = [...prevState.current];
     buildingStep.imported = toggle;
     setRecipe(buildingStep);
-    console.log("before removal", [...newBuildingSteps]);
-    const newState = removeBuildingStepsWithNoOutput(newBuildingSteps);
-    console.log("after removal", [...newState]);
+    setInputs(buildingStep);
+    let newState = removeBuildingStepsWithNoOutput(newBuildingSteps);
+    newState = calcPosition(newState);
     setBuildingSteps(newState);
   };
 
   const removeBuildingStepsWithNoOutput = updatedBuildingSteps => {
     const newState = [...updatedBuildingSteps];
     const filteredState = newState.filter(
-      buildingStep => buildingStep.outputs.length > 0
+      buildingStep => buildingStep.outputs.filter(output => output.qty).length > 0
     );
     return filteredState;
   };
@@ -207,7 +212,6 @@ const useFactoryBuilder = () => {
     buildingStep.inputs.forEach(input => {
       // Check within the previous state for any building steps already producing the input item
       const validBuildingStep = newState.find(bs => bs.item === input.item);
-
       if (validBuildingStep) {
         let validOutput = validBuildingStep.outputs.find(
           output => output.buildingStep === buildingStep && !output.byProduct
@@ -222,7 +226,7 @@ const useFactoryBuilder = () => {
           newState = addOutput(newState, validOutput, validBuildingStep);
         } else {
           const remainingQty =
-            input.qty - (getInputTotalQty(buildingStep, input) - validOutput.qty);
+            input.qty - (getInputTotalQty(input) - validOutput.qty);
           validOutput.qty = remainingQty;
         }
       } else {
@@ -231,6 +235,7 @@ const useFactoryBuilder = () => {
           qty: input.qty,
           item: input.item,
           buildingStep,
+          // id: uuidv4(),
         };
         const currentBuildingStep = newBuildingStep(output);
         newState = [...newState, currentBuildingStep];
@@ -296,6 +301,7 @@ const useFactoryBuilder = () => {
         currentInput = {
           buildingSteps: [],
           item: recipeItem.item,
+          id: uuidv4(),
         };
       }
       return {
@@ -305,6 +311,30 @@ const useFactoryBuilder = () => {
       };
     });
     buildingStep.inputs = inputs;
+    inputs.forEach(input => {
+      // Find the first buidling step that isn't a by-product and set its qty
+      input.buildingSteps.forEach(bs => {
+        updateOutputs(bs);
+      });
+    });
+  };
+
+  const updateOutputs = buildingStep => {
+    // Go through each output and look at
+    console.log("update outputs");
+    buildingStep.outputs.forEach(output => {
+      if (output.id && !output.byProduct && output.buildingStep) {
+        const input = output.buildingStep.inputs.find(
+          input => input.id === output.id
+        );
+        // console.log("input qty", input.qty);
+        // console.log("get total input qty", getInputTotalQty(input));
+        const remainingQty = input.qty - (getInputTotalQty(input) - output.qty);
+        // console.log("remaining qty", remainingQty, buildingStep.item.itemName);
+        output.qty = remainingQty;
+      }
+    });
+    setInputs(buildingStep);
   };
 
   const linkInputs = (buildingStep, output) => {
@@ -312,6 +342,7 @@ const useFactoryBuilder = () => {
     const input = output.buildingStep.inputs.find(
       input => input.item === output.item
     );
+    output.id = input.id;
     input.buildingSteps.push(buildingStep);
   };
 
@@ -323,31 +354,59 @@ const useFactoryBuilder = () => {
     return recipeItem.qty;
   };
 
-  const getInputTotalQty = (buildingStep, input) => {
+  const getInputTotalQty = input => {
     // Get the amount of items currently being sent to this building step's input
     return input.buildingSteps.reduce((total, bs) => {
       return (
         total +
         bs.outputs.reduce(
           (total, output) =>
-            output.buildingStep === buildingStep
-              ? parseFloat(output.qty) + total
-              : total,
+            output.id === input.id ? parseFloat(output.qty) + total : total,
           0
         )
       );
     }, 0);
   };
 
+  const setAltOutput = options => {
+    if (!options) return;
+
+    const { type, buildingStep, qty } = options;
+    if (!["store", "sink"].includes(type)) return console.log("incorrect type");
+    if (!type || !buildingStep) return;
+    const newState = [...prevState.current];
+    const existingOutput = buildingStep.outputs.find(output => output.type === type);
+    if (existingOutput) {
+      if (!qty) {
+        buildingStep.outputs = buildingStep.outputs.filter(
+          output => output.type !== type
+        );
+      } else {
+        existingOutput.qty = qty;
+      }
+    } else {
+      buildingStep.outputs.push({ type, qty: qty || 0, item: buildingStep.item });
+    }
+    setBuilding(buildingStep);
+    setInputs(buildingStep);
+    setBuildingSteps(newState);
+  };
+
+  const highlightOutputs = () => {};
+
+  const highlightInputs = () => {};
+
   return {
     items,
     buildingSteps,
     factoryTotals,
     addNewItem,
-    addOutput,
+    setAltOutput,
     setRecipe,
     setImported,
     autoBuildInputs,
+    highlightOutputs,
+    highlightInputs,
   };
 };
 

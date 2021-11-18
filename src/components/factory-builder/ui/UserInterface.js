@@ -38,7 +38,7 @@ const UserInterface = ({ items, item, qty, factoryTotals, functions }) => {
         </>
       );
     };
-    console.log("factory totals", factoryTotals);
+    // console.log("factory totals", factoryTotals);
 
     const renderOutputs = () => {
       const store = factoryTotals.outputs.store?.map(item => (
@@ -46,18 +46,36 @@ const UserInterface = ({ items, item, qty, factoryTotals, functions }) => {
           {item.item.itemName}: {item.qty}
         </div>
       ));
+      const sink = factoryTotals.outputs.sink?.map(item => (
+        <div>
+          {item.item.itemName}: {item.qty}
+        </div>
+      ));
+      const sinkPoints =
+        factoryTotals.outputs.sink?.reduce((total, item) => {
+          return item.item.points * item.qty + total;
+          // return total + 1;
+        }, 0) || 0;
       return (
         <>
           <h3>To Storage</h3>
           {store}
+          <h3>To Resource Sink ({sinkPoints.toLocaleString()} points)</h3>
+          {sink}
         </>
       );
     };
 
     return (
       <div className={"factory-totals"}>
-        <div className={"analysis inputs"}>{renderInputs()}</div>
-        <div className={"analysis outputs"}>{renderOutputs()}</div>
+        <div className={"analysis inputs"}>
+          <h2>Inputs</h2>
+          {renderInputs()}
+        </div>
+        <div className={"analysis outputs"}>
+          <h2>Outputs</h2>
+          {renderOutputs()}
+        </div>
       </div>
     );
   }, [factoryTotals]);

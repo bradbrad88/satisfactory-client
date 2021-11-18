@@ -37,7 +37,7 @@ const BuildingStep = ({ data, functions }) => {
             {/* {shortfall > 0 && (
               <button onClick={handleBuildRecipe}>Auto build</button>
             )} */}
-            <p>{shortfall}</p>
+            <p>{truncateDecimals(shortfall, 3)}</p>
           </div>
         )
       );
@@ -50,7 +50,7 @@ const BuildingStep = ({ data, functions }) => {
       .map(output => {
         return (
           <div key={output.buildingStep.id} className={"item-output"}>
-            <p>{parseFloat(output.qty)}</p>
+            <p>{truncateDecimals(output.qty, 3)}</p>
             <p>{output.buildingStep.item.itemName}</p>
           </div>
         );
@@ -58,12 +58,16 @@ const BuildingStep = ({ data, functions }) => {
   }, [data, setImported, setRecipe]);
 
   const renderByProducts = useMemo(() => {
-    return (
-      <div className={"item-output by-product"}>
-        <p>Groot</p>
-        <p>12</p>
+    const byProducts = data.outputs.filter(output => output.byProduct);
+    console.log("by products to be rendered", byProducts);
+    return byProducts.map(output => (
+      <div className={"item-output by-product"} key={output.item.itemId}>
+        <p>{output.item.itemName}</p>
+        <p>{truncateDecimals(output.qty, 4)}</p>
       </div>
-    );
+    ));
+
+    // return byProducts;
   }, [data, setImported, setRecipe]);
 
   const handleUpdateStore = e => {

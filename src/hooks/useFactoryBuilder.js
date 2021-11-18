@@ -152,6 +152,7 @@ const useFactoryBuilder = () => {
       }
       setBuilding(currentBuildingStep);
       setInputs(currentBuildingStep);
+      setByProduct(currentBuildingStep);
     }
     // No buidlingStep manufacturing this item in existance:
     else {
@@ -182,7 +183,10 @@ const useFactoryBuilder = () => {
     }
     setBuilding(buildingStep);
     setInputs(buildingStep);
-    setBuildingSteps([...buildingSteps]);
+    setByProduct(buildingStep);
+    let newState = [...prevState.current];
+    newState = removeBuildingStepsWithNoOutput(newState);
+    setBuildingSteps(newState);
   };
 
   const setImported = (buildingStep, toggle) => {
@@ -190,6 +194,7 @@ const useFactoryBuilder = () => {
     buildingStep.imported = toggle;
     setRecipe(buildingStep);
     setInputs(buildingStep);
+    setByProduct(buildingStep);
     let newState = removeBuildingStepsWithNoOutput(newBuildingSteps);
     newState = calcPosition(newState);
     setBuildingSteps(newState);
@@ -198,7 +203,9 @@ const useFactoryBuilder = () => {
   const removeBuildingStepsWithNoOutput = updatedBuildingSteps => {
     const newState = [...updatedBuildingSteps];
     const filteredState = newState.filter(
-      buildingStep => buildingStep.outputs.filter(output => output.qty).length > 0
+      buildingStep =>
+        buildingStep.outputs.filter(output => output.qty && !output.byProduct)
+          .length > 0
     );
     return filteredState;
   };
@@ -310,8 +317,12 @@ const useFactoryBuilder = () => {
         recipeQty: recipeItem.qty,
       };
     });
+    const prevAndNewInputs = buildingStep.inputs
+      .filter(input => !inputs.includes(input))
+      .concat(inputs);
+    console.log("prev and new inputs", prevAndNewInputs);
     buildingStep.inputs = inputs;
-    inputs.forEach(input => {
+    prevAndNewInputs.forEach(input => {
       // Find the first buidling step that isn't a by-product and set its qty
       input.buildingSteps.forEach(bs => {
         updateOutputs(bs);
@@ -327,14 +338,16 @@ const useFactoryBuilder = () => {
         const input = output.buildingStep.inputs.find(
           input => input.id === output.id
         );
-        // console.log("input qty", input.qty);
-        // console.log("get total input qty", getInputTotalQty(input));
-        const remainingQty = input.qty - (getInputTotalQty(input) - output.qty);
-        // console.log("remaining qty", remainingQty, buildingStep.item.itemName);
-        output.qty = remainingQty;
+        if (input) {
+          output.qty = input.qty - (getInputTotalQty(input) - output.qty);
+        } else {
+          output.qty = 0;
+        }
       }
     });
+    setBuilding(buildingStep);
     setInputs(buildingStep);
+    setByProduct(buildingStep);
   };
 
   const linkInputs = (buildingStep, output) => {
@@ -389,7 +402,52 @@ const useFactoryBuilder = () => {
     }
     setBuilding(buildingStep);
     setInputs(buildingStep);
+    // setByProduct(buildingStep);
     setBuildingSteps(newState);
+  };
+
+  const setByProduct = buildingStep => {
+    if (!buildingStep) return;
+    if (!buildingStep.recipe) {
+      // remove byProduct
+      const byProducts = buildingStep.outputs.filter(output => output.byProduct);
+
+      // Remove buildingStep from related input
+      byProducts.forEach(byProduct => {
+        if (!byProduct.buildingStep) return;
+        byProduct.buildingStep.inputs
+          .find(input => input.id === byProduct.id)
+          .buildingSteps.filter(bs => bs !== buildingStep);
+      });
+    } else {
+      // work out what the by-products should be
+      const byProductItems = buildingStep.recipe.RecipeItems.filter(
+        recipeItem =>
+          recipeItem.direction === "output" && recipeItem.item !== buildingStep.item
+      );
+      console.log("by product items", byProductItems);
+      const newByProducts = byProductItems.reduce((total, byProduct) => {
+        // find an existing instance of the by product and edit
+        const existingByProduct = buildingStep.outputs.find(
+          output => output.byProduct && output.item === byProduct.item
+        );
+        const qty = buildingStep.buildingCount * byProduct.qty;
+        if (existingByProduct) {
+          // edit existing by product
+          existingByProduct.qty = qty;
+          return total;
+        } else {
+          // or no existing instance and create new output
+          return total.concat({
+            byProduct: true,
+            id: null,
+            item: byProduct.item,
+            qty,
+          });
+        }
+      }, []);
+      buildingStep.outputs = buildingStep.outputs.concat(newByProducts);
+    }
   };
 
   const highlightOutputs = () => {};

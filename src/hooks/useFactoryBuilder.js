@@ -1,5 +1,4 @@
-import Building from "components/elements/fields/Building";
-import React, { useState, useMemo, useCallback, useEffect, useRef } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { v4 as uuidv4 } from "uuid";
 import useData from "./useData";
 
@@ -60,7 +59,7 @@ const useFactoryBuilder = () => {
       { inputs: {}, outputs: {} }
     );
     return breakdown;
-  }, [buildingSteps]);
+  }, [buildingSteps, getBuildingStepOutputQty]);
 
   const assignVerticalPosition = buildingStep => {
     // Two building steps that output to each other (recycled oil) are siblings

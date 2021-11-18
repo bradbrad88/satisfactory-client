@@ -12,8 +12,7 @@ const Header = () => {
   const location = useLocation();
   const isDesktopOrLaptop = useMediaQuery({ query: "(min-width: 1224px)" });
   const { sections } = useAdminSetup();
-  const { searchTerm, debouncedSearchTerm, setSearchTerm } =
-    useContext(SearchContext);
+  const { searchTerm, setSearchTerm } = useContext(SearchContext);
 
   const navItems = () => {
     const pathArray = location.pathname.split("/").filter(str => str !== "");

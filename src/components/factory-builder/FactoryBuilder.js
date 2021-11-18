@@ -1,19 +1,14 @@
-import React, { useMemo, useState } from "react";
-import useApi from "../../hooks/useApi";
-import useData from "hooks/useData";
+import React, { useState } from "react";
 import Map from "./map/Map";
 import UserInterface from "./ui/UserInterface";
 import "stylesheets/FactoryBuilder.css";
-import BuildingStep from "utils/BuildingStep";
 import useFactoryBuilder from "hooks/useFactoryBuilder";
-import { v4 as uuidv4 } from "uuid";
 
 const FactoryBuilder = () => {
   const {
     factoryTotals,
     items,
     buildingSteps,
-    fullBuild,
     addNewItem,
     setAltOutput,
     setRecipe,
@@ -48,14 +43,12 @@ const FactoryBuilder = () => {
   };
 
   const uiFunctions = {
-    // fullBuild,
     handleAddOutput,
     handleQuantity,
     handleItem,
   };
 
   const mapFunctions = {
-    // fullBuild,
     setRecipe,
     setAltOutput,
     setImported,

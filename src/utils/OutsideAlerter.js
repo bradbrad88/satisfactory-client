@@ -9,7 +9,7 @@ const OutsideAlerter = ({ children, onClickOutside, id }) => {
     };
     document.addEventListener("click", handleClickOutside);
     return () => window.removeEventListener("click", handleClickOutside);
-  }, [ref]);
+  }, [ref, onClickOutside]);
   return (
     <div className={"wrapper"} ref={ref}>
       {children}

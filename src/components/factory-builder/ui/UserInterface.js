@@ -20,21 +20,29 @@ const UserInterface = ({ items, item, qty, factoryTotals, functions }) => {
   const renderTotals = useMemo(() => {
     const renderInputs = () => {
       const rawMaterial = factoryTotals.inputs.rawMaterials?.map(rawMaterial => (
-        <div>
+        <div key={`raw-materials-${rawMaterial.item.itemId}`}>
           {rawMaterial.item.itemName}: {rawMaterial.qty}
         </div>
       ));
       const imports = factoryTotals.inputs.imported?.map(imported => (
-        <div>
+        <div key={`imported-${imported.item.itemId}`}>
           {imported.item.itemName}: {imported.qty}
         </div>
       ));
       return (
         <>
-          <h3>Raw Materials</h3>
-          {rawMaterial}
-          <h3>Imported</h3>
-          {imports}
+          {rawMaterial?.length > 0 && (
+            <>
+              <h3>Raw Materials</h3>
+              {rawMaterial}
+            </>
+          )}
+          {imports?.length > 0 && (
+            <>
+              <h3>Imported</h3>
+              {imports}
+            </>
+          )}
         </>
       );
     };
@@ -42,12 +50,12 @@ const UserInterface = ({ items, item, qty, factoryTotals, functions }) => {
 
     const renderOutputs = () => {
       const store = factoryTotals.outputs.store?.map(item => (
-        <div>
+        <div key={`store-${item.item.itemId}`}>
           {item.item.itemName}: {item.qty}
         </div>
       ));
       const sink = factoryTotals.outputs.sink?.map(item => (
-        <div>
+        <div key={`sink-${item.item.itemId}`}>
           {item.item.itemName}: {item.qty}
         </div>
       ));
@@ -58,10 +66,18 @@ const UserInterface = ({ items, item, qty, factoryTotals, functions }) => {
         }, 0) || 0;
       return (
         <>
-          <h3>To Storage</h3>
-          {store}
-          <h3>To Resource Sink ({sinkPoints.toLocaleString()} points)</h3>
-          {sink}
+          {store?.length > 0 && (
+            <>
+              <h3>To Storage</h3>
+              {store}
+            </>
+          )}
+          {sink?.length > 0 && (
+            <>
+              <h3>To Resource Sink ({sinkPoints.toLocaleString()} points)</h3>
+              {sink}
+            </>
+          )}
         </>
       );
     };

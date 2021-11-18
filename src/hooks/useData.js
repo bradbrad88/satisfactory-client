@@ -1,14 +1,10 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 const useData = () => {
   const [recipes, setRecipes] = useState([]);
   const [items, setItems] = useState([]);
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       const res = await fetch(`${process.env.REACT_APP_API_HOST}/`);
       const { data } = await res.json();
@@ -19,7 +15,11 @@ const useData = () => {
     } catch (error) {
       console.log("error", error);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const processItems = data => {
     const { items, recipes } = data;
@@ -54,10 +54,6 @@ const useData = () => {
       });
     });
   };
-
-  const processRecipes = data => {};
-
-  const processBuildings = data => {};
 
   return { items, recipes };
 };

@@ -142,7 +142,7 @@ class BuildingStep {
 
   // Fired from setRecipe
   setNewInputs() {
-    const { item, recipe, buildingCount } = this;
+    const { recipe, buildingCount } = this;
     this.clearInputs();
     if (!recipe) return;
     recipe.RecipeItems.filter(

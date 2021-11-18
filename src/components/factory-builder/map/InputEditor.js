@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState, useRef } from "react";
+import React, { useState, useRef } from "react";
 import OutsideAlerter from "utils/OutsideAlerter";
 
 // import 'stylesheets/FactoryBuilder.css'
@@ -32,10 +32,6 @@ const InputEditor = ({
   };
   const setFocus = () => {
     ref.current?.select();
-  };
-
-  const clickIn = e => {
-    setEditMode(true);
   };
 
   return (

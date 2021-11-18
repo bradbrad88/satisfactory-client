@@ -1,22 +1,25 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 
 export const SearchContext = React.createContext();
 
-export default ({ children }) => {
+const SearchProvider = ({ children }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const debounceTimer = useRef();
-  useEffect(() => {
-    handleSearchTermUpdate();
-    return () => clearTimeout(debounceTimer.current);
-  }, [searchTerm]);
-  const handleSearchTermUpdate = () => {
+
+  const handleSearchTermUpdate = useCallback(() => {
     // console.log("yep", term);
     clearTimeout(debounceTimer.current);
     debounceTimer.current = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm);
     }, 1000);
-  };
+  }, [searchTerm]);
+
+  useEffect(() => {
+    handleSearchTermUpdate();
+    return () => clearTimeout(debounceTimer.current);
+  }, [searchTerm, handleSearchTermUpdate]);
+
   return (
     <SearchContext.Provider
       value={{
@@ -30,3 +33,5 @@ export default ({ children }) => {
     </SearchContext.Provider>
   );
 };
+
+export default SearchProvider;

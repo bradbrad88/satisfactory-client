@@ -1,7 +1,6 @@
 import React, { useState, useCallback, useMemo } from "react";
 import Category from "components/elements/fields/Category";
 import InputEditor from "./InputEditor";
-import OutsideAlerter from "utils/OutsideAlerter";
 import truncateDecimals from "utils/truncateDecimals";
 
 const BuildingStep = ({ data, functions }) => {
@@ -9,7 +8,7 @@ const BuildingStep = ({ data, functions }) => {
   const { setRecipe, setImported, autoBuildInputs, setAltOutput } = functions;
   const handleAutoBuildRecipe = useCallback(() => {
     autoBuildInputs(data);
-  }, []);
+  }, [autoBuildInputs, data]);
 
   const renderItemInputs = useMemo(() => {
     // returns the small items displayed in each container - name & qty
@@ -42,7 +41,7 @@ const BuildingStep = ({ data, functions }) => {
         )
       );
     });
-  }, [data, setImported, setRecipe]);
+  }, [data]);
 
   const renderItemOutputs = useMemo(() => {
     return data.outputs
@@ -55,7 +54,7 @@ const BuildingStep = ({ data, functions }) => {
           </div>
         );
       });
-  }, [data, setImported, setRecipe]);
+  }, [data]);
 
   const renderByProducts = useMemo(() => {
     const byProducts = data.outputs.filter(output => output.byProduct);
@@ -68,24 +67,30 @@ const BuildingStep = ({ data, functions }) => {
     ));
 
     // return byProducts;
-  }, [data, setImported, setRecipe]);
+  }, [data]);
 
-  const handleUpdateStore = e => {
-    const options = {
-      type: "store",
-      qty: parseFloat(e),
-      buildingStep: data,
-    };
-    setAltOutput(options);
-  };
-  const handleUpdateSink = e => {
-    const options = {
-      type: "sink",
-      qty: parseFloat(e),
-      buildingStep: data,
-    };
-    setAltOutput(options);
-  };
+  const handleUpdateStore = useCallback(
+    e => {
+      const options = {
+        type: "store",
+        qty: parseFloat(e),
+        buildingStep: data,
+      };
+      setAltOutput(options);
+    },
+    [data, setAltOutput]
+  );
+  const handleUpdateSink = useCallback(
+    e => {
+      const options = {
+        type: "sink",
+        qty: parseFloat(e),
+        buildingStep: data,
+      };
+      setAltOutput(options);
+    },
+    [data, setAltOutput]
+  );
 
   const renderStoreOutput = useMemo(() => {
     const storeValue = data.outputs.reduce((total, output) => {
@@ -101,7 +106,7 @@ const BuildingStep = ({ data, functions }) => {
         id={`store-${data.id}`}
       />
     );
-  }, [data, setImported, setRecipe, setAltOutput]);
+  }, [data, handleUpdateStore]);
 
   const renderSinkOutput = useMemo(() => {
     const sinkValue = data.outputs.reduce((total, output) => {
@@ -123,7 +128,7 @@ const BuildingStep = ({ data, functions }) => {
       //   </label>
       // </div>
     );
-  }, [data, setImported, setRecipe]);
+  }, [data, handleUpdateSink]);
 
   const handleSetImport = () => {
     const toggle = !data.imported;
@@ -149,10 +154,10 @@ const BuildingStep = ({ data, functions }) => {
     setRecipe(data, options);
   };
 
-  const getOutputQty = outputs => {
-    const qty = outputs.reduce((total, output) => parseFloat(output.qty) + total, 0);
-    return qty;
-  };
+  // const getOutputQty = outputs => {
+  //   const qty = outputs.reduce((total, output) => parseFloat(output.qty) + total, 0);
+  //   return qty;
+  // };
 
   return (
     <div className={"container building-step"}>
@@ -163,11 +168,13 @@ const BuildingStep = ({ data, functions }) => {
           <h2>Main Outputs</h2>
           <div className={"main-products"}>{renderItemOutputs}</div>
         </div>
-        <div className="by-product">
-          <h2>By Products</h2>
+        {renderByProducts.length > 0 && (
+          <div className="by-product">
+            <h2>By Products</h2>
 
-          <div className={"by-products"}>{renderByProducts}</div>
-        </div>
+            <div className={"by-products"}>{renderByProducts}</div>
+          </div>
+        )}
       </div>
       {renderStoreOutput}
       {renderSinkOutput}

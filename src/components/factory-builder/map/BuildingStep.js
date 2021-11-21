@@ -2,49 +2,23 @@ import React, { useState, useCallback, useMemo } from "react";
 import Category from "components/elements/fields/Category";
 import InputEditor from "./InputEditor";
 import truncateDecimals from "utils/truncateDecimals";
+import Input from "./Input";
+import Output from "./Output";
+import {
+  AUTO_BUILD_LAYER,
+  SET_ALT_OUTPUT,
+  SET_IMPORTED,
+  SET_RECIPE,
+} from "reducers/buildingStepsReducer";
 
-const BuildingStep = ({ data, functions }) => {
-  const [showAutoBuild, setShowAutoBuild] = useState(false);
-  const { setRecipe, setImported, autoBuildInputs, setAltOutput } = functions;
-  const handleAutoBuildRecipe = useCallback(() => {
-    autoBuildInputs(data);
-  }, [autoBuildInputs, data]);
+const BuildingStep = ({ data, functions, dispatch }) => {
+  const [showAutoBuild, setShowAutoBuild] = useState(true);
+  // const { setRecipe, setImported, autoBuildInputs, setAltOutput } = functions;
 
-  const renderItemInputs = useMemo(() => {
-    // returns the small items displayed in each container - name & qty
-    return data.inputs.map(input => {
-      // Get outputs of building steps associated
-      const totalInput = input.buildingSteps?.reduce((total, inputBuildStep) => {
-        return (
-          total +
-          inputBuildStep.outputs.reduce((total, output) => {
-            if (output.buildingStep === data) return output.qty + total;
-            return total;
-          }, 0)
-        );
-      }, 0);
-      const shortfall = input.qty - totalInput;
-      const className = shortfall < 0 ? "over" : shortfall > 0 ? "under" : "";
-      if (shortfall > 0) setShowAutoBuild(true);
-      if (shortfall <= 0) setShowAutoBuild(false);
-      // Subtract this from input qty
-      return (
-        input && (
-          <div className={`item-input ${className}`} key={input.item.itemId}>
-            <p>{truncateDecimals(input.qty, 3)}</p>
-            <p>{input.item.itemName}</p>
-            {/* {shortfall > 0 && (
-              <button onClick={handleBuildRecipe}>Auto build</button>
-            )} */}
-            <p>{truncateDecimals(shortfall, 3)}</p>
-          </div>
-        )
-      );
-    });
-  }, [data]);
+  const { inputs, outputs } = data;
 
-  const renderItemOutputs = useMemo(() => {
-    return data.outputs
+  const renderItemOutputs = () => {
+    return outputs
       .filter(output => !output.byProduct && output.buildingStep)
       .map(output => {
         return (
@@ -54,44 +28,39 @@ const BuildingStep = ({ data, functions }) => {
           </div>
         );
       });
-  }, [data]);
-
-  const renderByProducts = useMemo(() => {
-    const byProducts = data.outputs.filter(output => output.byProduct);
-    console.log("by products to be rendered", byProducts);
-    return byProducts.map(output => (
-      <div className={"item-output by-product"} key={output.item.itemId}>
-        <p>{output.item.itemName}</p>
-        <p>{truncateDecimals(output.qty, 4)}</p>
-      </div>
-    ));
+  };
+  const renderByProducts = () => {
+    const byProducts = outputs.filter(output => output.byProduct);
+    return byProducts.map(output => <Output outputData={output} />);
 
     // return byProducts;
-  }, [data]);
+  };
 
-  const handleUpdateStore = useCallback(
-    e => {
-      const options = {
-        type: "store",
-        qty: parseFloat(e),
-        buildingStep: data,
-      };
-      setAltOutput(options);
-    },
-    [data, setAltOutput]
-  );
-  const handleUpdateSink = useCallback(
-    e => {
-      const options = {
-        type: "sink",
-        qty: parseFloat(e),
-        buildingStep: data,
-      };
-      setAltOutput(options);
-    },
-    [data, setAltOutput]
-  );
+  const handleUpdateStore = e => {
+    const type = SET_ALT_OUTPUT;
+    const payload = {
+      type: "store",
+      qty: parseFloat(e),
+      buildingStep: data,
+    };
+    dispatch({ type, payload });
+  };
 
+  const handleUpdateSink = e => {
+    const type = SET_ALT_OUTPUT;
+    const payload = {
+      type: "sink",
+      qty: parseFloat(e),
+      buildingStep: data,
+    };
+    dispatch({ type, payload });
+  };
+
+  const handleAutoBuildRecipe = () => {
+    const type = AUTO_BUILD_LAYER;
+    const payload = { buildingStep: data };
+    dispatch({ type, payload });
+  };
   const renderStoreOutput = useMemo(() => {
     const storeValue = data.outputs.reduce((total, output) => {
       if (output.type !== "store") return total;
@@ -121,18 +90,22 @@ const BuildingStep = ({ data, functions }) => {
         handleChange={handleUpdateSink}
         id={`sink-${data.id}`}
       />
-      // <div>
-      //   <label>
-      //     Resourse Sink
-      //     <input onKeyDown={handleUpdateSink} type="number" />
-      //   </label>
-      // </div>
     );
   }, [data, handleUpdateSink]);
 
+  const renderItemInputs = () => {
+    // returns the small items displayed in each container - name & qty
+
+    return inputs.map(input => {
+      return <Input inputData={input} key={input.id} />;
+    });
+  };
+
   const handleSetImport = () => {
-    const toggle = !data.imported;
-    setImported(data, toggle);
+    const payload = { toggle: !data.imported, buildingStep: data };
+    const type = SET_IMPORTED;
+    dispatch({ type, payload });
+    // setImported(data, toggle);
   };
 
   const processRecipeOptions = () => {
@@ -150,8 +123,10 @@ const BuildingStep = ({ data, functions }) => {
     const recipe = data.recipes.find(
       r => parseInt(r.recipeId) === parseInt(e.target.value)
     );
-    const options = { recipe };
-    setRecipe(data, options);
+    const type = SET_RECIPE;
+    const payload = { options: { recipe }, buildingStep: data };
+    dispatch({ type, payload });
+    // setRecipe(data, options);
   };
 
   // const getOutputQty = outputs => {
@@ -166,13 +141,13 @@ const BuildingStep = ({ data, functions }) => {
       <div className={"item-outputs"}>
         <div className="main-product">
           <h2>Main Outputs</h2>
-          <div className={"main-products"}>{renderItemOutputs}</div>
+          <div className={"main-products"}>{renderItemOutputs()}</div>
         </div>
         {renderByProducts.length > 0 && (
           <div className="by-product">
             <h2>By Products</h2>
 
-            <div className={"by-products"}>{renderByProducts}</div>
+            <div className={"by-products"}>{renderByProducts()}</div>
           </div>
         )}
       </div>
@@ -215,7 +190,7 @@ const BuildingStep = ({ data, functions }) => {
           )}
         </>
       )}
-      <div className={"item-inputs"}>{renderItemInputs}</div>
+      <div className={"item-inputs"}>{renderItemInputs()}</div>
     </div>
   );
 

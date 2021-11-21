@@ -1,9 +1,13 @@
-import React, { useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import Category from "components/elements/fields/Category";
 import NumberInput from "components/elements/fields/NumberInput";
+import { ADD_NEW_ITEM } from "reducers/buildingStepsReducer";
 
-const UserInterface = ({ items, item, qty, factoryTotals, functions }) => {
-  const { handleQuantity, handleItem, handleAddOutput } = functions;
+const UserInterface = ({ items, data, dispatch }) => {
+  const [item, setInitialItem] = useState(null);
+  const [qty, setQty] = useState(0);
+
+  // const { handleQuantity, handleItem, handleAddOutput } = functions;
 
   const itemOptions = useMemo(() => {
     if (!items) return [];
@@ -16,6 +20,57 @@ const UserInterface = ({ items, item, qty, factoryTotals, functions }) => {
     itemOptions.unshift({ title: "SELECT AN ITEM", id: "" });
     return itemOptions;
   }, [items]);
+
+  const factoryTotals = useMemo(() => {
+    // console.log("factory totals building steps", [...buildingSteps]);
+    const getBuildingStepOutputQty = buildingStep => {
+      const outputQty = buildingStep.outputs.reduce((total, output) => {
+        if (output.byProduct) return total;
+        return parseFloat(output.qty) + total;
+      }, 0);
+      // console.log("building step output qty", outputQty);
+      return outputQty;
+    };
+
+    const breakdown = data.reduce(
+      (total, buildingStep) => {
+        const newTotal = { ...total };
+        const outputs = buildingStep.outputs.reduce((outputTotal, output) => {
+          const { item, qty, type } = output;
+          const newTotal = { ...outputTotal };
+          const arr = newTotal[type] || [];
+          // TODO - look for existing item here and add to it
+          arr.push({ item, qty });
+          newTotal[type] = arr;
+          return newTotal;
+        }, {});
+        if (buildingStep.item.rawMaterial) {
+          newTotal.inputs.rawMaterials = newTotal.inputs.rawMaterials || [];
+          newTotal.inputs.rawMaterials.push({
+            item: buildingStep.item,
+            qty: getBuildingStepOutputQty(buildingStep),
+          });
+        } else if (buildingStep.imported) {
+          newTotal.inputs.imported = newTotal.inputs.imported || [];
+          newTotal.inputs.imported.push({
+            item: buildingStep.item,
+            qty: getBuildingStepOutputQty(buildingStep),
+          });
+        } else {
+        }
+
+        // see if newwTotal.ouputs already exists
+        Object.keys(outputs).forEach(key => {
+          const arr = outputs[key] || [];
+          const existingArr = newTotal.outputs[key] || [];
+          newTotal.outputs[key] = [...existingArr, ...arr];
+        });
+        return newTotal;
+      },
+      { inputs: {}, outputs: {} }
+    );
+    return breakdown;
+  }, [data]);
 
   const renderTotals = useMemo(() => {
     const renderInputs = () => {
@@ -46,7 +101,6 @@ const UserInterface = ({ items, item, qty, factoryTotals, functions }) => {
         </>
       );
     };
-    // console.log("factory totals", factoryTotals);
 
     const renderOutputs = () => {
       const store = factoryTotals.outputs.store?.map(item => (
@@ -62,7 +116,6 @@ const UserInterface = ({ items, item, qty, factoryTotals, functions }) => {
       const sinkPoints =
         factoryTotals.outputs.sink?.reduce((total, item) => {
           return item.item.points * item.qty + total;
-          // return total + 1;
         }, 0) || 0;
       return (
         <>
@@ -95,6 +148,25 @@ const UserInterface = ({ items, item, qty, factoryTotals, functions }) => {
       </div>
     );
   }, [factoryTotals]);
+
+  const handleQuantity = e => {
+    setQty(e.target.value);
+  };
+
+  const handleItem = e => {
+    const newItem = items.find(
+      item => parseInt(item.itemId) === parseInt(e.target.value)
+    );
+    setInitialItem(newItem);
+  };
+
+  const handleAddOutput = () => {
+    const action = {
+      type: ADD_NEW_ITEM,
+      payload: { type: "store", qty, item },
+    };
+    dispatch(action);
+  };
 
   return (
     <div className={"ui"}>

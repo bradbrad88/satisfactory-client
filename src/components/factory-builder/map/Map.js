@@ -1,16 +1,18 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 
 import BuildingStep from "./BuildingStep";
 
-const Map = ({ data, functions }) => {
+const Map = ({ data, functions, dispatch }) => {
   const [dragging, setDragging] = useState(false);
   const [initialMouse, setInitialMouse] = useState({});
   const [mapOffset, setMapOffset] = useState({ v: 0, h: 0 });
   const [zoom, setZoom] = useState(1);
+  const endOffset = useRef({ v: 0, h: 0 });
 
   const onMouseUp = useCallback(() => {
     setDragging(false);
-  }, [setDragging]);
+    endOffset.current = mapOffset;
+  }, [setDragging, mapOffset]);
 
   const onMouseDown = useCallback(
     e => {
@@ -24,12 +26,36 @@ const Map = ({ data, functions }) => {
     e => {
       if (!dragging) return;
       const { clientX, clientY } = e;
-      const v = clientY - initialMouse.clientY + mapOffset.v;
-      const h = clientX - initialMouse.clientX + mapOffset.h;
+      const v = clientY - initialMouse.clientY + endOffset.current.v;
+      const h = clientX - initialMouse.clientX + endOffset.current.h;
       setMapOffset({ v, h });
     },
-    [initialMouse.clientY, initialMouse.clientX, dragging]
+    [initialMouse, dragging]
   );
+
+  const renderSteps = useMemo(() => {
+    const buildingSteps = data.reduce((total, buildingStep) => {
+      const arr = total[buildingStep.ver] || [];
+      arr.push(buildingStep);
+      total[buildingStep.ver] = arr;
+      return total;
+    }, {});
+    return Object.keys(buildingSteps).map(key => {
+      const renderSteps = buildingSteps[key].map(step => (
+        <BuildingStep
+          data={step}
+          key={step.id}
+          functions={functions}
+          dispatch={dispatch}
+        />
+      ));
+      return (
+        <div className={"row"} key={key}>
+          {renderSteps}
+        </div>
+      );
+    });
+  }, [data, dispatch]);
 
   useEffect(() => {
     window.addEventListener("mouseup", onMouseUp);
@@ -44,25 +70,6 @@ const Map = ({ data, functions }) => {
 
   if (typeof data !== "object") return null;
   if (data.length < 1) return null;
-
-  const renderSteps = () => {
-    const buildingSteps = data.reduce((total, buildingStep) => {
-      const arr = total[buildingStep.ver] || [];
-      arr.push(buildingStep);
-      total[buildingStep.ver] = arr;
-      return total;
-    }, {});
-    return Object.keys(buildingSteps).map(key => {
-      const renderSteps = buildingSteps[key].map(step => (
-        <BuildingStep data={step} key={step.id} functions={functions} />
-      ));
-      return (
-        <div className={"row"} key={key}>
-          {renderSteps}
-        </div>
-      );
-    });
-  };
 
   const preventScroll = () => {
     window.addEventListener("scroll", preventScrollListener);
@@ -113,7 +120,7 @@ const Map = ({ data, functions }) => {
 
           // onMouseUp={onMouseUp}
         >
-          {renderSteps()}
+          {renderSteps}
         </div>
       </div>
     </>

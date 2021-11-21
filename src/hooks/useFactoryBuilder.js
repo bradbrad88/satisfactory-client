@@ -164,6 +164,7 @@ const useFactoryBuilder = () => {
   const addNewItem = output => {
     let updatedState = [...prevState.current];
     updatedState = addOutput(updatedState, output);
+    updatedState = calcSuppliedQty(updatedState);
     updatedState = calcPosition(updatedState);
     setBuildingSteps(updatedState);
   };
@@ -189,12 +190,13 @@ const useFactoryBuilder = () => {
   };
 
   const setImported = (buildingStep, toggle) => {
-    const newBuildingSteps = [...prevState.current];
+    let newState = [...prevState.current];
     buildingStep.imported = toggle;
     setRecipe(buildingStep);
     setInputs(buildingStep);
-    setByProduct(buildingStep);
-    let newState = removeBuildingStepsWithNoOutput(newBuildingSteps);
+    // setByProduct(buildingStep);
+    newState = removeBuildingStepsWithNoOutput(newState);
+    newState = calcSuppliedQty(newState);
     newState = calcPosition(newState);
     setBuildingSteps(newState);
   };
@@ -241,25 +243,16 @@ const useFactoryBuilder = () => {
           qty: input.qty,
           item: input.item,
           buildingStep,
-          // id: uuidv4(),
         };
         const currentBuildingStep = newBuildingStep(output);
         newState = [...newState, currentBuildingStep];
-        // newBuildingSteps.push(currentBuildingStep);
       }
+      setSuppliedInputQty(input);
     });
+    // newState = setByProduct(newState);
+    newState = calcSuppliedQty(newState);
     newState = calcPosition(newState);
     setBuildingSteps(newState);
-    // See if input.buildingSteps > 0
-    // // Adjust the qty of associated buildingStep output
-    // Else
-    // See if buildingStep exists that makes input.item
-    // If it does
-    // // Add an output to this buildingStep
-    // If not
-    // // Create new buildingStep
-
-    // Calc Positions after loop
   };
 
   const setBuilding = buildingStep => {
@@ -286,7 +279,6 @@ const useFactoryBuilder = () => {
 
   const setInputs = buildingStep => {
     if (!buildingStep.recipe) {
-      // remove all inputs
       removeAllInputs(buildingStep);
       return;
     }
@@ -302,7 +294,6 @@ const useFactoryBuilder = () => {
       );
       if (existingInput) {
         currentInput = existingInput;
-        // existingInput.qty = buildingStep.buildingCount * recipeItem.qty
       } else {
         currentInput = {
           buildingSteps: [],
@@ -319,19 +310,32 @@ const useFactoryBuilder = () => {
     const prevAndNewInputs = buildingStep.inputs
       .filter(input => !inputs.includes(input))
       .concat(inputs);
-    console.log("prev and new inputs", prevAndNewInputs);
     buildingStep.inputs = inputs;
     prevAndNewInputs.forEach(input => {
-      // Find the first buidling step that isn't a by-product and set its qty
       input.buildingSteps.forEach(bs => {
         updateOutputs(bs);
       });
+      setSuppliedInputQty(input);
     });
   };
 
+  const setSuppliedInputQty = input => {
+    // console.log("running set supplied input qty", input);
+    input.suppliedQty = input.buildingSteps.reduce((total, inputBuildingStep) => {
+      const output = inputBuildingStep.outputs.find(
+        output => output.id === input.id
+      );
+      // console.log("supplied input qty function - output", output);
+      if (output) {
+        return output.qty + total;
+      } else {
+        return total;
+      }
+    }, 0);
+  };
+
   const updateOutputs = buildingStep => {
-    // Go through each output and look at
-    console.log("update outputs");
+    // Go through each output and look for
     buildingStep.outputs.forEach(output => {
       if (output.id && !output.byProduct && output.buildingStep) {
         const input = output.buildingStep.inputs.find(
@@ -401,7 +405,6 @@ const useFactoryBuilder = () => {
     }
     setBuilding(buildingStep);
     setInputs(buildingStep);
-    // setByProduct(buildingStep);
     setBuildingSteps(newState);
   };
 
@@ -410,7 +413,6 @@ const useFactoryBuilder = () => {
     if (!buildingStep.recipe) {
       // remove byProduct
       const byProducts = buildingStep.outputs.filter(output => output.byProduct);
-
       // Remove buildingStep from related input
       byProducts.forEach(byProduct => {
         if (!byProduct.buildingStep) return;
@@ -446,7 +448,47 @@ const useFactoryBuilder = () => {
         }
       }, []);
       buildingStep.outputs = buildingStep.outputs.concat(newByProducts);
+      removeRedundantByProducts(buildingStep, newByProducts);
     }
+  };
+
+  const removeRedundantByProducts = (buildingStep, requiredByProducts) => {
+    // Takes an array of byProduct outputs that are still relevant
+    const redundantByProducts = buildingStep.outputs.filter(
+      output => output.byProduct && !requiredByProducts.includes(output)
+    );
+    redundantByProducts.forEach(byProduct => {
+      if (byProduct.buildingStep) {
+        const relatedInput = byProduct.buildingStep.inputs.find(
+          input => input.id === byProduct.id
+        );
+        relatedInput.buildingSteps = relatedInput.buildingSteps.filter(
+          bs => bs !== buildingStep
+        );
+      }
+    });
+    buildingStep.outputs = buildingStep.outputs.filter(
+      output => !redundantByProducts.includes(output)
+    );
+  };
+
+  const calcSuppliedQty = updatedState => {
+    const newState = [...updatedState];
+    newState.forEach(buildingStep => {
+      buildingStep.inputs.forEach(input => {
+        input.buildingSteps.reduce((total, bs) => {
+          const relatedOutput = bs.outputs.find(output => output.id === input.id);
+          if (!relatedOutput) {
+            console.log(
+              "error finding related input when calculating supplied input qty"
+            );
+            return total;
+          }
+          return total + parseFloat(relatedOutput);
+        }, 0);
+      });
+    });
+    return newState;
   };
 
   const highlightOutputs = () => {};

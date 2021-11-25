@@ -1,13 +1,19 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { ADD_NEW_ITEM } from "reducers/buildingStepsReducer";
+import BuildingRow from "./BuildingRow";
 
-import BuildingStep from "./BuildingStep";
+// import BuildingStep from "./BuildingStep";
 
-const Map = ({ data, functions, dispatch }) => {
+const Map = ({ data, dispatch }) => {
+  const [tempItem, setTempItem] = useState(null);
+  const [tempPosition, setTempPosition] = useState(0);
+  const [activeItem, setActiveItem] = useState(null);
   const [dragging, setDragging] = useState(false);
   const [initialMouse, setInitialMouse] = useState({});
   const [mapOffset, setMapOffset] = useState({ v: 0, h: 0 });
   const [zoom, setZoom] = useState(1);
   const endOffset = useRef({ v: 0, h: 0 });
+  const scrollRef = useRef();
 
   const onMouseUp = useCallback(() => {
     setDragging(false);
@@ -22,6 +28,7 @@ const Map = ({ data, functions, dispatch }) => {
     },
     [setDragging, setInitialMouse]
   );
+
   const onMouseMove = useCallback(
     e => {
       if (!dragging) return;
@@ -33,29 +40,58 @@ const Map = ({ data, functions, dispatch }) => {
     [initialMouse, dragging]
   );
 
-  const renderSteps = useMemo(() => {
-    const buildingSteps = data.reduce((total, buildingStep) => {
+  const onInputDrag = (input, buildingStep) => {
+    // console.log("input drag", input, buildingStep);
+  };
+
+  const updateDomPosition = useCallback(ref => {
+    console.log("ref", ref.getBoundingClientRect());
+  }, []);
+
+  const setTempNull = () => {
+    setTempItem(null);
+  };
+
+  const handleActiveItem = () => {};
+
+  const buildingRows = useMemo(() => {
+    if (!data) return null;
+    const buildingRows = data.reduce((total, buildingStep) => {
       const arr = total[buildingStep.ver] || [];
       arr.push(buildingStep);
       total[buildingStep.ver] = arr;
       return total;
     }, {});
-    return Object.keys(buildingSteps).map(key => {
-      const renderSteps = buildingSteps[key].map(step => (
-        <BuildingStep
-          data={step}
-          key={step.id}
-          functions={functions}
-          dispatch={dispatch}
-        />
-      ));
-      return (
-        <div className={"row"} key={key}>
-          {renderSteps}
-        </div>
-      );
+    Object.keys(buildingRows).forEach(key => {
+      buildingRows[key].sort((a, b) => a.hor - b.hor);
     });
-  }, [data, dispatch]);
+
+    const renderBuildingRows = Object.keys(buildingRows).map(key => (
+      <BuildingRow
+        data={buildingRows[key]}
+        key={key}
+        dispatch={dispatch}
+        inputDrag={onInputDrag}
+        updateDomPosition={updateDomPosition}
+        tempStep={tempItem?.row === parseInt(key) ? tempItem : null}
+        setTempPosition={i => setTempPosition(i)}
+        setTempNull={setTempNull}
+        activeItem={activeItem}
+        setActiveItem={handleActiveItem}
+      />
+    ));
+    if (tempItem && !buildingRows[tempItem.row]) {
+      console.log("got the thing without the thing", buildingRows);
+      renderBuildingRows.push(
+        <BuildingRow
+          tempStep={tempItem}
+          data={[]}
+          setTempPosition={i => setTempPosition(i)}
+        />
+      );
+    }
+    return renderBuildingRows;
+  }, [data, dispatch, tempItem, updateDomPosition]);
 
   useEffect(() => {
     window.addEventListener("mouseup", onMouseUp);
@@ -65,8 +101,6 @@ const Map = ({ data, functions, dispatch }) => {
       window.removeEventListener("mouseup", onMouseUp);
     };
   }, [onMouseUp, onMouseMove]);
-  // console.log("data", data);
-  // const {} = functions;
 
   if (typeof data !== "object") return null;
   if (data.length < 1) return null;
@@ -86,14 +120,117 @@ const Map = ({ data, functions, dispatch }) => {
   const onWheel = e => {
     const STEP = 0.1;
     const { deltaY } = e;
-    console.log("delta y", deltaY);
     if (deltaY < 0) return setZoom(zoom + STEP);
     if (deltaY > 0) {
       let newZoom = zoom - STEP;
       if (newZoom < 0.1) newZoom = 0.1;
       setZoom(newZoom);
     }
-    // setZoom(null);
+  };
+
+  const onDragOver = e => {
+    e.preventDefault();
+    // console.log("e", e);
+    try {
+      const dragData = e.dataTransfer.getData("text/plain");
+      const item = JSON.parse(dragData);
+      setTempItem({ ...item, position: { x: e.clientX, y: e.clientY } });
+    } catch (error) {
+      setTempItem(null);
+    }
+  };
+
+  const onDragLeave = e => {
+    // setTempItem(null);
+  };
+
+  const onDrop = e => {
+    e.preventDefault();
+    // console.log("dropping", e);
+    try {
+      const dragData = e.dataTransfer.getData("text/plain");
+      const parsedData = JSON.parse(dragData);
+      // console.log("parsed data", parsedData);
+      const buildingStep = data.find(
+        buildingStep => buildingStep.id === parsedData.buildingStep
+      );
+      const { item } = buildingStep.inputs.find(
+        input => input.id === parsedData.inputId
+      );
+      const type = ADD_NEW_ITEM;
+      const output = {
+        item,
+        qty: parsedData.qty,
+        id: parsedData.inputId,
+        buildingStep,
+      };
+      const payload = {
+        output,
+        options: { hor: tempPosition, newBuildingStep: true },
+      };
+      console.log("dispatch", payload);
+      dispatch({ type, payload });
+      setTempItem(null);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const onDragEnterScroll = direction => {
+    scrollRef.current = setInterval(
+      () => {
+        let stateHandler;
+        const setState = stateHandler => {
+          setMapOffset(prevState => {
+            const newState = stateHandler(prevState);
+            endOffset.current = newState;
+            return newState;
+          });
+        };
+        switch (direction) {
+          case "LEFT":
+            stateHandler = state => {
+              return {
+                ...state,
+                h: state.h + 10,
+              };
+            };
+            return setState(stateHandler);
+          case "RIGHT":
+            stateHandler = state => {
+              return {
+                ...state,
+                h: state.h - 10,
+              };
+            };
+            return setState(stateHandler);
+          case "UP":
+            stateHandler = state => {
+              return {
+                ...state,
+                v: state.v + 10,
+              };
+            };
+            return setState(stateHandler);
+          case "DOWN":
+            stateHandler = state => {
+              return {
+                ...state,
+                v: state.v - 10,
+              };
+            };
+            return setState(stateHandler);
+          default:
+            break;
+        }
+      },
+      5,
+      direction
+    );
+  };
+
+  const onDragLeaveScroll = () => {
+    clearInterval(scrollRef.current);
   };
 
   const style = () => {
@@ -104,23 +241,50 @@ const Map = ({ data, functions, dispatch }) => {
 
   return (
     <>
-      {/* <p>Dragging:{dragging}</p>
-      <p>Initial mouse:{initialMouse.clientX}</p>
-      <p>Offset:{mapOffset.h}</p> */}
       <div
         className={"map"}
         onMouseEnter={preventScroll}
         onMouseLeave={enableScroll}
         onMouseDown={onMouseDown}
         onWheel={onWheel}
+        onDragOver={onDragOver}
+        onDragLeave={onDragLeave}
+        onDrop={onDrop}
       >
+        {/* {tempItem && <div>{tempItem.itemName}</div>} */}
+        <div
+          className="scroll top"
+          onDragEnter={() => onDragEnterScroll("UP")}
+          onDragLeave={onDragLeaveScroll}
+        ></div>
+        <div
+          className="scroll right"
+          onDragEnter={() => onDragEnterScroll("RIGHT")}
+          onDragLeave={onDragLeaveScroll}
+        ></div>
+        <div
+          className="scroll bottom"
+          onDragEnter={() => onDragEnterScroll("DOWN")}
+          onDragLeave={onDragLeaveScroll}
+        ></div>
+        <div
+          className="scroll left"
+          onDragEnter={() => onDragEnterScroll("LEFT")}
+          onDragLeave={onDragLeaveScroll}
+        ></div>
+        <div
+          style={{ position: "absolute", zIndex: "3", cursor: "pointer" }}
+          onClick={() => setMapOffset({ v: 0, h: 0 })}
+        >
+          [+]
+        </div>
         <div
           className={"grid"}
           style={style()}
 
           // onMouseUp={onMouseUp}
         >
-          {renderSteps}
+          {buildingRows}
         </div>
       </div>
     </>

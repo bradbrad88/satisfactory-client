@@ -1,17 +1,18 @@
 import React, { useRef, useEffect } from "react";
 
-const OutsideAlerter = ({ children, onClickOutside, id }) => {
+const OutsideAlerter = ({ children, onClickOutside, onClickInside }) => {
   const ref = useRef();
   useEffect(() => {
     const handleClickOutside = e => {
-      e.stopPropagation();
-      onClickOutside(ref.current?.contains(e.target));
+      if (!ref.current?.contains(e.target)) {
+        onClickOutside(e);
+      }
     };
-    document.addEventListener("click", handleClickOutside);
+    window.addEventListener("click", handleClickOutside);
     return () => window.removeEventListener("click", handleClickOutside);
-  }, [ref, onClickOutside]);
+  }, [onClickOutside]);
   return (
-    <div className={"wrapper"} ref={ref}>
+    <div onClickCapture={onClickInside} ref={ref}>
       {children}
     </div>
   );

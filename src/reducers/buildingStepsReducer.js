@@ -5,21 +5,23 @@ export const SET_ALT_OUTPUT = "SET_ALT_OUTPUT";
 export const SET_RECIPE = "SET_RECIPE";
 export const SET_IMPORTED = "SET_IMPORTED";
 export const AUTO_BUILD_LAYER = "AUTO_BUILD_LAYER";
+export const SET_OUTPUT_QTY = "SET_OUTPUT_QTY";
 
-const addNewItem = (state, output) => {
+const addNewItem = (state, output, options) => {
   let updatedState = [...state];
-  updatedState = addOutput(updatedState, output);
-  updatedState = calcSuppliedQty(updatedState);
+  updatedState = _addOutput(updatedState, output, options);
+  updatedState = _calcSuppliedQty(updatedState);
+  updatedState.forEach(bs => {});
   updatedState = calcPosition(updatedState);
   return updatedState;
 };
 
-const addOutput = (state, output, buildingStep) => {
+const _addOutput = (state, output, options) => {
   let updatedState = [...state];
   let currentBuildingStep;
-  if (buildingStep) {
-    currentBuildingStep = buildingStep;
-  } else {
+  if (options?.buildingStep) {
+    currentBuildingStep = options.buildingStep;
+  } else if (!options?.newBuildingStep) {
     currentBuildingStep = updatedState.find(bs => bs.item === output.item);
   }
   // If there is a buildingStep that already manufactures the item in question:
@@ -42,9 +44,16 @@ const addOutput = (state, output, buildingStep) => {
   // No buidlingStep manufacturing this item in existance:
   else {
     currentBuildingStep = newBuildingStep(output);
+    if (options?.hor) {
+      currentBuildingStep.hor = options.hor;
+    }
     updatedState.push(currentBuildingStep);
   }
   return updatedState;
+};
+
+const editOutput = (state, buildingStep, output, options) => {
+  let updatedState = [...state];
 };
 
 const assignVerticalPosition = buildingStep => {
@@ -76,8 +85,9 @@ const assignVerticalPosition = buildingStep => {
 };
 
 const calcPosition = updatedState => {
-  // reduce buildingSteps state down to steps that don't contain outputs with buildingSteps
-
+  // Get the top level steps - they should not contain outputs with buildingSteps
+  // Can include a byProduct output with buildingStep
+  // Can include output with sibling input step
   updatedState
     .filter(
       buildingStep =>
@@ -88,12 +98,30 @@ const calcPosition = updatedState => {
           return output.buildingStep && !output.byProduct && !sibling;
         })
     )
+    // With top level items found
     .forEach(buildingStep => {
       assignVerticalPosition(buildingStep);
     });
+  // Create object with rows as properties
+  // Each row contains array of buildingSteps on that vertically positioned row
+  const rows = updatedState.reduce((total, buildingStep) => {
+    const arr = total[buildingStep.ver] || [];
+    arr.push(buildingStep);
+    total[buildingStep.ver] = arr;
+    return total;
+  }, {});
+
+  Object.keys(rows).forEach(key => {
+    rows[key]
+      .sort((a, b) => {
+        if (b.hor === undefined || b.hor === null) return -1;
+        if (a.hor === undefined || a.hor === null) return 1;
+        return a.hor - b.hor;
+      })
+      .forEach((row, i) => (row.hor = i));
+  });
+
   return updatedState;
-  // Ie anything going to store or sink
-  // Should not count outputs produced from by-products as by-product can be re-circulated to child steps
 };
 
 const newBuildingStep = output => {
@@ -141,7 +169,7 @@ const setImported = (state, buildingStep, toggle) => {
   setInputs(buildingStep);
   // setByProduct(buildingStep);
   updatedState = removeBuildingStepsWithNoOutput(updatedState);
-  updatedState = calcSuppliedQty(updatedState);
+  updatedState = _calcSuppliedQty(updatedState);
   updatedState = calcPosition(updatedState);
   return updatedState;
 };
@@ -177,7 +205,7 @@ const autoBuildLayer = (state, buildingStep) => {
           buildingStep,
           qty: input.qty,
         };
-        updatedState = addOutput(updatedState, validOutput, validBuildingStep);
+        updatedState = _addOutput(updatedState, validOutput, validBuildingStep);
       } else {
         const remainingQty = input.qty - (getInputTotalQty(input) - validOutput.qty);
         validOutput.qty = remainingQty;
@@ -192,10 +220,10 @@ const autoBuildLayer = (state, buildingStep) => {
       const currentBuildingStep = newBuildingStep(output);
       updatedState = [...updatedState, currentBuildingStep];
     }
-    setSuppliedInputQty(input);
+    // setSuppliedInputQty(input);
   });
   // newState = setByProduct(newState);
-  updatedState = calcSuppliedQty(updatedState);
+  updatedState = _calcSuppliedQty(updatedState);
   updatedState = calcPosition(updatedState);
   return updatedState;
 };
@@ -220,7 +248,7 @@ const removeAllInputs = buildingStep => {
   buildingStep.inputs = [];
 };
 
-const setInputs = buildingStep => {
+const setInputs = (buildingStep, recursionTracker = []) => {
   if (!buildingStep.recipe) {
     removeAllInputs(buildingStep);
     return;
@@ -228,7 +256,7 @@ const setInputs = buildingStep => {
   const inputs = buildingStep.recipe.RecipeItems.filter(
     recipeItem => recipeItem.direction === "input"
   ).map(recipeItem => {
-    let currentInput = {};
+    let currentInput;
     // Loop through the items required to make this recipe
     // For each item, check if a similar input already exists
     // If so, adjust the qty and recipeQty
@@ -257,25 +285,29 @@ const setInputs = buildingStep => {
   prevAndNewInputs.forEach(input => {
     input.buildingSteps.forEach(bs => {
       updateOutputs(bs);
+      // if (!recursionTracker.includes(bs)) {
+      //   recursionTracker.push(bs);
+
+      // }
     });
-    setSuppliedInputQty(input);
+    // setSuppliedInputQty(input);
   });
 };
 
-const setSuppliedInputQty = input => {
-  // console.log("running set supplied input qty", input);
-  input.suppliedQty = input.buildingSteps.reduce((total, inputBuildingStep) => {
-    const output = inputBuildingStep.outputs.find(output => output.id === input.id);
-    // console.log("supplied input qty function - output", output);
-    if (output) {
-      return output.qty + total;
-    } else {
-      return total;
-    }
-  }, 0);
-};
+// const setSuppliedInputQty = input => {
+//   // console.log("running set supplied input qty", input);
+//   input.suppliedQty = input.buildingSteps.reduce((total, inputBuildingStep) => {
+//     const output = inputBuildingStep.outputs.find(output => output.id === input.id);
+//     // console.log("supplied input qty function - output", output);
+//     if (output) {
+//       return output.qty + total;
+//     } else {
+//       return total;
+//     }
+//   }, 0);
+// };
 
-const updateOutputs = buildingStep => {
+const updateOutputs = (buildingStep, recursionTracker = []) => {
   // Go through each output and look for
   buildingStep.outputs.forEach(output => {
     if (output.id && !output.byProduct && output.buildingStep) {
@@ -288,13 +320,18 @@ const updateOutputs = buildingStep => {
     }
   });
   setBuilding(buildingStep);
-  setInputs(buildingStep);
+  setInputs(buildingStep, recursionTracker);
   setByProduct(buildingStep);
 };
 
 const linkInputs = (buildingStep, output) => {
   if (!output.buildingStep) return;
-  const input = output.buildingStep.inputs.find(input => input.item === output.item);
+
+  const input = output.buildingStep.inputs.find(input => {
+    // console.log("input item", input.item);
+    // console.log("output item", output.item);
+    return input.item === output.item;
+  });
   output.id = input.id;
   input.buildingSteps.push(buildingStep);
 };
@@ -303,7 +340,6 @@ const getRecipeOutputQty = buildingStep => {
   const recipeItem = buildingStep.recipe.RecipeItems.find(
     recipeItem => recipeItem.item === buildingStep.item
   );
-  console.log("recipe output qty", recipeItem.qty);
   return recipeItem.qty;
 };
 
@@ -363,7 +399,6 @@ const setByProduct = buildingStep => {
       recipeItem =>
         recipeItem.direction === "output" && recipeItem.item !== buildingStep.item
     );
-    console.log("by product items", byProductItems);
     const newByProducts = byProductItems.reduce((total, byProduct) => {
       // find an existing instance of the by product and edit
       const existingByProduct = buildingStep.outputs.find(
@@ -418,7 +453,7 @@ const getBuildingStepOutputQty = buildingStep => {
   return outputQty;
 };
 
-const calcSuppliedQty = updatedState => {
+const _calcSuppliedQty = updatedState => {
   const newState = [...updatedState];
   newState.forEach(buildingStep => {
     buildingStep.inputs.forEach(input => {
@@ -437,34 +472,34 @@ const calcSuppliedQty = updatedState => {
   return newState;
 };
 
-const highlightOutputs = () => {};
+const setOutputQty = (state, buildingStep, output, qty) => {
+  const updatedState = [...state];
+  output.qty = qty;
+  setBuilding(buildingStep);
+  setInputs(buildingStep);
+  return updatedState;
+};
 
-const highlightInputs = () => {};
+// const highlightOutputs = () => {};
+
+// const highlightInputs = () => {};
 
 const reducer = (state, action) => {
   const { type, payload } = action;
-  const { buildingStep, toggle, options } = payload;
+  const { buildingStep, output, toggle, options, qty } = payload;
   switch (type) {
     case ADD_NEW_ITEM:
-      return addNewItem(state, payload);
-    // return state;
+      return addNewItem(state, output, options);
     case SET_ALT_OUTPUT:
-      console.log("setting alt output");
       return setAltOutput(state, payload);
-    // return state;
     case SET_IMPORTED:
-      console.log("setting imported property", action);
-
       return setImported(state, buildingStep, toggle);
-    // return state;
     case SET_RECIPE:
-      console.log("setting recipe");
-
       return setRecipe(state, buildingStep, options);
-      return state;
     case AUTO_BUILD_LAYER:
-      console.log("auto buildilng layer");
       return autoBuildLayer(state, buildingStep);
+    case SET_OUTPUT_QTY:
+      return setOutputQty(state, buildingStep, output, qty);
     default:
       return state;
   }

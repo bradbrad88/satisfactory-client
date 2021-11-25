@@ -12,13 +12,25 @@ const InputEditor = ({
   type,
   id,
 }) => {
-  const [editMode, setEditMode] = useState(false);
+  const [active, setActive] = useState(false);
   const [newValue, setNewValue] = useState(value);
   const ref = useRef();
-  const onClick = toggle => {
-    setEditMode(toggle);
-    if (toggle) setFocus();
+
+  const onClickInside = () => {
+    if (active) return;
+    setActive(true);
+    setFocus();
   };
+
+  const onClickOutside = () => {
+    setActive(false);
+  };
+
+  // const onClick = toggle => {
+  //   setEditMode(toggle);
+  //   if (toggle) setFocus();
+  // };
+
   const onChange = e => {
     setNewValue(e.target.value);
   };
@@ -27,18 +39,20 @@ const InputEditor = ({
     if (key === "Enter") {
       // setNewValue(e.target.value);
       handleChange(e.target.value);
-      setEditMode(false);
+      setActive(false);
     }
   };
   const setFocus = () => {
-    ref.current?.select();
+    setTimeout(() => {
+      ref.current?.select();
+    }, 0);
   };
 
   return (
-    <OutsideAlerter onClickOutside={onClick} id={id}>
+    <OutsideAlerter onClickOutside={onClickOutside} onClickInside={onClickInside}>
       <div
-        className={`${className} ${editMode && "edit-mode"}`}
-        onMouseDown={e => e.stopPropagation()}
+        className={`${className} ${active && "edit-mode"}`}
+        // onMouseDown={e => e.stopPropagation()}
         // onClick={e => e.stopPropagation()}
       >
         <label htmlFor={id}>{label}</label>
@@ -46,7 +60,7 @@ const InputEditor = ({
         <input
           // readOnly={!editMode}
           ref={ref}
-          style={{ display: editMode ? "inline-block" : "none" }}
+          style={{ display: active ? "inline-block" : "none" }}
           onChange={onChange}
           onKeyDown={onKeyDown}
           type={type}
@@ -57,7 +71,7 @@ const InputEditor = ({
 
         <div
           className={"display"}
-          style={{ display: editMode ? "none" : "inline-block" }}
+          style={{ display: active ? "none" : "inline-block" }}
         >
           {value}
         </div>

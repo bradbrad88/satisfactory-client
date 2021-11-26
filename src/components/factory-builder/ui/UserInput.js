@@ -40,6 +40,10 @@ const UserInput = ({ items, data, dispatch }) => {
     dispatch(action);
   };
 
+  const style = () => {
+    return { width: "10rem" };
+  };
+
   return (
     <div className={"ui-component"}>
       <Category
@@ -48,6 +52,7 @@ const UserInput = ({ items, data, dispatch }) => {
         options={itemOptions}
         value={item?.itemId}
         onChange={handleItem}
+        style={style()}
       />
       <NumberInput
         className={"field"}
@@ -55,8 +60,13 @@ const UserInput = ({ items, data, dispatch }) => {
         placeholder={"Items/min..."}
         handleInputChange={handleQuantity}
         value={qty}
+        style={style()}
       />
-      <button onClick={handleAddOutput}>Add New Item</button>
+      <div className="field">
+        <button style={{ width: "10rem" }} onClick={handleAddOutput}>
+          Add New Item
+        </button>
+      </div>
     </div>
   );
 };

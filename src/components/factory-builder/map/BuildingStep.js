@@ -153,7 +153,15 @@ const BuildingStep = ({
 
   const renderByProducts = () => {
     const byProducts = outputs.filter(output => output.byProduct);
-    return byProducts.map(output => <Output outputData={output} />);
+    return byProducts.map(output => (
+      <Output
+        outputData={output}
+        buildingStep={data}
+        dispatch={dispatch}
+        key={data.id + output.item.itemId}
+        setTempNull={setTempNull}
+      />
+    ));
   };
 
   const renderItemInputs = () => {
@@ -219,7 +227,7 @@ const BuildingStep = ({
             <h2>Main Outputs</h2>
             <div className={"main-products"}>{renderItemOutputs()}</div>
           </div>
-          {renderByProducts.length > 0 && (
+          {renderByProducts().length > 0 && (
             <div className="by-product">
               <h2>By Products</h2>
 

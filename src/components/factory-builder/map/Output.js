@@ -66,7 +66,11 @@ const Output = ({ outputData, buildingStep, dispatch }) => {
         draggable
         onDragStart={onDragStart}
       >
-        <p>{outputBuildingStep.item.itemName}</p>
+        <p>
+          {outputData.byProduct
+            ? outputData.item.itemName
+            : outputBuildingStep.item.itemName}
+        </p>
         <input
           ref={ref}
           type={"number"}

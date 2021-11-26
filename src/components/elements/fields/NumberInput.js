@@ -9,6 +9,7 @@ const NumberInput = ({
   id,
   label,
   step,
+  style,
 }) => {
   return (
     <div className="field">
@@ -20,6 +21,7 @@ const NumberInput = ({
         onChange={handleInputChange}
         value={value}
         id={`${id} ${item && "update"}`}
+        style={style}
       />
       {error && <p>{error}</p>}
     </div>

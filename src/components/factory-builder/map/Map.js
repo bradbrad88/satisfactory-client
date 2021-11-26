@@ -124,7 +124,7 @@ const Map = ({ data, recipes, dispatch }) => {
   };
 
   const onWheel = e => {
-    const STEP = 0.1;
+    const STEP = 0.04;
     const { deltaY } = e;
     if (deltaY < 0) return setZoom(zoom + STEP);
     if (deltaY > 0) {
@@ -241,7 +241,8 @@ const Map = ({ data, recipes, dispatch }) => {
 
   const style = () => {
     return {
-      transform: `translate(${mapOffset.h}px, ${mapOffset.v}px) scale(${zoom})`,
+      left: "50%",
+      transform: `translateX(-50%) translate(${mapOffset.h}px, ${mapOffset.v}px) scale(${zoom})`,
     };
   };
 

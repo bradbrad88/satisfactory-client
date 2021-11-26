@@ -1,6 +1,6 @@
 import React from "react";
 
-const Select = ({ title, className, value, onChange, id, options }) => {
+const Select = ({ title, className, value, onChange, id, options, style }) => {
   const renderOptions = () => {
     return options.map(option => (
       <option key={option.id} value={option.id}>
@@ -10,7 +10,7 @@ const Select = ({ title, className, value, onChange, id, options }) => {
   };
 
   return (
-    <select id={id} onChange={onChange} value={value}>
+    <select id={id} onChange={onChange} value={value} style={style}>
       {renderOptions()}
     </select>
   );

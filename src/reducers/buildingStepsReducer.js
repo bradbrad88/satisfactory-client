@@ -13,7 +13,7 @@ const addNewItem = (state, output, options) => {
   updatedState = _addOutput(updatedState, output, options);
   updatedState = _calcSuppliedQty(updatedState);
   updatedState = removeBuildingStepsWithNoOutput(updatedState);
-  updatedState = calcPosition(updatedState);
+  updatedState = _calcPosition(updatedState);
   return updatedState;
 };
 
@@ -49,7 +49,7 @@ const addItemUpstream = (state, buildingStep, recipe) => {
   };
   buildingStep.outputs.push(newOutput);
   linkInputs(buildingStep, newOutput);
-  updatedState = calcPosition(updatedState);
+  updatedState = _calcPosition(updatedState);
   return updatedState;
 };
 
@@ -100,11 +100,11 @@ const _addOutput = (state, output, options) => {
   return updatedState;
 };
 
-const editOutput = (state, buildingStep, output, options) => {
+const _editOutput = (state, buildingStep, output, options) => {
   let updatedState = [...state];
 };
 
-const assignVerticalPosition = buildingStep => {
+const _assignVerticalPosition = buildingStep => {
   // Two building steps that output to each other (recycled oil) are siblings
   // let sibling = null;
   const ver = buildingStep.outputs.reduce((total, output) => {
@@ -127,31 +127,13 @@ const assignVerticalPosition = buildingStep => {
       const sibling = inputBuildingStep.inputs.some(input =>
         input.buildingSteps.includes(buildingStep)
       );
-      if (!sibling) assignVerticalPosition(inputBuildingStep);
+      if (!sibling) _assignVerticalPosition(inputBuildingStep);
     });
   });
 };
 
-const calcPosition = updatedState => {
-  // Get the top level steps - they should not contain outputs with buildingSteps
-  // Can include a byProduct output with buildingStep
-  // Can include output with sibling input step
-  updatedState
-    .filter(
-      buildingStep =>
-        !buildingStep.outputs.some(output => {
-          const sibling = output.buildingStep?.inputs.find(
-            input => input.id === output.id
-          );
-          return output.buildingStep && !output.byProduct && !sibling;
-        })
-    )
-    // With top level items found
-    .forEach(buildingStep => {
-      assignVerticalPosition(buildingStep);
-    });
-  // Create object with rows as properties
-  // Each row contains array of buildingSteps on that vertically positioned row
+const _assignHorizontalPosition = state => {
+  let updatedState = [...state];
   const rows = updatedState.reduce((total, buildingStep) => {
     const arr = total[buildingStep.ver] || [];
     arr.push(buildingStep);
@@ -168,7 +150,30 @@ const calcPosition = updatedState => {
       })
       .forEach((row, i) => (row.hor = i));
   });
+  return updatedState;
+};
 
+const _calcPosition = updatedState => {
+  // Get the top level steps - they should not contain outputs with buildingSteps
+  // Can include a byProduct output with buildingStep
+  // Can include output with sibling input step
+  updatedState
+    .filter(
+      buildingStep =>
+        !buildingStep.outputs.some(output => {
+          const sibling = output.buildingStep?.inputs.find(
+            input => input.id === output.id
+          );
+          return output.buildingStep && !output.byProduct && !sibling;
+        })
+    )
+    // With top level items found
+    .forEach(buildingStep => {
+      _assignVerticalPosition(buildingStep);
+    });
+  // Create object with rows as properties
+  // Each row contains array of buildingSteps on that vertically positioned row
+  updatedState = _assignHorizontalPosition(updatedState);
   return updatedState;
 };
 
@@ -220,7 +225,7 @@ const setImported = (state, buildingStep, toggle) => {
   // setByProduct(buildingStep);
   updatedState = removeBuildingStepsWithNoOutput(updatedState);
   updatedState = _calcSuppliedQty(updatedState);
-  updatedState = calcPosition(updatedState);
+  updatedState = _calcPosition(updatedState);
   return updatedState;
 };
 
@@ -279,7 +284,7 @@ const autoBuildLayer = (state, buildingStep) => {
   });
   // newState = setByProduct(newState);
   updatedState = _calcSuppliedQty(updatedState);
-  updatedState = calcPosition(updatedState);
+  updatedState = _calcPosition(updatedState);
   return updatedState;
 };
 

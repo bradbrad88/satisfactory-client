@@ -1,14 +1,14 @@
 import React, { useMemo, useReducer } from "react";
 import Map from "./map/Map";
-import UserInput from "./ui/UserInput";
-import "stylesheets/FactoryBuilder.css";
+
 import useData from "hooks/useData";
 import buildingStepsReducer from "reducers/buildingStepsReducer";
 import ControlPanel from "./ui/ControlPanel";
+import "stylesheets/FactoryBuilder.css";
 
 const FactoryBuilder = () => {
   const [buildingSteps, dispatch] = useReducer(buildingStepsReducer, []);
-  const { items } = useData();
+  const { items, recipes } = useData();
 
   return (
     <div className={"factory-builder"}>
@@ -18,9 +18,8 @@ const FactoryBuilder = () => {
       >
         Factory Tree
       </button>
-      {/* <UserInput  items={items} data={buildingSteps} dispatch={dispatch}/> */}
       <ControlPanel items={items} data={buildingSteps} dispatch={dispatch} />
-      <Map data={buildingSteps} dispatch={dispatch} />
+      <Map data={buildingSteps} recipes={recipes} dispatch={dispatch} />
     </div>
   );
 };

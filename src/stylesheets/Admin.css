@@ -60,20 +60,20 @@ button.delete:hover {
   text-align: center;
 }
 
-.form > .field {
+.field {
   margin-bottom: 1.5rem;
   /* display: flex; */
   /* padding: 0.5rem; */
 }
 
-.form > .field.slider {
+.field.slider {
   display: flex;
   align-items: center;
 }
 
-.form > .field > input,
-.form > .field > select,
-.form > .field > .switch {
+.field > input,
+.field > select,
+.field > .switch {
   width: 65%;
   padding: 10px;
   font-family: inherit;
@@ -87,33 +87,33 @@ button.delete:hover {
   text-transform: uppercase;
 }
 
-.form > .field.slider > label {
+.field.slider > label {
   display: block;
   /* background-color: red; */
   position: relative;
 }
 
-.form > .field > .switch {
+.field > .switch {
   width: 80px;
   height: 43px;
   padding: 0;
   display: inline-block;
 }
 
-.form > .field > input::placeholder {
+.field > input::placeholder {
   color: rgba(146, 0, 0, 0.842);
 }
 
-.form > .field > input:hover,
-.form > .field > select:hover,
-.form > .field > .switch.hover,
-.form > .field > .switch:hover {
+.field > input:hover,
+.field > select:hover,
+.field > .switch.hover,
+.field > .switch:hover {
   box-shadow: 0 0 10px rgba(255, 255, 255, 0.562);
 }
 
-.form > .field > input:focus,
-.form > .field > select:focus,
-.form > .field > .switch:focus {
+.field > input:focus,
+.field > select:focus,
+.field > .switch:focus {
   border: none;
   outline: none;
   box-shadow: 0 0 15px rgb(33, 203, 255);

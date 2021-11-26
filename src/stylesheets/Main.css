@@ -1,3 +1,7 @@
+:root {
+  --accent-color: rgb(255, 94, 0);
+}
+
 body {
   font-family: "Lato", sans-serif;
   color: white;

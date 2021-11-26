@@ -1,4 +1,5 @@
 import React, { useMemo } from "react";
+import truncateDecimals from "utils/truncateDecimals";
 
 const FactoryAnalysis = ({ data }) => {
   const factoryTotals = useMemo(() => {
@@ -56,12 +57,12 @@ const FactoryAnalysis = ({ data }) => {
     const renderInputs = () => {
       const rawMaterial = factoryTotals.inputs.rawMaterials?.map(rawMaterial => (
         <div key={`raw-materials-${rawMaterial.item.itemId}`}>
-          {rawMaterial.item.itemName}: {rawMaterial.qty}
+          {rawMaterial.item.itemName}: {truncateDecimals(rawMaterial.qty, 3)}
         </div>
       ));
       const imports = factoryTotals.inputs.imported?.map(imported => (
         <div key={`imported-${imported.item.itemId}`}>
-          {imported.item.itemName}: {imported.qty}
+          {imported.item.itemName}: {truncateDecimals(imported.qty, 3)}
         </div>
       ));
       return (
@@ -85,12 +86,12 @@ const FactoryAnalysis = ({ data }) => {
     const renderOutputs = () => {
       const store = factoryTotals.outputs.store?.map(item => (
         <div key={`store-${item.item.itemId}`}>
-          {item.item.itemName}: {item.qty}
+          {item.item.itemName}: {truncateDecimals(item.qty, 3)}
         </div>
       ));
       const sink = factoryTotals.outputs.sink?.map(item => (
         <div key={`sink-${item.item.itemId}`}>
-          {item.item.itemName}: {item.qty}
+          {item.item.itemName}: {truncateDecimals(item.qty, 3)}
         </div>
       ));
       const sinkPoints =

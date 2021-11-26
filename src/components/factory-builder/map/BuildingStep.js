@@ -2,9 +2,12 @@ import React, { useState, useLayoutEffect, useRef } from "react";
 import Category from "components/elements/fields/Category";
 import InputEditor from "./InputEditor";
 import truncateDecimals from "utils/truncateDecimals";
+import RecipeSelector from "./RecipeSelector";
 import Input from "./Input";
 import Output from "./Output";
+import { newStep } from "utils/SvgIcons";
 import {
+  ADD_ITEM_UPSTREAM,
   AUTO_BUILD_LAYER,
   SET_ALT_OUTPUT,
   SET_IMPORTED,
@@ -13,11 +16,13 @@ import {
 
 const BuildingStep = ({
   data,
+  recipes,
   dispatch,
   updateDomPosition,
   inputDrag,
   setTempNull,
 }) => {
+  const [recipeSelector, setRecipeSelector] = useState(null);
   const [showAutoBuild] = useState(true);
   const [highlight, setHightlight] = useState(false);
   const { inputs, outputs } = data;
@@ -36,8 +41,10 @@ const BuildingStep = ({
   const handleUpdateStore = e => {
     const type = SET_ALT_OUTPUT;
     const payload = {
-      type: "store",
-      qty: parseFloat(e),
+      output: {
+        type: "store",
+        qty: parseFloat(e),
+      },
       buildingStep: data,
     };
     dispatch({ type, payload });
@@ -46,8 +53,10 @@ const BuildingStep = ({
   const handleUpdateSink = e => {
     const type = SET_ALT_OUTPUT;
     const payload = {
-      type: "sink",
-      qty: parseFloat(e),
+      output: {
+        type: "sink",
+        qty: parseFloat(e),
+      },
       buildingStep: data,
     };
     dispatch({ type, payload });
@@ -62,6 +71,31 @@ const BuildingStep = ({
   const handleSetImport = () => {
     const payload = { toggle: !data.imported, buildingStep: data };
     const type = SET_IMPORTED;
+    dispatch({ type, payload });
+  };
+
+  const handleNewPotentialStep = () => {
+    const relevantRecipes = recipes.filter(recipe => {
+      const recipeItems = recipe.RecipeItems.filter(recipeItem => {
+        return (
+          recipeItem.direction === "input" &&
+          recipeItem.item.itemId === data.item.itemId
+        );
+      });
+      return recipeItems.length > 0;
+    });
+    const { offsetWidth, offsetLeft } = ref.current;
+    setRecipeSelector({
+      location: { offsetLeft, offsetWidth },
+      recipes: relevantRecipes,
+    });
+  };
+
+  const recipeSelectionHandler = recipeId => {
+    console.log("recipe id", recipeId);
+    const recipe = recipes.find(recipe => recipe.recipeId === recipeId);
+    const payload = { buildingStep: data, recipe };
+    const type = ADD_ITEM_UPSTREAM;
     dispatch({ type, payload });
   };
 
@@ -82,8 +116,6 @@ const BuildingStep = ({
     try {
       const dragData = e.dataTransfer.getData("text/plain");
       const item = JSON.parse(dragData);
-      // console.log("item", item.itemId);
-      // console.log("step", data.item.itemId);
       if (item.itemId === data.item.itemId) {
         e.stopPropagation();
         e.preventDefault();
@@ -113,6 +145,7 @@ const BuildingStep = ({
             buildingStep={data}
             dispatch={dispatch}
             key={data.id + output.item.itemId}
+            setTempNull={setTempNull}
           />
         );
       });
@@ -131,6 +164,7 @@ const BuildingStep = ({
           buildingStep={data}
           inputDrag={inputDrag}
           key={input.id}
+          setTempNull={setTempNull}
         />
       );
     });
@@ -169,66 +203,79 @@ const BuildingStep = ({
   };
 
   return (
-    <div
-      className={`container building-step ${highlight && "highlight"}`}
-      ref={ref}
-      onDragOver={onDragOver}
-      onDragLeave={onDragLeave}
-    >
-      <h1>{data.item.itemName}</h1>
-      <div className={"item-outputs"}>
-        <div className="main-product">
-          <h2>Main Outputs</h2>
-          <div className={"main-products"}>{renderItemOutputs()}</div>
-        </div>
-        {renderByProducts.length > 0 && (
-          <div className="by-product">
-            <h2>By Products</h2>
-
-            <div className={"by-products"}>{renderByProducts()}</div>
-          </div>
-        )}
-      </div>
-      <div className={"alt-outputs"}>
-        {renderStoreOutput()}
-        {renderSinkOutput()}
-      </div>
-      {data.imported && !data.item.rawMaterial && (
-        <button className={"build"} onClick={handleSetImport}>
-          Build on site
+    <>
+      <div
+        className={`container building-step ${highlight && "highlight"}`}
+        ref={ref}
+        onDragOver={onDragOver}
+        onDragLeave={onDragLeave}
+      >
+        <h1>{data.item.itemName}</h1>
+        <button className={"new-step"} onClick={handleNewPotentialStep}>
+          {newStep(30)}
         </button>
-      )}
-      {!data.imported && (
-        <>
-          <button className={"build"} onClick={handleSetImport}>
-            Import
-          </button>
-          <h3>
-            Recipe:{" "}
-            {data.recipe?.category === "standard"
-              ? "Standard"
-              : data.recipe?.recipeName}
-          </h3>
-          <div onMouseDown={preventPropagation}>
-            <Category
-              options={processRecipeOptions()}
-              onChange={onRecipeChange}
-              value={data.recipe?.recipeId || ""}
-            />
+        <div className={"item-outputs"}>
+          <div className="main-product">
+            <h2>Main Outputs</h2>
+            <div className={"main-products"}>{renderItemOutputs()}</div>
           </div>
-          <h3>
-            Requires: ({truncateDecimals(data.buildingCount, 4)}){" "}
-            {data.building?.title}
-          </h3>
-          {showAutoBuild && (
-            <button className={"build"} onClick={handleAutoBuildRecipe}>
-              Auto Build
-            </button>
+          {renderByProducts.length > 0 && (
+            <div className="by-product">
+              <h2>By Products</h2>
+
+              <div className={"by-products"}>{renderByProducts()}</div>
+            </div>
           )}
-        </>
+        </div>
+        <div className={"alt-outputs"}>
+          {renderStoreOutput()}
+          {renderSinkOutput()}
+        </div>
+        {data.imported && !data.item.rawMaterial && (
+          <button className={"build"} onClick={handleSetImport}>
+            Build on site
+          </button>
+        )}
+        {!data.imported && (
+          <>
+            <button className={"build"} onClick={handleSetImport}>
+              Import
+            </button>
+            <h3>
+              Recipe:{" "}
+              {data.recipe?.category === "standard"
+                ? "Standard"
+                : data.recipe?.recipeName}
+            </h3>
+            <div onMouseDown={preventPropagation}>
+              <Category
+                options={processRecipeOptions()}
+                onChange={onRecipeChange}
+                value={data.recipe?.recipeId || ""}
+              />
+            </div>
+            <h3>
+              Requires: ({truncateDecimals(data.buildingCount, 4)}){" "}
+              {data.building?.title}
+            </h3>
+            {showAutoBuild && (
+              <button className={"build"} onClick={handleAutoBuildRecipe}>
+                Auto Build
+              </button>
+            )}
+          </>
+        )}
+        <div className={"item-inputs"}>{renderItemInputs()}</div>
+      </div>
+      {recipeSelector && (
+        <RecipeSelector
+          recipes={recipeSelector.recipes}
+          location={recipeSelector.location}
+          selectionHandler={recipeSelectionHandler}
+          close={() => setRecipeSelector(null)}
+        />
       )}
-      <div className={"item-inputs"}>{renderItemInputs()}</div>
-    </div>
+    </>
   );
 };
 

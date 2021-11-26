@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import BuildingStep from "./BuildingStep";
 const BuildingRow = ({
   data,
+  recipes,
   inputDrag,
   tempStep,
   setTempPosition,
@@ -12,7 +13,6 @@ const BuildingRow = ({
 }) => {
   const [stepPositions, setStepPositions] = useState([]);
   const updateDomPosition = (ref, buildingStep) => {
-    console.log("setting step positions");
     setStepPositions(prevState => {
       const step = prevState.find(step => buildingStep.id === step.buildingStep.id);
       if (step) {
@@ -29,6 +29,7 @@ const BuildingRow = ({
     const buildingSteps = data.map(buildingStep => (
       <BuildingStep
         data={buildingStep}
+        recipes={recipes}
         inputDrag={inputDrag}
         key={buildingStep.id}
         dispatch={dispatch}
@@ -51,7 +52,6 @@ const BuildingRow = ({
         if (Math.abs(diffCentre) < Math.abs(total.diff)) {
           const i =
             diffCentre <= 0 ? step.buildingStep.hor + 1 : step.buildingStep.hor;
-          console.log("the closest", diffCentre, step, i);
           return { diff: diffCentre, i };
         }
         return total;

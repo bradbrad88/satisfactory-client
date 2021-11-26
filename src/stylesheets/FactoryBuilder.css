@@ -23,7 +23,7 @@
 
 .ui {
   display: inline-block;
-  min-width: 18rem;
+  min-width: fit-content;
   overflow-y: auto;
 }
 
@@ -35,6 +35,10 @@
   overflow: hidden;
   margin-left: 0;
   width: 100vw;
+}
+
+.icon.centre {
+  fill: white;
 }
 
 .ui-switches {
@@ -57,32 +61,39 @@
   color: white;
   font-family: inherit;
   font-size: 1rem;
-  font-weight: bold;
+  font-weight: 900;
   transition: background-color 0.2s ease-in-out;
+  cursor: pointer;
+  padding: 0 1rem;
 }
 
 .ui-switch.active {
-  background-color: rgba(255, 97, 5, 0.445);
+  background-color: var(--accent-color);
 }
 
 .ui-switch.active:hover {
-  background-color: rgba(255, 97, 5, 0.445);
+  background-color: var(--accent-color);
 }
 
 .ui-switch:hover {
-  background-color: rgba(255, 182, 48, 0.699);
+  background-color: rgba(255, 255, 255, 0.212);
   /* box-shadow: 0 0 5px rgba(255, 255, 255, 0.705); */
 }
 
 .grid {
+  position: relative;
   display: grid;
+  transform-origin: center center;
   /* background-color: thistle; */
+  width: fit-content;
 }
 
 .row {
   display: flex;
   flex-direction: row;
   justify-content: center;
+  gap: 1rem;
+  margin: 1rem;
 }
 
 .container.building-step {
@@ -91,24 +102,44 @@
   width: 25rem;
   align-self: center;
   padding: 1rem;
-  margin: 1rem;
+  /* margin: 1rem; */
   border-radius: 0.3rem;
   user-select: none;
   min-width: fit-content;
   border-radius: 0.3rem;
 }
 .container.building-step.highlight {
-  border: solid 1px rgb(243, 171, 16);
+  border: solid 1px var(--accent-color);
 }
 
 .building-step.temp {
   background-color: rgba(255, 255, 255, 0.055);
   min-height: 15rem;
-  border: rgb(255, 115, 0) solid 2px;
+  border: var(--accent-color) solid 2px;
 }
 
 .container.building-step > h1 {
   text-align: center;
+}
+
+button.new-step {
+  position: absolute;
+  right: 0.5rem;
+  top: 0.5rem;
+  background-color: rgba(0, 0, 0, 0);
+  border: none;
+  outline: none;
+  z-index: 4;
+  cursor: pointer;
+}
+
+.icon.new-step {
+  fill: white;
+  transition: 0.2s;
+}
+
+button.new-step:hover .icon.new-step {
+  fill: var(--accent-color);
 }
 
 .build {
@@ -268,12 +299,13 @@
 
 .scroll {
   position: absolute;
-  /* background-color: rgba(255, 255, 255, 0.027); */
+  /* background-color: rgba(255, 255, 255, 0.015); */
   height: 60px;
   width: 60px;
   /* top: 0;
   left: 0; */
-  z-index: 2;
+  z-index: 1;
+  /* pointer-events: none; */
 }
 
 .scroll.top,
@@ -306,6 +338,28 @@
   bottom: 0;
 }
 
+.recipe-selector {
+  position: absolute;
+  width: 17rem;
+  border: 1px solid rgba(255, 255, 255, 0.363);
+  background: rgb(43, 43, 43);
+  z-index: 1;
+  /* min-height: 15rem; */
+}
+
+.recipe-selector > button {
+  width: 100%;
+  border: 1px solid white;
+  font-family: inherit;
+  font-size: 1.5rem;
+  color: white;
+  font-weight: bold;
+  background-color: rgba(255, 255, 255, 0);
+  transition: 0.2s;
+}
+.recipe-selector > button:hover {
+  background-color: var(--accent-color);
+}
 /* .alt-outputs > input:read-only {
   background-color: rgba(255, 255, 255, 0.123);
   width: min-content;

@@ -6,14 +6,62 @@ export const SET_RECIPE = "SET_RECIPE";
 export const SET_IMPORTED = "SET_IMPORTED";
 export const AUTO_BUILD_LAYER = "AUTO_BUILD_LAYER";
 export const SET_OUTPUT_QTY = "SET_OUTPUT_QTY";
+export const ADD_ITEM_UPSTREAM = "ADD_ITEM_UPSTREAM";
 
 const addNewItem = (state, output, options) => {
   let updatedState = [...state];
   updatedState = _addOutput(updatedState, output, options);
   updatedState = _calcSuppliedQty(updatedState);
-  updatedState.forEach(bs => {});
+  updatedState = removeBuildingStepsWithNoOutput(updatedState);
   updatedState = calcPosition(updatedState);
   return updatedState;
+};
+
+const addItemUpstream = (state, buildingStep, recipe) => {
+  let updatedState = [...state];
+  console.log("buildingStep", buildingStep);
+  console.log("recipe", recipe);
+  // debugger;
+  const item = findDefaultItem(recipe);
+  console.log("item", item);
+  const output = {
+    type: "store",
+    qty: 1,
+    item,
+  };
+
+  const _newBuildingStep = newBuildingStep(output);
+  _newBuildingStep.imported = false;
+  updatedState.push(_newBuildingStep);
+  const options = { recipe };
+
+  updatedState = setRecipe(updatedState, _newBuildingStep, options);
+
+  const input = _newBuildingStep.inputs.find(
+    input => input.item === buildingStep.item
+  );
+  const newOutput = {
+    id: input.id,
+    qty: input.qty,
+    buildingStep: _newBuildingStep,
+    type: "step",
+    item: input.item,
+  };
+  buildingStep.outputs.push(newOutput);
+  linkInputs(buildingStep, newOutput);
+  updatedState = calcPosition(updatedState);
+  return updatedState;
+};
+
+const findDefaultItem = recipe => {
+  const item = recipe.RecipeItems.reduce((defaultItem, currentItem) => {
+    if (currentItem.direction !== "output") return defaultItem;
+    console.log("find default item", currentItem);
+    if (currentItem.item.points > (defaultItem?.item.points || 0))
+      return currentItem.item;
+    return defaultItem;
+  }, null);
+  return item;
 };
 
 const _addOutput = (state, output, options) => {
@@ -127,6 +175,7 @@ const calcPosition = updatedState => {
 const newBuildingStep = output => {
   if (!output?.item) return null;
   const { item } = output;
+  console.log("output", output);
   const buildingStep = {
     id: uuidv4(),
     item,
@@ -157,7 +206,8 @@ const setRecipe = (state, buildingStep, options) => {
   setBuilding(buildingStep);
   setInputs(buildingStep);
   setByProduct(buildingStep);
-
+  // TODO - set recipe should not be responsible for state
+  // separate user and non-user functionality
   updatedState = removeBuildingStepsWithNoOutput(updatedState);
   return updatedState;
 };
@@ -175,12 +225,17 @@ const setImported = (state, buildingStep, toggle) => {
 };
 
 const removeBuildingStepsWithNoOutput = state => {
+  // Ensures each buildingStep has either an output or something attached to its inputs
   let updatedState = [...state];
-  updatedState = updatedState.filter(
-    buildingStep =>
+  updatedState = updatedState.filter(buildingStep => {
+    return (
       buildingStep.outputs.filter(output => output.qty && !output.byProduct).length >
-      0
-  );
+        0 ||
+      buildingStep.inputs.filter(input => getInputTotalQty(input) > 0).length > 0
+    );
+  });
+  if (updatedState.length !== state.length)
+    updatedState = removeBuildingStepsWithNoOutput(updatedState);
   return updatedState;
 };
 
@@ -357,13 +412,13 @@ const getInputTotalQty = input => {
   }, 0);
 };
 
-const setAltOutput = (state, options) => {
-  if (!options) return;
+const setAltOutput = (state, output, buildingStep) => {
+  if (!output) return;
 
-  const { type, buildingStep, qty } = options;
+  const { type, qty } = output;
   if (!["store", "sink"].includes(type)) return console.log("incorrect type");
   if (!type || !buildingStep) return;
-  const updatedState = [...state];
+  let updatedState = [...state];
   const existingOutput = buildingStep.outputs.find(output => output.type === type);
   if (existingOutput) {
     if (!qty) {
@@ -378,6 +433,7 @@ const setAltOutput = (state, options) => {
   }
   setBuilding(buildingStep);
   setInputs(buildingStep);
+  updatedState = removeBuildingStepsWithNoOutput(updatedState);
   return updatedState;
 };
 
@@ -473,10 +529,11 @@ const _calcSuppliedQty = updatedState => {
 };
 
 const setOutputQty = (state, buildingStep, output, qty) => {
-  const updatedState = [...state];
+  let updatedState = [...state];
   output.qty = qty;
   setBuilding(buildingStep);
   setInputs(buildingStep);
+  updatedState = removeBuildingStepsWithNoOutput(updatedState);
   return updatedState;
 };
 
@@ -486,12 +543,12 @@ const setOutputQty = (state, buildingStep, output, qty) => {
 
 const reducer = (state, action) => {
   const { type, payload } = action;
-  const { buildingStep, output, toggle, options, qty } = payload;
+  const { buildingStep, output, recipe, toggle, options, qty } = payload;
   switch (type) {
     case ADD_NEW_ITEM:
       return addNewItem(state, output, options);
     case SET_ALT_OUTPUT:
-      return setAltOutput(state, payload);
+      return setAltOutput(state, output, buildingStep);
     case SET_IMPORTED:
       return setImported(state, buildingStep, toggle);
     case SET_RECIPE:
@@ -500,6 +557,8 @@ const reducer = (state, action) => {
       return autoBuildLayer(state, buildingStep);
     case SET_OUTPUT_QTY:
       return setOutputQty(state, buildingStep, output, qty);
+    case ADD_ITEM_UPSTREAM:
+      return addItemUpstream(state, buildingStep, recipe);
     default:
       return state;
   }

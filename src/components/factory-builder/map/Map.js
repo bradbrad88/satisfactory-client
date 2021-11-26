@@ -1,18 +1,24 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { ADD_NEW_ITEM } from "reducers/buildingStepsReducer";
 import BuildingRow from "./BuildingRow";
+import { centreMap as centreIcon } from "utils/SvgIcons";
 
 // import BuildingStep from "./BuildingStep";
 
-const Map = ({ data, dispatch }) => {
+const Map = ({ data, recipes, dispatch }) => {
+  // Item that appears when dragging an input indicating new step to be created
   const [tempItem, setTempItem] = useState(null);
+  // The temp item's intended position
   const [tempPosition, setTempPosition] = useState(0);
+  // TODO - highlight related inputs/outputs based on the active items
   const [activeItem, setActiveItem] = useState(null);
+  // Related to moving the map
   const [dragging, setDragging] = useState(false);
   const [initialMouse, setInitialMouse] = useState({});
   const [mapOffset, setMapOffset] = useState({ v: 0, h: 0 });
   const [zoom, setZoom] = useState(1);
   const endOffset = useRef({ v: 0, h: 0 });
+  // Handles moving the map when dragging an input/output item - the ref holds an interval function
   const scrollRef = useRef();
 
   const onMouseUp = useCallback(() => {
@@ -69,6 +75,7 @@ const Map = ({ data, dispatch }) => {
     const renderBuildingRows = Object.keys(buildingRows).map(key => (
       <BuildingRow
         data={buildingRows[key]}
+        recipes={recipes}
         key={key}
         dispatch={dispatch}
         inputDrag={onInputDrag}
@@ -81,7 +88,6 @@ const Map = ({ data, dispatch }) => {
       />
     ));
     if (tempItem && !buildingRows[tempItem.row]) {
-      console.log("got the thing without the thing", buildingRows);
       renderBuildingRows.push(
         <BuildingRow
           tempStep={tempItem}
@@ -239,6 +245,11 @@ const Map = ({ data, dispatch }) => {
     };
   };
 
+  const centreMap = () => {
+    endOffset.current = { v: 0, h: 0 };
+    setMapOffset({ v: 0, h: 0 });
+  };
+
   return (
     <>
       <div
@@ -256,27 +267,38 @@ const Map = ({ data, dispatch }) => {
           className="scroll top"
           onDragEnter={() => onDragEnterScroll("UP")}
           onDragLeave={onDragLeaveScroll}
+          onDrop={onDragLeaveScroll}
         ></div>
         <div
           className="scroll right"
           onDragEnter={() => onDragEnterScroll("RIGHT")}
           onDragLeave={onDragLeaveScroll}
+          onDrop={onDragLeaveScroll}
         ></div>
         <div
           className="scroll bottom"
           onDragEnter={() => onDragEnterScroll("DOWN")}
           onDragLeave={onDragLeaveScroll}
+          onDrop={onDragLeaveScroll}
         ></div>
         <div
           className="scroll left"
           onDragEnter={() => onDragEnterScroll("LEFT")}
           onDragLeave={onDragLeaveScroll}
+          onDrop={onDragLeaveScroll}
         ></div>
         <div
-          style={{ position: "absolute", zIndex: "3", cursor: "pointer" }}
-          onClick={() => setMapOffset({ v: 0, h: 0 })}
+          className={"centre-map"}
+          style={{
+            position: "absolute",
+            zIndex: "3",
+            cursor: "pointer",
+            top: "1rem",
+            left: "1rem",
+          }}
+          onClick={centreMap}
         >
-          [+]
+          {centreIcon(36)}
         </div>
         <div
           className={"grid"}

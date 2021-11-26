@@ -3,7 +3,7 @@ import truncateDecimals from "utils/truncateDecimals";
 import conveyor from "assets/conveyor.webp";
 import pipe from "assets/pipe.webp";
 
-const Input = ({ inputData, buildingStep, inputDrag }) => {
+const Input = ({ inputData, buildingStep, inputDrag, setTempNull }) => {
   const [dragImg, setDragImg] = useState(null);
 
   useEffect(() => {
@@ -47,6 +47,10 @@ const Input = ({ inputData, buildingStep, inputDrag }) => {
     e.dataTransfer.setData("text/plain", JSON.stringify(data));
   };
 
+  const onDragExit = () => {
+    setTempNull();
+  };
+
   const onMouseUp = () => {};
 
   const shortfall = inputData.qty - suppliedQty();
@@ -58,6 +62,8 @@ const Input = ({ inputData, buildingStep, inputDrag }) => {
       onMouseUp={onMouseUp}
       draggable
       onDragStart={onDragStart}
+      onDragEnd={onDragExit}
+      // onDragExit={onDragExit}
     >
       <p>{truncateDecimals(inputData.qty, 3)}</p>
       <p>{inputData.item.itemName}</p>

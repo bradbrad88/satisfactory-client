@@ -1,4 +1,4 @@
-import React, { useMemo, useReducer } from "react";
+import React, { useReducer } from "react";
 import Map from "./map/Map";
 
 import useData from "hooks/useData";

@@ -12,7 +12,7 @@ const Input = ({ inputData, buildingStep, inputDrag, setTempNull }) => {
     img.src = inputData.item.transportType === "conveyor" ? conveyor : pipe;
     img.onload = () => setDragImg(img);
     return () => window.removeEventListener("mouseup", onMouseUp);
-  }, []);
+  }, [inputData.item.transportType]);
 
   const suppliedQty = () => {
     const suppliedQty = inputData.buildingSteps.reduce((total, bs) => {
@@ -25,26 +25,13 @@ const Input = ({ inputData, buildingStep, inputDrag, setTempNull }) => {
       }
       return total + parseFloat(relatedOutput.qty);
     }, 0);
-
+    console.log("supplied qty", suppliedQty);
     return suppliedQty;
   };
 
   const onMouseDown = e => {
     e.stopPropagation();
     inputDrag(inputData, buildingStep);
-  };
-
-  const onDragStart = e => {
-    const data = {
-      inputId: inputData.id,
-      itemId: inputData.item.itemId,
-      itemName: inputData.item.itemName,
-      qty: inputData.qty,
-      row: buildingStep.ver + 1,
-      buildingStep: buildingStep.id,
-    };
-    e.dataTransfer.setDragImage(dragImg, 0, 0);
-    e.dataTransfer.setData("text/plain", JSON.stringify(data));
   };
 
   const onDragExit = () => {
@@ -55,6 +42,21 @@ const Input = ({ inputData, buildingStep, inputDrag, setTempNull }) => {
 
   const shortfall = inputData.qty - suppliedQty();
   const className = shortfall < 0 ? "over" : shortfall > 0 ? "under" : "";
+
+  const onDragStart = e => {
+    const data = {
+      fromInput: true,
+      inputId: inputData.id,
+      itemId: inputData.item.itemId,
+      itemName: inputData.item.itemName,
+      qty: shortfall < 0 ? 0 : shortfall,
+      row: buildingStep.ver + 1,
+      buildingStep: buildingStep.id,
+    };
+    e.dataTransfer.setDragImage(dragImg, 0, 0);
+    e.dataTransfer.setData("text/plain", JSON.stringify(data));
+  };
+
   return (
     <div
       className={`item-input ${className}`}

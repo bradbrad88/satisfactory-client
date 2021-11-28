@@ -5,6 +5,7 @@ import truncateDecimals from "utils/truncateDecimals";
 import RecipeSelector from "./RecipeSelector";
 import Input from "./Input";
 import Output from "./Output";
+import ByProduct from "./ByProduct";
 import { newStep } from "utils/SvgIcons";
 import {
   ADD_ITEM_UPSTREAM,
@@ -12,6 +13,7 @@ import {
   SET_ALT_OUTPUT,
   SET_IMPORTED,
   SET_RECIPE,
+  INPUT_DROPPED_ON_BUILDINGSTEP,
 } from "reducers/buildingStepsReducer";
 
 const BuildingStep = ({
@@ -23,13 +25,32 @@ const BuildingStep = ({
   setTempNull,
 }) => {
   const [recipeSelector, setRecipeSelector] = useState(null);
-  const [showAutoBuild] = useState(true);
+  // const [showAutoBuild] = useState(true);
   const [highlight, setHightlight] = useState(false);
   const { inputs, outputs } = data;
   const ref = useRef();
+
   useLayoutEffect(() => {
     updateDomPosition(ref.current, data);
   }, [data, updateDomPosition]);
+
+  const suppliedInputQty = input => {
+    return input.buildingSteps.reduce((total, buildingStep) => {
+      const output = buildingStep.outputs.find(output => output.id === input.id);
+      if (output) return output.qty + total;
+      return total;
+    }, 0);
+  };
+
+  const shortfall = () => {
+    const shortfall = inputs.reduce((total, input) => {
+      const qty = input.qty - suppliedInputQty(input);
+      if (qty !== 0) return true;
+      return total;
+    }, false);
+    console.log("shortfall", shortfall);
+    return shortfall;
+  };
 
   const processRecipeOptions = () => {
     return data.recipes.map(recipe => ({
@@ -85,8 +106,9 @@ const BuildingStep = ({
       return recipeItems.length > 0;
     });
     const { offsetWidth, offsetLeft } = ref.current;
+    const x = offsetLeft + offsetWidth;
     setRecipeSelector({
-      location: { offsetLeft, offsetWidth },
+      location: { x },
       recipes: relevantRecipes,
     });
   };
@@ -109,6 +131,24 @@ const BuildingStep = ({
     );
     const type = SET_RECIPE;
     const payload = { options: { recipe }, buildingStep: data };
+    dispatch({ type, payload });
+  };
+
+  const onDrop = e => {
+    setHightlight(false);
+    try {
+      const dragData = e.dataTransfer.getData("text/plain");
+      const parsedItem = JSON.parse(dragData);
+      e.stopPropagation();
+      if (parsedItem.fromInput) handleInputDrop(parsedItem);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleInputDrop = inputData => {
+    const type = INPUT_DROPPED_ON_BUILDINGSTEP;
+    const payload = { inputData, buildingStep: data };
     dispatch({ type, payload });
   };
 
@@ -154,8 +194,8 @@ const BuildingStep = ({
   const renderByProducts = () => {
     const byProducts = outputs.filter(output => output.byProduct);
     return byProducts.map(output => (
-      <Output
-        outputData={output}
+      <ByProduct
+        byProductData={output}
         buildingStep={data}
         dispatch={dispatch}
         key={data.id + output.item.itemId}
@@ -217,64 +257,79 @@ const BuildingStep = ({
         ref={ref}
         onDragOver={onDragOver}
         onDragLeave={onDragLeave}
+        onDrop={onDrop}
       >
-        <h1>{data.item.itemName}</h1>
-        <button className={"new-step"} onClick={handleNewPotentialStep}>
-          {newStep(30)}
-        </button>
-        <div className={"item-outputs"}>
-          <div className="main-product">
-            <h2>Main Outputs</h2>
-            <div className={"main-products"}>{renderItemOutputs()}</div>
-          </div>
-          {renderByProducts().length > 0 && (
-            <div className="by-product">
-              <h2>By Products</h2>
-
-              <div className={"by-products"}>{renderByProducts()}</div>
-            </div>
-          )}
-        </div>
-        <div className={"alt-outputs"}>
-          {renderStoreOutput()}
-          {renderSinkOutput()}
-        </div>
-        {data.imported && !data.item.rawMaterial && (
-          <button className={"build"} onClick={handleSetImport}>
-            Build on site
-          </button>
-        )}
-        {!data.imported && (
-          <>
+        <div className="title cell">
+          <h1>{data.item.itemName}</h1>
+          {!data.imported && (
             <button className={"build"} onClick={handleSetImport}>
               Import
             </button>
-            <h3>
-              Recipe:{" "}
-              {data.recipe?.category === "standard"
-                ? "Standard"
-                : data.recipe?.recipeName}
-            </h3>
-            <div onMouseDown={preventPropagation}>
-              <Category
-                options={processRecipeOptions()}
-                onChange={onRecipeChange}
-                value={data.recipe?.recipeId || ""}
-              />
+          )}
+          {data.imported && !data.item.rawMaterial && (
+            <button className={"build"} onClick={handleSetImport}>
+              Build on site
+            </button>
+          )}
+          <button className={"new-step"} onClick={handleNewPotentialStep}>
+            {newStep(30)}
+          </button>
+        </div>
+        <div className="output cell">
+          <div className={"item-outputs"}>
+            <div className="main-product">
+              <h2>Outputs</h2>
+              <div className={"main-products"}>{renderItemOutputs()}</div>
             </div>
-            <h3>
-              Requires: ({truncateDecimals(data.buildingCount, 4)}){" "}
-              {data.building?.title}
-            </h3>
-            {showAutoBuild && (
+            {renderByProducts().length > 0 && (
+              <div className="by-product">
+                <h2>By Products</h2>
+
+                <div className={"by-products"}>{renderByProducts()}</div>
+              </div>
+            )}
+          </div>
+          <div className={"alt-outputs"}>
+            {renderStoreOutput()}
+            {renderSinkOutput()}
+          </div>
+        </div>
+        <div className="recipe cell">
+          {!data.imported && (
+            <>
+              <h3>
+                Recipe:{" "}
+                {data.recipe?.category === "standard"
+                  ? "Standard"
+                  : data.recipe?.recipeName}
+              </h3>
+              <div onMouseDown={preventPropagation}>
+                <Category
+                  options={processRecipeOptions()}
+                  onChange={onRecipeChange}
+                  value={data.recipe?.recipeId || ""}
+                />
+              </div>
+              <h3>
+                Requires: ({truncateDecimals(data.buildingCount, 4)})
+                {data.building?.title}
+              </h3>
+            </>
+          )}
+        </div>
+        {!data.imported && (
+          <div className="input cell">
+            <h2>Inputs</h2>
+            {shortfall() && (
               <button className={"build"} onClick={handleAutoBuildRecipe}>
                 Auto Build
               </button>
             )}
-          </>
+            <div className={"item-inputs"}>{renderItemInputs()}</div>
+          </div>
         )}
-        <div className={"item-inputs"}>{renderItemInputs()}</div>
       </div>
+      {/* Recipe Selector handles the recipes that can be continued on from the output */}
       {recipeSelector && (
         <RecipeSelector
           recipes={recipeSelector.recipes}

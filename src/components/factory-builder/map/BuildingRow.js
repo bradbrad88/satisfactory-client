@@ -58,7 +58,7 @@ const BuildingRow = ({
       }, {});
       setTempPosition(position.i - 0.1);
       const step = (
-        <div className={"container building-step temp"}>
+        <div key={"temp-step"} className={"container building-step temp"}>
           <h2>{tempStep.itemName}</h2>
           <p>{tempStep.qty}</p>
         </div>

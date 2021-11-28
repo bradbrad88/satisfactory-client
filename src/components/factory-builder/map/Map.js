@@ -1,7 +1,11 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
-import { ADD_NEW_ITEM } from "reducers/buildingStepsReducer";
+import {
+  ADD_NEW_ITEM,
+  BYPRODUCT_DROPPED_ON_MAP,
+} from "reducers/buildingStepsReducer";
 import BuildingRow from "./BuildingRow";
 import { centreMap as centreIcon } from "utils/SvgIcons";
+import RecipeSelector from "./RecipeSelector";
 
 // import BuildingStep from "./BuildingStep";
 
@@ -10,8 +14,11 @@ const Map = ({ data, recipes, dispatch }) => {
   const [tempItem, setTempItem] = useState(null);
   // The temp item's intended position
   const [tempPosition, setTempPosition] = useState(0);
+  // Used in by-product drag&drop to display available recipes to build from by-product
+  const [upstreamRecipeSelector, setUpstreamRecipeSelector] = useState(null);
+  const byProductRef = useRef();
   // TODO - highlight related inputs/outputs based on the active items
-  const [activeItem, setActiveItem] = useState(null);
+  const [activeItem] = useState(null);
   // Related to moving the map
   const [dragging, setDragging] = useState(false);
   const [initialMouse, setInitialMouse] = useState({});
@@ -97,7 +104,7 @@ const Map = ({ data, recipes, dispatch }) => {
       );
     }
     return renderBuildingRows;
-  }, [data, dispatch, tempItem, updateDomPosition]);
+  }, [data, dispatch, tempItem, updateDomPosition, activeItem, recipes]);
 
   useEffect(() => {
     window.addEventListener("mouseup", onMouseUp);
@@ -140,7 +147,8 @@ const Map = ({ data, recipes, dispatch }) => {
     try {
       const dragData = e.dataTransfer.getData("text/plain");
       const item = JSON.parse(dragData);
-      setTempItem({ ...item, position: { x: e.clientX, y: e.clientY } });
+      if (item.fromInput)
+        setTempItem({ ...item, position: { x: e.clientX, y: e.clientY } });
     } catch (error) {
       setTempItem(null);
     }
@@ -152,34 +160,70 @@ const Map = ({ data, recipes, dispatch }) => {
 
   const onDrop = e => {
     e.preventDefault();
-    // console.log("dropping", e);
     try {
       const dragData = e.dataTransfer.getData("text/plain");
       const parsedData = JSON.parse(dragData);
-      // console.log("parsed data", parsedData);
-      const buildingStep = data.find(
-        buildingStep => buildingStep.id === parsedData.buildingStep
-      );
-      const { item } = buildingStep.inputs.find(
-        input => input.id === parsedData.inputId
-      );
-      const type = ADD_NEW_ITEM;
-      const output = {
-        item,
-        qty: parsedData.qty,
-        id: parsedData.inputId,
-        buildingStep,
-      };
-      const payload = {
-        output,
-        options: { hor: tempPosition, newBuildingStep: true },
-      };
-      console.log("dispatch", payload);
-      dispatch({ type, payload });
-      setTempItem(null);
+      if (parsedData.fromInput) handleInputDrop(parsedData);
+      if (parsedData.fromByProduct) {
+        const { clientX, clientY } = e;
+        const { offsetLeft, offsetTop } = e.target;
+        handleByProductDrop(parsedData, {
+          x: clientX - offsetLeft,
+          y: clientY - offsetTop,
+        });
+      }
     } catch (error) {
       console.error(error);
     }
+  };
+
+  const handleInputDrop = inputData => {
+    const buildingStep = data.find(
+      buildingStep => buildingStep.id === inputData.buildingStep
+    );
+    const { item } = buildingStep.inputs.find(
+      input => input.id === inputData.inputId
+    );
+    const type = ADD_NEW_ITEM;
+    const output = {
+      item,
+      qty: inputData.qty,
+      id: inputData.inputId,
+      buildingStep,
+      type: "step",
+    };
+    const payload = {
+      output,
+      options: { output, item, hor: tempPosition, imported: true },
+    };
+    dispatch({ type, payload });
+    setTempItem(null);
+  };
+
+  const handleByProductDrop = (byProductData, location) => {
+    const { itemId, buildingStepId } = byProductData;
+    const relevantRecipes = recipes.filter(recipe => {
+      const recipeItems = recipe.RecipeItems.filter(recipeItem => {
+        return (
+          recipeItem.direction === "input" &&
+          recipeItem.item.itemId === parseInt(byProductData.itemId)
+        );
+      });
+      return recipeItems.length > 0;
+    });
+    console.log("by product data", byProductData);
+    byProductRef.current = { buildingStepId, itemId };
+    setUpstreamRecipeSelector({ recipes: relevantRecipes, location });
+  };
+
+  const handleByProductUpstream = (_recipeId, recipe) => {
+    // console.log("handler", things);
+    const type = BYPRODUCT_DROPPED_ON_MAP;
+    const payload = {
+      ...byProductRef.current,
+      recipe,
+    };
+    dispatch({ type, payload });
   };
 
   const onDragEnterScroll = direction => {
@@ -242,7 +286,8 @@ const Map = ({ data, recipes, dispatch }) => {
   const style = () => {
     return {
       left: "50%",
-      transform: `translateX(-50%) translate(${mapOffset.h}px, ${mapOffset.v}px) scale(${zoom})`,
+      top: "0",
+      transform: `translate(-50%, 0) translate(${mapOffset.h}px, ${mapOffset.v}px) scale(${zoom})`,
     };
   };
 
@@ -301,6 +346,14 @@ const Map = ({ data, recipes, dispatch }) => {
         >
           {centreIcon(36)}
         </div>
+        {upstreamRecipeSelector && (
+          <RecipeSelector
+            recipes={upstreamRecipeSelector.recipes}
+            location={upstreamRecipeSelector.location}
+            selectionHandler={handleByProductUpstream}
+            close={() => setUpstreamRecipeSelector(null)}
+          />
+        )}
         <div
           className={"grid"}
           style={style()}

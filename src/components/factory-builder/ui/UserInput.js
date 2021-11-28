@@ -32,16 +32,19 @@ const UserInput = ({ items, data, dispatch }) => {
     setInitialItem(newItem);
   };
 
-  const handleAddOutput = () => {
+  const handleAddNewItem = () => {
+    const output = { type: "store", qty, item };
     const action = {
       type: ADD_NEW_ITEM,
-      payload: { output: { type: "store", qty, item } },
+      payload: {
+        options: { item, imported: true, output, userAdded: true },
+      },
     };
     dispatch(action);
   };
 
   const style = () => {
-    return { width: "10rem" };
+    return { width: "11rem", fontSize: "0.8rem" };
   };
 
   return (
@@ -63,7 +66,7 @@ const UserInput = ({ items, data, dispatch }) => {
         style={style()}
       />
       <div className="field">
-        <button style={{ width: "10rem" }} onClick={handleAddOutput}>
+        <button style={{ width: "10rem" }} onClick={handleAddNewItem}>
           Add New Item
         </button>
       </div>

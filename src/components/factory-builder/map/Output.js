@@ -1,7 +1,7 @@
 import React, { useRef, useState } from "react";
 import OutsideAlerter from "utils/OutsideAlerter";
 import { SET_OUTPUT_QTY } from "reducers/buildingStepsReducer";
-import { item } from "utils/SvgIcons";
+// import { item } from "utils/SvgIcons";
 import { useEffect } from "react/cjs/react.development";
 import conveyor from "assets/conveyor.webp";
 import pipe from "assets/pipe.webp";
@@ -20,7 +20,7 @@ const Output = ({ outputData, buildingStep, dispatch }) => {
     img.style.height = "20px";
     // document.querySelector("#root").prepend(img);
     img.onload = () => setDragImg(img);
-  }, []);
+  }, [outputData.item.transportType]);
 
   const onClickOutside = e => {
     setActive(false);

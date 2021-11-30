@@ -4,8 +4,8 @@ import truncateDecimals from "utils/truncateDecimals";
 import conveyor from "assets/conveyor.webp";
 import pipe from "assets/pipe.webp";
 
-const ByProduct = ({ byProductData, buildingStep }) => {
-  const { item, qty } = byProductData;
+const ByProduct = ({ byProductData }) => {
+  const { item, qty, buildingStep } = byProductData;
   const [dragImg, setDragImg] = useState(null);
   useEffect(() => {
     const img = new Image(20, 20);
@@ -28,6 +28,7 @@ const ByProduct = ({ byProductData, buildingStep }) => {
       itemId: item.itemId,
       // itemName: item.itemName,
       // qty: byProductData.qty,
+      byProductId: byProductData.id,
       buildingStepId: buildingStep.id,
     };
     e.dataTransfer.setData("text/plain", JSON.stringify(data));

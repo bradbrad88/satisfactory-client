@@ -7,8 +7,8 @@ import conveyor from "assets/conveyor.webp";
 import pipe from "assets/pipe.webp";
 import truncateDecimals from "utils/truncateDecimals";
 
-const Output = ({ outputData, buildingStep, dispatch }) => {
-  const { qty, buildingStep: outputBuildingStep } = outputData;
+const Output = ({ outputData, dispatch }) => {
+  const { qty, buildingStep } = outputData;
   const [active, setActive] = useState(false);
   const [dragImg, setDragImg] = useState(null);
   const [newValue, setNewValue] = useState("");
@@ -69,7 +69,7 @@ const Output = ({ outputData, buildingStep, dispatch }) => {
         <p>
           {outputData.byProduct
             ? outputData.item.itemName
-            : outputBuildingStep.item.itemName}
+            : outputData.input.buildingStep.item.itemName}
         </p>
         <input
           ref={ref}

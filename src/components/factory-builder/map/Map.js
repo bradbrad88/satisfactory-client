@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef, useMemo } from "react"
 import {
   ADD_NEW_ITEM,
   BYPRODUCT_DROPPED_ON_MAP,
+  INPUT_DROPPED_ON_MAP,
 } from "reducers/buildingStepsReducer";
 import BuildingRow from "./BuildingRow";
 import { centreMap as centreIcon } from "utils/SvgIcons";
@@ -16,7 +17,7 @@ const Map = ({ data, recipes, dispatch }) => {
   const [tempPosition, setTempPosition] = useState(0);
   // Used in by-product drag&drop to display available recipes to build from by-product
   const [upstreamRecipeSelector, setUpstreamRecipeSelector] = useState(null);
-  const byProductRef = useRef();
+  // const byProductRef = useRef();
   // TODO - highlight related inputs/outputs based on the active items
   const [activeItem] = useState(null);
   // Related to moving the map
@@ -163,7 +164,10 @@ const Map = ({ data, recipes, dispatch }) => {
     try {
       const dragData = e.dataTransfer.getData("text/plain");
       const parsedData = JSON.parse(dragData);
-      if (parsedData.fromInput) handleInputDrop(parsedData);
+      if (parsedData.fromInput) {
+        e.stopPropagation();
+        handleInputDrop(parsedData);
+      }
       if (parsedData.fromByProduct) {
         const { clientX, clientY } = e;
         const { offsetLeft, offsetTop } = e.target;
@@ -178,23 +182,25 @@ const Map = ({ data, recipes, dispatch }) => {
   };
 
   const handleInputDrop = inputData => {
-    const buildingStep = data.find(
-      buildingStep => buildingStep.id === inputData.buildingStep
-    );
-    const { item } = buildingStep.inputs.find(
-      input => input.id === inputData.inputId
-    );
-    const type = ADD_NEW_ITEM;
-    const output = {
-      item,
-      qty: inputData.qty,
-      id: inputData.inputId,
-      buildingStep,
-      type: "step",
-    };
+    // const buildingStep = data.find(
+    //   buildingStep => buildingStep.id === inputData.buildingStepId
+    // );
+    // const { item } = buildingStep.inputs.find(
+    //   input => input.id === inputData.inputId
+    // );
+    console.log("!!!!", inputData);
+    const type = INPUT_DROPPED_ON_MAP;
+    // const output = {
+    //   item,
+    //   qty: inputData.qty,
+    //   id: inputData.inputId,
+    //   buildingStep,
+    //   type: "step",
+    // };
     const payload = {
-      output,
-      options: { output, item, hor: tempPosition, imported: true },
+      inputData,
+      // output,
+      // options: { output, item, hor: tempPosition, imported: true },
     };
     dispatch({ type, payload });
     setTempItem(null);
@@ -212,15 +218,16 @@ const Map = ({ data, recipes, dispatch }) => {
       return recipeItems.length > 0;
     });
     console.log("by product data", byProductData);
-    byProductRef.current = { buildingStepId, itemId };
-    setUpstreamRecipeSelector({ recipes: relevantRecipes, location });
+    // byProductRef.current = { buildingStepId, itemId };
+    setUpstreamRecipeSelector({ recipes: relevantRecipes, location, byProductData });
   };
 
-  const handleByProductUpstream = (_recipeId, recipe) => {
+  const handleByProductUpstream = (recipe, byProduct) => {
     // console.log("handler", things);
     const type = BYPRODUCT_DROPPED_ON_MAP;
     const payload = {
-      ...byProductRef.current,
+      // ...byProductRef.current,
+      ...byProduct,
       recipe,
     };
     dispatch({ type, payload });
@@ -349,6 +356,7 @@ const Map = ({ data, recipes, dispatch }) => {
         {upstreamRecipeSelector && (
           <RecipeSelector
             recipes={upstreamRecipeSelector.recipes}
+            forwardingData={upstreamRecipeSelector.byProductData}
             location={upstreamRecipeSelector.location}
             selectionHandler={handleByProductUpstream}
             close={() => setUpstreamRecipeSelector(null)}

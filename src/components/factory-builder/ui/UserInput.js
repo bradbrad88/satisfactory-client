@@ -33,11 +33,11 @@ const UserInput = ({ items, data, dispatch }) => {
   };
 
   const handleAddNewItem = () => {
-    const output = { type: "store", qty, item };
+    // const output = { type: "store", qty, item };
     const action = {
       type: ADD_NEW_ITEM,
       payload: {
-        options: { item, imported: true, output, userAdded: true },
+        options: { item, imported: true, userAdded: true, ver: 1 },
       },
     };
     dispatch(action);

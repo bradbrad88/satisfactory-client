@@ -4,10 +4,10 @@ import conveyor from "assets/conveyor.webp";
 import pipe from "assets/pipe.webp";
 import { BYPRODUCT_DROPPED_ON_INPUT } from "reducers/buildingStepsReducer";
 
-const Input = ({ inputData, buildingStep, inputDrag, setTempNull, dispatch }) => {
+const Input = ({ inputData, inputDrag, setTempNull, dispatch }) => {
   const [dragImg, setDragImg] = useState(null);
   const [validDrag, setValidDrag] = useState(false);
-
+  const { buildingStep } = inputData;
   useEffect(() => {
     window.addEventListener("mouseup", onMouseUp);
     const img = new Image(20, 20);
@@ -17,16 +17,10 @@ const Input = ({ inputData, buildingStep, inputDrag, setTempNull, dispatch }) =>
   }, [inputData.item.transportType]);
 
   const suppliedQty = () => {
-    const suppliedQty = inputData.buildingSteps.reduce((total, bs) => {
-      const relatedOutput = bs.outputs.find(output => output.id === inputData.id);
-      if (!relatedOutput) {
-        console.log(
-          "error finding related input when calculating supplied input qty"
-        );
-        return total;
-      }
-      return total + parseFloat(relatedOutput.qty);
-    }, 0);
+    const suppliedQty = inputData.outputs.reduce(
+      (total, output) => total + parseFloat(output.qty),
+      0
+    );
     return suppliedQty;
   };
 
@@ -48,7 +42,7 @@ const Input = ({ inputData, buildingStep, inputDrag, setTempNull, dispatch }) =>
       itemName: inputData.item.itemName,
       qty: shortfall < 0 ? 0 : shortfall,
       row: buildingStep.ver + 1,
-      buildingStep: buildingStep.id,
+      buildingStepId: buildingStep.id,
     };
     e.dataTransfer.setDragImage(dragImg, 0, 0);
     e.dataTransfer.setData("text/plain", JSON.stringify(data));
@@ -84,14 +78,16 @@ const Input = ({ inputData, buildingStep, inputDrag, setTempNull, dispatch }) =>
   };
 
   const onDrop = e => {
-    const { buildingStepId, itemId, fromByProduct } = getDataFromDrop(e);
+    const { byProductId, buildingStepId, itemId, fromByProduct } =
+      getDataFromDrop(e);
     if (!fromByProduct) return;
     e.stopPropagation();
     const type = BYPRODUCT_DROPPED_ON_INPUT;
     const payload = {
-      buildingStepId,
-      itemId,
-      inputBuildingStep: buildingStep,
+      byProductId,
+      // buildingStepId,
+      // itemId,
+      // inputBuildingStep: buildingStep,
       input: inputData,
     };
     dispatch({ type, payload });

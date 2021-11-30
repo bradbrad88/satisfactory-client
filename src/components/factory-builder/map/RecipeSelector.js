@@ -1,7 +1,13 @@
 import React, { useCallback, useEffect } from "react";
 import "stylesheets/FactoryBuilder.css";
 
-const RecipeSelector = ({ recipes, location, selectionHandler, close }) => {
+const RecipeSelector = ({
+  recipes,
+  forwardingData,
+  location,
+  selectionHandler,
+  close,
+}) => {
   const clickAway = useCallback(() => {
     close();
   }, [close]);
@@ -19,7 +25,7 @@ const RecipeSelector = ({ recipes, location, selectionHandler, close }) => {
     const recipeId = parseInt(e.target.value);
     const recipe = recipes.find(recipe => recipe.recipeId === recipeId);
     console.log("RECIPE", recipe);
-    selectionHandler(recipeId, recipe);
+    selectionHandler(recipe, forwardingData);
     close();
   };
 

@@ -35,10 +35,8 @@ const BuildingStep = ({
   }, [data, updateDomPosition]);
 
   const suppliedInputQty = input => {
-    return input.buildingSteps.reduce((total, buildingStep) => {
-      const output = buildingStep.outputs.find(output => output.id === input.id);
-      if (output) return output.qty + total;
-      return total;
+    return input.outputs.reduce((total, output) => {
+      return output.qty + total;
     }, 0);
   };
 
@@ -112,9 +110,9 @@ const BuildingStep = ({
     });
   };
 
-  const recipeSelectionHandler = recipeId => {
-    console.log("recipe id", recipeId);
-    const recipe = recipes.find(recipe => recipe.recipeId === recipeId);
+  const recipeSelectionHandler = recipe => {
+    console.log("recipe id", recipe);
+    // const recipe = recipes.find(recipe => recipe.recipeId === recipeId);
     const payload = { buildingStep: data, recipe };
     const type = ADD_ITEM_UPSTREAM;
     dispatch({ type, payload });
@@ -138,14 +136,17 @@ const BuildingStep = ({
     try {
       const dragData = e.dataTransfer.getData("text/plain");
       const parsedItem = JSON.parse(dragData);
-      e.stopPropagation();
-      if (parsedItem.fromInput) handleInputDrop(parsedItem);
+      if (parsedItem.fromInput) handleInputDrop(parsedItem, e);
     } catch (error) {
       console.error(error);
     }
   };
 
-  const handleInputDrop = inputData => {
+  const handleInputDrop = (inputData, e) => {
+    console.log("inputData", inputData);
+    if (inputData.itemId !== data.item.itemId) {
+      return;
+    }
     const type = INPUT_DROPPED_ON_BUILDINGSTEP;
     const payload = { inputData, buildingStep: data };
     dispatch({ type, payload });
@@ -176,14 +177,13 @@ const BuildingStep = ({
 
   const renderItemOutputs = () => {
     return outputs
-      .filter(output => !output.byProduct && output.buildingStep)
+      .filter(output => !output.byProduct && output.input)
       .map(output => {
         return (
           <Output
             outputData={output}
-            buildingStep={data}
             dispatch={dispatch}
-            key={data.id + output.item.itemId}
+            key={data.id + output.id}
             setTempNull={setTempNull}
           />
         );
@@ -195,7 +195,6 @@ const BuildingStep = ({
     return byProducts.map(output => (
       <ByProduct
         byProductData={output}
-        buildingStep={data}
         dispatch={dispatch}
         key={data.id + output.item.itemId}
         setTempNull={setTempNull}
@@ -208,7 +207,6 @@ const BuildingStep = ({
       return (
         <Input
           inputData={input}
-          buildingStep={data}
           inputDrag={inputDrag}
           key={input.id}
           setTempNull={setTempNull}

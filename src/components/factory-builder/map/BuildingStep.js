@@ -48,7 +48,6 @@ const BuildingStep = ({
       if (qty !== 0) return true;
       return total;
     }, false);
-    console.log("shortfall", shortfall);
     return shortfall;
   };
 
@@ -213,6 +212,7 @@ const BuildingStep = ({
           inputDrag={inputDrag}
           key={input.id}
           setTempNull={setTempNull}
+          dispatch={dispatch}
         />
       );
     });

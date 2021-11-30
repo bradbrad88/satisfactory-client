@@ -253,6 +253,12 @@ button.new-step:hover .icon.new-step {
   border-color: yellow;
 }
 
+.item-input.valid-drag {
+  border-color: rgb(43, 218, 43);
+  box-shadow: 0 0 7px rgb(77, 212, 77);
+  background-color: rgba(255, 255, 255, 0.226);
+}
+
 .analysis.inputs {
   display: flex;
   flex-direction: row;

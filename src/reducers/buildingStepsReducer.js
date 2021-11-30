@@ -10,6 +10,7 @@ export const SET_OUTPUT_QTY = "SET_OUTPUT_QTY";
 export const ADD_ITEM_UPSTREAM = "ADD_ITEM_UPSTREAM";
 export const INPUT_DROPPED_ON_BUILDINGSTEP = "INPUT_DROPPED_ON_BUILDINGSTEP";
 export const BYPRODUCT_DROPPED_ON_MAP = "BYPRODUCT_DROPPED_ON_MAP";
+export const BYPRODUCT_DROPPED_ON_INPUT = "BYPRODUCT_DROPPED_ON_INPUT";
 
 const _newBuildingStep = options => {
   const { input, output, recipe, item, imported, hor, userAdded } = options;
@@ -93,6 +94,7 @@ const _getInputSuppliedQty = input => {
 };
 
 const _setRecipe = (buildingStep, recipe) => {
+  console.log("setting the recipe", recipe, buildingStep);
   buildingStep.recipe = recipe;
   _setNewInputs(buildingStep);
   _setByProduct(buildingStep);
@@ -109,15 +111,75 @@ const _setBuildingCount = buildingStep => {
   //   _getBuildingStepOutputQty(buildingStep) / _getRecipeOutputQty(buildingStep);
 };
 
-const _removeAllInputs = buildingStep => {
-  buildingStep.inputs.forEach(input => {
-    input.buildingSteps.forEach(bs => {
-      // bs.outputs = bs.outputs.filter(output => output.buildingStep !== buildingStep);
-      const output = bs.outputs.find(output => output.id === input.id);
-      _editOutput(bs, output, 0);
-    });
+// const _removeAllInputs = buildingStep => {
+//   buildingStep.inputs.forEach(input => {
+//     input.buildingSteps.forEach(bs => {
+//       // bs.outputs = bs.outputs.filter(output => output.buildingStep !== buildingStep);
+//       const output = bs.outputs.find(output => output.id === input.id);
+//       _editOutput(bs, output, 0);
+//     });
+//   });
+//   buildingStep.inputs = [];
+// };
+
+const _destroyInput = (buildingStep, input) => {
+  console.log("destroying input - ", buildingStep.item, input);
+  input.buildingSteps.forEach(inputBuildingStep => {
+    const relatedOutput = _getOutput(inputBuildingStep, input.id);
+    console.log(
+      "destroying output related to buildingStep",
+      inputBuildingStep,
+      relatedOutput
+    );
+    _destroyOutput(inputBuildingStep, relatedOutput);
+    // if no more outputs remain on the related buildingStep and it is not userAdded then destroy it
+    if (inputBuildingStep.outputs.length === 0 && !inputBuildingStep.userAdded)
+      _destroyBuildingStep(inputBuildingStep);
   });
-  buildingStep.inputs = [];
+  buildingStep.inputs = buildingStep.inputs.filter(i => i !== input);
+};
+
+const _destroyOutput = (buildingStep, output) => {
+  if (output.buildingStep) {
+    const relatedInput = output.buildingStep.inputs.find(
+      input => input.id === output.id
+    );
+    console.log("related input", relatedInput);
+    if (relatedInput)
+      _removeLinkToOutput(buildingStep, output.buildingStep, relatedInput.id);
+  }
+  console.log("about to filter", { ...buildingStep }, { ...output });
+  buildingStep.outputs = buildingStep.outputs.filter(o => o !== output);
+};
+
+const _destroyBuildingStep = buildingStep => {
+  console.log("destroying building step", buildingStep);
+  buildingStep.outputs.forEach(output => {
+    _destroyOutput(buildingStep, output);
+  });
+  buildingStep.inputs.forEach(input => {
+    _destroyInput(buildingStep, input);
+  });
+  buildingStep.delete = true;
+  console.log("building step destroyed", { ...buildingStep });
+};
+
+const _removeRedundantInputs = (buildingStep, newRecipeItems) => {
+  const recipeItems = [...newRecipeItems];
+  buildingStep.inputs.forEach(input => {
+    const required = recipeItems.find(recipeItem => recipeItem.item === input.item);
+    if (!required) {
+      _destroyInput(buildingStep, input);
+    } else {
+      // leave input as is (setNewInputs responsible for setting new qty/recipeQty)
+      // remove from recipeItems (this array will be used to create new inputs)
+      const i = recipeItems.indexOf(required);
+      recipeItems.splice(i, 1);
+    }
+  });
+
+  // return recipe items that still need work
+  return recipeItems;
 };
 
 const _getRecipeInputItems = buildingStep => {
@@ -129,9 +191,9 @@ const _getRecipeInputItems = buildingStep => {
 };
 
 const _updateOutputQty = (buildingStep, inputId, qty) => {
+  if (buildingStep.item.itemName === "Uranium Fuel Rod")
+    console.log("updating the output qty", qty);
   const output = buildingStep.outputs.find(output => output.id === inputId);
-  console.log("output", output);
-  console.log("qty", qty);
   if (!output) return false;
   if (output.locked) return false;
   if (output.byProduct) return false;
@@ -141,46 +203,69 @@ const _updateOutputQty = (buildingStep, inputId, qty) => {
 };
 
 const _setInputQtys = buildingStep => {
+  if (buildingStep.item.itemName === "Uranium Fuel Rod")
+    console.log("setting uranium fuel rod input qts");
   if (!buildingStep.recipe) return;
+  if (buildingStep.item.itemName === "Uranium Fuel Rod")
+    console.log("got past the first test");
   const { inputs } = buildingStep;
   const totalOutput = _getBuildingStepOutputQty(buildingStep);
-  if (!totalOutput) _removeAllInputs(buildingStep);
+  // if (!totalOutput) _removeAllInputs(buildingStep);
   const recipeOutputQty = _getRecipeOutputQty(buildingStep);
   inputs.forEach(input => {
     const qty = (input.recipeQty / recipeOutputQty) * totalOutput;
-    if (qty === input.qty) return;
     input.qty = qty;
     const remainingQty = input.qty - _getInputSuppliedQty(input);
     // run updateOutputQty until it finds an appropriate output and completes successfully
-    input.buildingSteps.some(bs => _updateOutputQty(bs, input.id, remainingQty));
+    if (remainingQty)
+      input.buildingSteps.some(bs => _updateOutputQty(bs, input.id, remainingQty));
   });
   _setByProductQty(buildingStep);
 };
 
 const _setNewInputs = buildingStep => {
-  _removeAllInputs(buildingStep);
-  if (!buildingStep.recipe) return;
+  // _removeAllInputs(buildingStep);
+  // if (!buildingStep.recipe) return;
+
   const recipeItems = _getRecipeInputItems(buildingStep);
+  const remainingRecipeItems = _removeRedundantInputs(buildingStep, recipeItems);
+
+  if (recipeItems.length < 1) return;
   console.log("recipe items", recipeItems);
   const totalOutput = _getBuildingStepOutputQty(buildingStep);
   const recipeOutputQty = _getRecipeOutputQty(buildingStep);
-  const inputs = recipeItems.map(recipeItem => ({
-    id: uuidv4(),
-    buildingSteps: [],
-    item: recipeItem.item,
-    recipeQty: recipeItem.qty,
-    qty: (recipeItem.qty / recipeOutputQty) * totalOutput,
-  }));
+  const inputs = recipeItems.map(recipeItem => {
+    if (remainingRecipeItems.includes(recipeItem)) {
+      // new input, give it the full treatment
+      const newInput = {
+        id: uuidv4(),
+        buildingSteps: [],
+        item: recipeItem.item,
+        recipeQty: recipeItem.qty,
+        qty: (recipeItem.qty / recipeOutputQty) * totalOutput,
+      };
+      return newInput;
+    } else {
+      // existing item, adjust qtys only
+      const existingInput = _getInputByItem(buildingStep, recipeItem.item);
+      existingInput.qty = (recipeItem.qty / recipeOutputQty) * totalOutput;
+      existingInput.recipeQty = recipeItem.qty;
+      return existingInput;
+    }
+  });
   console.log("inputs", inputs);
   buildingStep.inputs = inputs;
+  if (totalOutput) {
+    _setInputQtys(buildingStep);
+  }
 };
 
 const _findDefaultItem = recipe => {
-  const item = recipe.RecipeItems.reduce((defaultItem, currentItem) => {
+  const { item } = recipe.RecipeItems.reduce((defaultItem, currentItem) => {
     if (currentItem.direction !== "output") return defaultItem;
     console.log("find default item", currentItem);
     if (currentItem.item.points > (defaultItem?.item.points || 0))
-      return currentItem.item;
+      return currentItem;
     return defaultItem;
   }, null);
   return item;
@@ -215,13 +300,22 @@ const _editOutput = (buildingStep, output, qty) => {
 };
 
 const _linkInput = (buildingStep, inputId) => {
+  // BuildingStep supplied should be the child step
+  // Input ID should already be located
+  // This function will simply add the buildingStep to input.buildingSteps
   // Adds the supplied buildingStep to input.buildingSteps
   const output = _getOutput(buildingStep, inputId);
   if (!output.buildingStep) return null;
   const input = _getInput(output.buildingStep, inputId);
   output.id = input.id;
+  // output.buildingStep;
   input.buildingSteps.push(buildingStep);
   return true;
+};
+
+const _linkInputOutput = (input, output) => {
+  output.inputId = input.id;
+  output.inputBuildingStep = input.buildingStep;
 };
 
 const _setByProductQty = buildingStep => {
@@ -268,19 +362,20 @@ const _removeBuildingStepsWithNoIO = state => {
   // Ensures each buildingStep has either an output or something attached to its inputs
   // Won't destroy top-level building steps
   let updatedState = [...state];
-  const topLevelSteps = _findTopLevelSteps(updatedState);
-  // console.log("top level steps", topLevelSteps);
-  updatedState = updatedState.filter(buildingStep => {
-    return (
-      buildingStep.outputs.filter(output => output.qty && !output.byProduct).length >
-        0 ||
-      buildingStep.inputs.filter(input => input.buildingSteps.length > 0).length >
-        0 ||
-      buildingStep.userAdded
-    );
-  });
-  if (updatedState.length !== state.length)
-    updatedState = _removeBuildingStepsWithNoIO(updatedState);
+  updatedState = updatedState.filter(buildingStep => !buildingStep.delete);
+  // const topLevelSteps = _findTopLevelSteps(updatedState);
+  // // console.log("top level steps", topLevelSteps);
+  // updatedState = updatedState.filter(buildingStep => {
+  //   return (
+  //     buildingStep.outputs.filter(output => output.qty && !output.byProduct).length >
+  //       0 ||
+  //     buildingStep.inputs.filter(input => input.buildingSteps.length > 0).length >
+  //       0 ||
+  //     buildingStep.userAdded
+  //   );
+  // });
+  // if (updatedState.length !== state.length)
+  //   updatedState = _removeBuildingStepsWithNoIO(updatedState);
   return updatedState;
 };
 
@@ -415,8 +510,10 @@ const addItemUpstream = (state, buildingStep, recipe) => {
     imported: false,
     recipe: recipe,
     item,
+    userAdded: true,
   };
   const newBuildingStep = _newBuildingStep(options);
+  console.log("new building step with failing input", { ...newBuildingStep });
   const input = _getInputByItem(newBuildingStep, buildingStep.item);
   const output = {
     buildingStep: newBuildingStep,
@@ -439,14 +536,42 @@ const byProductDroppedOnMap = (state, payload) => {
   let updatedState = [...state];
   const { buildingStepId, recipe, itemId } = payload;
   const buildingStep = _getBuildingStep(updatedState, buildingStepId);
-  const output = _getOutputByItem(buildingStep, itemId);
+  const byProduct = _getOutputByItem(buildingStep, itemId);
   const item = _findDefaultItem(recipe);
   const options = {
     item,
     recipe,
     imported: false,
+    userAdded: true,
   };
+
   const newBuildingStep = _newBuildingStep(options);
+  const input = _getInputByItem(newBuildingStep, item);
+  // _addOutput(newBuildingStep, output)
+  updatedState.push(newBuildingStep);
+  return updatedState;
+};
+
+const byProductDroppedOnInput = (state, payload) => {
+  let updatedState = [...state];
+  const { itemId, buildingStepId, inputBuildingStep, input } = payload;
+  console.log("itemId", itemId);
+  console.log("buildingStepId", buildingStepId);
+  console.log("inputBuildingStep", inputBuildingStep);
+  console.log("input", input);
+  // get the output and buildingStep firstoff
+  // const output = _getOutputByItem(buildingStep);
+  // see if the output is connected to anything already
+
+  // look for multiple of the same by-product
+
+  // split
+
+  // qty = output.qty
+  // output.type = 'step'
+  // output.buildingStep
+  // output.id
+
   return updatedState;
 };
 
@@ -615,6 +740,8 @@ const reducer = (state, action) => {
       return inputDroppedOnBuildingStep(state, buildingStep, inputData);
     case BYPRODUCT_DROPPED_ON_MAP:
       return byProductDroppedOnMap(state, payload);
+    case BYPRODUCT_DROPPED_ON_INPUT:
+      return byProductDroppedOnInput(state, payload);
     case SET_IMPORTED:
       return setImported(state, buildingStep, toggle);
     case SET_RECIPE:

@@ -1,3 +1,4 @@
+import ByProduct from "components/factory-builder/map/ByProduct";
 import { v4 as uuidv4 } from "uuid";
 
 export const ADD_NEW_ITEM = "ADD_NEW_ITEM";
@@ -94,10 +95,12 @@ const _getByProducts = buildingStep => {
   return byProducts;
 };
 
-const _getByProductsByItem = (buildingStep, item) => {
-  const byProducts = buildingStep.outputs.filter(
-    output => output.byProduct && output.item === item
-  );
+const _getByProductsByItemId = (buildingStep, itemId) => {
+  const byProducts = buildingStep.outputs.filter(output => {
+    console.log("output", output);
+    console.log("item id", itemId);
+    return output.byProduct && output.item.itemId === parseInt(itemId);
+  });
   return byProducts;
 };
 
@@ -140,9 +143,14 @@ const _getRecipeInputItems = buildingStep => {
 };
 
 const _getRecipeByProducts = (recipe, item) => {
-  return recipe.RecipeItems.filter(
-    recipeItem => recipeItem.direction === "output" && recipeItem.item !== item
-  );
+  return recipe.RecipeItems.filter(recipeItem => {
+    console.log("item", item.itemId);
+    console.log("recipe", recipeItem.item.itemId);
+    console.log("direction", recipeItem.direction);
+    return (
+      recipeItem.direction === "output" && recipeItem.item.itemId !== item.itemId
+    );
+  });
 };
 
 const _destroyInput = input => {
@@ -171,21 +179,34 @@ const _destroyBuildingStep = buildingStep => {
 };
 
 const _addOutput = output => {
+  if (!output.buildingStep)
+    return console.error(
+      "Trying to add output without attaching buildingStep",
+      output
+    );
+  if (!output.item)
+    return console.error("Trying to add output without attaching an item", output);
+  if (!output.id) output.id = uuidv4();
+  const { buildingStep } = output;
   output.buildingStep.outputs.push(output);
-  _setInputQtys(output.buildingStep);
+  if (!output.byProduct) _setByProductQty(buildingStep);
+  _setInputQtys(buildingStep, output.byProduct);
 };
 
 const _editOutput = (output, qty, overrideLock) => {
+  const { buildingStep, byProduct } = output;
   if (output.locked && !overrideLock) return false;
   output.qty = qty;
-  _setInputQtys(output.buildingStep);
+  if (!byProduct) _setByProductQty(buildingStep);
+  _setInputQtys(output.buildingStep, output.byProduct);
+
   return true;
 };
 
 const _setRecipe = (buildingStep, recipe) => {
   buildingStep.recipe = recipe;
-  _setNewInputs(buildingStep);
   _setByProduct(buildingStep);
+  _setNewInputs(buildingStep);
 };
 
 const _setBuildingCount = buildingStep => {};
@@ -217,31 +238,51 @@ const _setNewInputs = buildingStep => {
       return existingInput;
     }
   });
-  console.log("inputs", inputs);
+  // console.log("inputs", inputs);
   buildingStep.inputs = inputs;
-  if (totalOutput) {
-    _setInputQtys(buildingStep);
-  }
+  console.log("total output", totalOutput);
+  // if (totalOutput) {
+  _setInputQtys(buildingStep);
+  // }
 };
 
-const _setInputQtys = buildingStep => {
+const _setInputQtys = (buildingStep, skipByProdUpdate) => {
   const { inputs } = buildingStep;
   if (!buildingStep.recipe) return;
-  _setByProductQty(buildingStep);
+  // _setByProductQty(buildingStep);
   if (inputs.length < 1) return;
   const totalOutput = _getBuildingStepOutputQty(buildingStep);
   // if (!totalOutput) _removeAllInputs(buildingStep);
   const recipeOutputQty = _getRecipeOutputQty(buildingStep);
-  inputs.forEach(input => {
-    const qty = (input.recipeQty / recipeOutputQty) * totalOutput;
-    input.qty = qty;
-    const remainingQty = input.qty - _getInputSuppliedQty(input);
-    // run updateOutputQty until it finds an appropriate output and completes successfully
-    if (remainingQty)
+  inputs.forEach(input =>
+    _setInputQty(input, skipByProdUpdate, { totalOutput, recipeOutputQty })
+  );
+};
+
+const _setInputQty = (input, skipByProdUpdate, qtys = {}) => {
+  const { buildingStep } = input;
+  let { totalOutput, recipeOutputQty } = qtys;
+  if (!totalOutput) totalOutput = _getBuildingStepOutputQty(buildingStep);
+  if (!recipeOutputQty) recipeOutputQty = _getRecipeOutputQty(buildingStep);
+  const qty = (input.recipeQty / recipeOutputQty) * totalOutput;
+  input.qty = qty;
+  const remainingQty = input.qty - _getInputSuppliedQty(input);
+  console.log("remaining qty", remainingQty);
+  if (remainingQty) {
+    if (!skipByProdUpdate)
       input.outputs
-        .filter(output => !output.byProduct)
-        .some(output => _editOutput(output, remainingQty + output.qty));
-  });
+        .filter(output => output.byProduct)
+        .forEach(output => {
+          _setByProductQty(output.buildingStep);
+        });
+    input.outputs
+      .filter(output => !output.byProduct)
+      .some(output => {
+        const remainingQty = input.qty - _getInputSuppliedQty(input);
+        const qty = remainingQty + output.qty;
+        return _editOutput(output, qty < 0 ? 0 : qty);
+      });
+  }
 };
 
 const _setByProduct = buildingStep => {
@@ -255,6 +296,14 @@ const _setByProduct = buildingStep => {
   );
   const byProducts = _getByProducts(buildingStep);
   const remainingRecipeItems = _removeRedundantIOs(byProducts, byProductRecipeItems);
+  const createByProductObject = () => {
+    const byProduct = byProductRecipeItems.reduce((total, item) => {
+      total[item.item.itemId] = { recipeQty: item.qty, item: item.item };
+      return total;
+    }, {});
+    return byProduct;
+  };
+  buildingStep.byProducts = createByProductObject();
   const newOutputs = remainingRecipeItems.map(recipeItem => ({
     id: uuidv4(),
     buildingStep,
@@ -264,22 +313,62 @@ const _setByProduct = buildingStep => {
     recipeQty: recipeItem.qty,
   }));
   buildingStep.outputs = buildingStep.outputs.concat(newOutputs);
-  _setByProductQty(buildingStep);
+  // _setByProductQty(buildingStep);
 };
 
 const _setByProductQty = buildingStep => {
+  const { byProducts: byProductProperties } = buildingStep;
+  if (!byProductProperties) return;
   const totalOutput = _getBuildingStepOutputQty(buildingStep);
   const recipeOutputQty = _getRecipeOutputQty(buildingStep);
-  console.log("recipe output qty", recipeOutputQty);
-  const byProducts = _getByProducts(buildingStep); // buildingStep.outputs.filter(output => output.byProduct);
-  byProducts.forEach(byProduct => {
-    byProduct.qty = (byProduct.recipeQty / recipeOutputQty) * totalOutput;
+  Object.keys(byProductProperties).forEach(itemId => {
+    const { recipeQty } = byProductProperties[itemId];
+    let requiredQty = (recipeQty / recipeOutputQty) * totalOutput;
+    const byProducts = _getByProductsByItemId(buildingStep, itemId);
+    requiredQty = byProducts.reduce((runningQtyRemainder, byProduct) => {
+      const { input } = byProduct;
+      if (runningQtyRemainder <= 0) {
+        const remainingByProducts = _getByProductsByItemId(buildingStep, itemId);
+        if (!input && remainingByProducts.length > 1) {
+          _destroyOutput(byProduct);
+        }
+        return runningQtyRemainder;
+      }
+      byProduct.qty = runningQtyRemainder;
+      if (input) {
+        if (input.qty <= byProduct.qty) {
+          byProduct.qty = input.qty;
+        }
+        _setInputQty(input, true);
+      }
+      return runningQtyRemainder - byProduct.qty;
+    }, requiredQty);
+
+    if (requiredQty > 0 || byProducts.length < 1) {
+      // Add a new by-product
+      const output = {
+        buildingStep,
+        qty: requiredQty,
+        item: byProductProperties[itemId].item,
+        byProduct: true,
+        type: null,
+      };
+      _addOutput(output);
+    }
   });
+
+  // Run through outputs already existing and see if they absorb the full qty
+
+  // const byProducts = _getByProducts(buildingStep);
+  // byProducts.forEach(byProduct => {
+  //   byProduct.qty = (byProduct.recipeQty / recipeOutputQty) * totalOutput;
+  // });
   // TODO - just so much to do
 };
 
 const _linkInputOutput = (input, output) => {
   output.input = input;
+  output.type = "step";
   if (!input.outputs.includes(output)) input.outputs.push(output);
 };
 
@@ -516,24 +605,7 @@ const byProductDroppedOnInput = (state, payload) => {
   let updatedState = [...state];
   const { byProductId, input } = payload;
   const byProduct = _getOutputFromStateById(state, byProductId);
-  // console.log("byproduct id", byProductId);
-  // console.log("itemId", itemId);
-  // console.log("buildingStepId", buildingStepId);
-  // console.log("inputBuildingStep", inputBuildingStep);
-  // console.log("input", input);
   _linkInputOutput(input, byProduct);
-  // get the output and buildingStep firstoff
-  // const output = _getOutputByItem(buildingStep);
-  // see if the output is connected to anything already
-
-  // look for multiple of the same by-product
-
-  // split
-
-  // qty = output.qty
-  // output.type = 'step'
-  // output.buildingStep
-  // output.id
 
   return updatedState;
 };

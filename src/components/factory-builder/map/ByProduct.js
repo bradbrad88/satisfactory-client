@@ -5,7 +5,7 @@ import conveyor from "assets/conveyor.webp";
 import pipe from "assets/pipe.webp";
 
 const ByProduct = ({ byProductData }) => {
-  const { item, qty, buildingStep } = byProductData;
+  const { item, qty, buildingStep, input, type } = byProductData;
   const [dragImg, setDragImg] = useState(null);
   useEffect(() => {
     const img = new Image(20, 20);
@@ -14,11 +14,11 @@ const ByProduct = ({ byProductData }) => {
   }, [item.transportType]);
 
   const onClickOutside = () => {
-    console.log("clicked outside by-product");
+    // console.log("clicked outside by-product");
   };
 
   const onClickInside = () => {
-    console.log("clicked inside by-product");
+    // console.log("clicked inside by-product");
   };
 
   const onDragStart = e => {
@@ -26,8 +26,6 @@ const ByProduct = ({ byProductData }) => {
     const data = {
       fromByProduct: true,
       itemId: item.itemId,
-      // itemName: item.itemName,
-      // qty: byProductData.qty,
       byProductId: byProductData.id,
       buildingStepId: buildingStep.id,
     };
@@ -37,13 +35,16 @@ const ByProduct = ({ byProductData }) => {
   return (
     <OutsideAlerter onClickInside={onClickInside} onClickOutside={onClickOutside}>
       <div
-        className={`item-output by-product`}
+        className={`item-output by-product ${!type && "left-over"}`}
         draggable
         onMouseDown={e => e.stopPropagation()}
         onDragStart={onDragStart}
       >
         <p>{item.itemName}</p>
         <p>{truncateDecimals(qty, 3)}</p>
+        {input && <p>Going to: {input.buildingStep.item.itemName}</p>}
+        {!input && type && <p>{type}</p>}
+        {!type && <p>Left over</p>}
       </div>
     </OutsideAlerter>
   );

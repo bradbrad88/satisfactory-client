@@ -147,6 +147,7 @@ const BuildingStep = ({
     if (inputData.itemId !== data.item.itemId) {
       return;
     }
+    e.stopPropagation();
     const type = INPUT_DROPPED_ON_BUILDINGSTEP;
     const payload = { inputData, buildingStep: data };
     dispatch({ type, payload });
@@ -196,7 +197,7 @@ const BuildingStep = ({
       <ByProduct
         byProductData={output}
         dispatch={dispatch}
-        key={data.id + output.item.itemId}
+        key={output.id}
         setTempNull={setTempNull}
       />
     ));

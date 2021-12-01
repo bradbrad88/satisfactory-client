@@ -44,7 +44,7 @@ const EditBuildingForm = ({
     valid: existingItem ? true : false,
   });
   const [category, setCategory] = useState({
-    value: existingItem ? existingItem.category : CATEGORY_OPTIONS[0].title,
+    value: existingItem ? existingItem.category : CATEGORY_OPTIONS[0].id,
   });
   const [inputs, setInputs] = useState(
     existingItem

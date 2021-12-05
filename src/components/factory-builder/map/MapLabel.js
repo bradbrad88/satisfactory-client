@@ -1,15 +1,10 @@
-import React, { useState } from "react";
+import { FactoryManagerContext } from "contexts/FactoryManagerContext";
+import React, { useContext, useState } from "react";
 
-const MapLabel = ({
-  item,
-  activeFactory,
-  setActiveFactory,
-  relocate,
-  mapDimensions,
-}) => {
+const MapLabel = ({ item }) => {
+  const { activeFactory, setActiveFactory } = useContext(FactoryManagerContext);
   const [startLocation, setStartLocation] = useState();
   const { location } = item;
-  // console.log("map dimensions", mapDimensions);
   const style = () => {
     const { x, y } = location;
     return {
@@ -22,15 +17,11 @@ const MapLabel = ({
   const onMouseDown = e => {
     e.stopPropagation();
     setActiveFactory(item.id);
-    console.log("e.target", e.target);
     const rect = e.target.getBoundingClientRect();
-    console.log("rect", rect);
     setStartLocation();
   };
 
-  const onMouseUp = () => {
-    // console.log("mouse up bitches");
-  };
+  const onMouseUp = () => {};
 
   const active = () => {
     if (activeFactory === item) return true;

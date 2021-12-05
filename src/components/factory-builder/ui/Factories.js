@@ -1,9 +1,17 @@
-import React from "react";
+import React, { useContext } from "react";
 import FactoryListItem from "./FactoryListItem";
 import { building } from "utils/SvgIcons";
 import { ADD_NEW_FACTORY } from "reducers/factoryManagerReducer";
+import { FactoryManagerContext } from "contexts/FactoryManagerContext";
 
-const Factories = ({ factories, setActiveFactory, activeFactory, dispatch }) => {
+const Factories = (
+  {
+    // factories, setActiveFactory, activeFactory, dispatch
+  }
+) => {
+  const { factories, setActiveFactory, activeFactory, dispatch } =
+    useContext(FactoryManagerContext);
+  console.log("factories", factories);
   const renderFactoryList = () => {
     return factories.map(factory => (
       <FactoryListItem

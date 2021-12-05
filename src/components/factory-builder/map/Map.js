@@ -13,12 +13,12 @@ import RecipeSelector from "./RecipeSelector";
 // import BuildingStep from "./BuildingStep";
 
 const Map = ({
-  data,
-  factories,
-  activeFactory,
-  setActiveFactory,
-  recipes,
-  dispatch,
+  // data,
+  // factories,
+  // activeFactory,
+  // setActiveFactory,
+  // recipes,
+  // dispatch,
   mapState,
 }) => {
   // Item that appears when dragging an input indicating new step to be created
@@ -345,13 +345,17 @@ const Map = ({
         </div>
         <div className={"map-content"} style={style()}>
           {mapState === "build" && (
-            <FactoryLayout data={data} recipes={recipes} dispatch={dispatch} />
+            <FactoryLayout
+            // data={data}
+            //  recipes={recipes}
+            //  dispatch={dispatch}
+            />
           )}
           {mapState === "locate" && (
             <FactoryLocations
-              factories={factories}
-              activeFactory={activeFactory}
-              setActiveFactory={setActiveFactory}
+            // factories={factories}
+            // activeFactory={activeFactory}
+            // setActiveFactory={setActiveFactory}
             />
           )}
         </div>

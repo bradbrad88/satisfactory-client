@@ -6,21 +6,9 @@ import buildingStepsReducer from "reducers/buildingStepsReducer";
 import ControlPanel from "./ui/ControlPanel";
 import "stylesheets/FactoryBuilder.css";
 
-const FactoryBuilder = ({
-  factories,
-  activeFactory,
-  // addNewFactory,
-  setActiveFactory,
-  dispatch,
-}) => {
+const FactoryBuilder = ({}) => {
   const [mapState, setMapState] = useState("build");
   const [buildingSteps] = useReducer(buildingStepsReducer, []);
-
-  // const [factoryName, setFactoryName] = useState("");
-  // const [location, setLocation] = useState({ x: 0, y: 0 });
-  const { items, recipes } = useData();
-
-  const saveFactories = () => {};
 
   return (
     <div className={"factory-builder"}>
@@ -36,29 +24,8 @@ const FactoryBuilder = ({
       >
         Save Factories
       </button>
-      {/* <div>
-        <label>Factory Name</label>
-        <input type={"text"} />
-      </div> */}
-      <ControlPanel
-        items={items}
-        data={buildingSteps}
-        dispatch={dispatch}
-        setMapState={mapState => setMapState(mapState)}
-        factories={factories}
-        activeFactory={activeFactory}
-        setActiveFactory={setActiveFactory}
-        // addNewFactory={addNewFactory}
-      />
-      <Map
-        factories={factories}
-        activeFactory={activeFactory}
-        setActiveFactory={setActiveFactory}
-        data={buildingSteps}
-        recipes={recipes}
-        dispatch={dispatch}
-        mapState={mapState}
-      />
+      <ControlPanel setMapState={mapState => setMapState(mapState)} />
+      <Map mapState={mapState} />
     </div>
   );
 };

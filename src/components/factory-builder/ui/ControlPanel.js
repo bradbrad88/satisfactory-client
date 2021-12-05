@@ -11,7 +11,6 @@ const ControlPanel = ({
   factories,
   activeFactory,
   setActiveFactory,
-  // addNewFactory,
   items,
   data,
   dispatch,
@@ -23,21 +22,13 @@ const ControlPanel = ({
     switch (tab) {
       case USER_INPUT:
         setMapState("build");
-        return <UserInput items={items} data={data} dispatch={dispatch} />;
+        return <UserInput />;
       case ANALYSIS:
         setMapState("build");
-        return <FactoryAnalysis data={data} />;
+        return <FactoryAnalysis />;
       case FACTORIES:
         setMapState("locate");
-        return (
-          <Factories
-            factories={factories}
-            dispatch={dispatch}
-            activeFactory={activeFactory}
-            setActiveFactory={setActiveFactory}
-            // addNewFactory={addNewFactory}
-          />
-        );
+        return <Factories />;
 
       default:
         return null;

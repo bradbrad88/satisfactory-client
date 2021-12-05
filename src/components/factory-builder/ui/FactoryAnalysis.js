@@ -1,7 +1,9 @@
-import React, { useMemo } from "react";
+import React, { useContext, useMemo } from "react";
 import truncateDecimals from "utils/truncateDecimals";
+import { FactoryManagerContext } from "contexts/FactoryManagerContext";
 
-const FactoryAnalysis = ({ data }) => {
+const FactoryAnalysis = () => {
+  const { activeFactory } = useContext(FactoryManagerContext);
   const factoryTotals = useMemo(() => {
     // console.log("factory totals building steps", [...buildingSteps]);
     const getBuildingStepOutputQty = buildingStep => {
@@ -13,7 +15,7 @@ const FactoryAnalysis = ({ data }) => {
       return outputQty;
     };
 
-    const breakdown = data.reduce(
+    const breakdown = activeFactory?.buildingSteps.reduce(
       (total, buildingStep) => {
         const newTotal = { ...total };
         const outputs = buildingStep.outputs.reduce((outputTotal, output) => {
@@ -51,10 +53,11 @@ const FactoryAnalysis = ({ data }) => {
       { inputs: {}, outputs: {} }
     );
     return breakdown;
-  }, [data]);
+  }, [activeFactory]);
 
   const renderTotals = useMemo(() => {
     const renderInputs = () => {
+      if (!factoryTotals) return null;
       const rawMaterial = factoryTotals.inputs.rawMaterials?.map(rawMaterial => (
         <div key={`raw-materials-${rawMaterial.item.itemId}`}>
           {rawMaterial.item.itemName}: {truncateDecimals(rawMaterial.qty, 3)}
@@ -84,6 +87,7 @@ const FactoryAnalysis = ({ data }) => {
     };
 
     const renderOutputs = () => {
+      if (!factoryTotals) return null;
       const store = factoryTotals.outputs.store?.map(item => (
         <div key={`store-${item.item.itemId}`}>
           {item.item.itemName}: {truncateDecimals(item.qty, 3)}

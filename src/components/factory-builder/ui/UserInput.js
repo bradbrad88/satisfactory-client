@@ -1,13 +1,11 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useContext } from "react";
 import Category from "components/elements/fields/Category";
-import NumberInput from "components/elements/fields/NumberInput";
 import { ADD_NEW_ITEM } from "reducers/buildingStepsReducer";
+import { FactoryManagerContext } from "contexts/FactoryManagerContext";
 
-const UserInput = ({ items, data, dispatch }) => {
+const UserInput = () => {
+  const { items, dispatch } = useContext(FactoryManagerContext);
   const [item, setInitialItem] = useState(null);
-  const [qty, setQty] = useState(0);
-
-  // const { handleQuantity, handleItem, handleAddOutput } = functions;
 
   const itemOptions = useMemo(() => {
     if (!items) return [];
@@ -21,10 +19,6 @@ const UserInput = ({ items, data, dispatch }) => {
     return itemOptions;
   }, [items]);
 
-  const handleQuantity = e => {
-    setQty(e.target.value);
-  };
-
   const handleItem = e => {
     const newItem = items.find(
       item => parseInt(item.itemId) === parseInt(e.target.value)
@@ -33,7 +27,6 @@ const UserInput = ({ items, data, dispatch }) => {
   };
 
   const handleAddNewItem = () => {
-    // const output = { type: "store", qty, item };
     const action = {
       type: ADD_NEW_ITEM,
       payload: {
@@ -57,14 +50,6 @@ const UserInput = ({ items, data, dispatch }) => {
         onChange={handleItem}
         style={style()}
       />
-      {/* <NumberInput
-        className={"field"}
-        label={"Quantity"}
-        placeholder={"Items/min..."}
-        handleInputChange={handleQuantity}
-        value={qty}
-        style={style()}
-      /> */}
       <div className="field">
         <button style={{ width: "10rem" }} onClick={handleAddNewItem}>
           Add New Item

@@ -66,11 +66,6 @@ const Output = ({ outputData, dispatch }) => {
         draggable
         onDragStart={onDragStart}
       >
-        <p>
-          {outputData.byProduct
-            ? outputData.item.itemName
-            : outputData.input.buildingStep.item.itemName}
-        </p>
         <input
           ref={ref}
           type={"number"}
@@ -82,6 +77,7 @@ const Output = ({ outputData, dispatch }) => {
         <p style={{ display: active ? "none" : "block" }}>
           {truncateDecimals(qty, 3)}
         </p>
+        <p>Going to {outputData.input.buildingStep.item.itemName}</p>
         {/* <p>{active ? "active" : "not active"}</p> */}
       </div>
     </OutsideAlerter>

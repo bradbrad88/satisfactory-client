@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import FactoryLayout from "./FactoryLayout";
+import FactoryLocations from "./FactoryLocations";
 import {
   ADD_NEW_ITEM,
   BYPRODUCT_DROPPED_ON_MAP,
@@ -10,16 +12,24 @@ import RecipeSelector from "./RecipeSelector";
 
 // import BuildingStep from "./BuildingStep";
 
-const Map = ({ data, recipes, dispatch }) => {
+const Map = ({
+  data,
+  factories,
+  activeFactory,
+  setActiveFactory,
+  recipes,
+  dispatch,
+  mapState,
+}) => {
   // Item that appears when dragging an input indicating new step to be created
-  const [tempItem, setTempItem] = useState(null);
+
   // The temp item's intended position
-  const [tempPosition, setTempPosition] = useState(0);
+  // const [tempPosition, setTempPosition] = useState(0);
   // Used in by-product drag&drop to display available recipes to build from by-product
-  const [upstreamRecipeSelector, setUpstreamRecipeSelector] = useState(null);
+  // const [upstreamRecipeSelector, setUpstreamRecipeSelector] = useState(null);
   // const byProductRef = useRef();
   // TODO - highlight related inputs/outputs based on the active items
-  const [activeItem] = useState(null);
+  // const [activeItem] = useState(null);
   // Related to moving the map
   const [dragging, setDragging] = useState(false);
   const [initialMouse, setInitialMouse] = useState({});
@@ -54,58 +64,54 @@ const Map = ({ data, recipes, dispatch }) => {
     [initialMouse, dragging]
   );
 
-  const onInputDrag = (input, buildingStep) => {
-    // console.log("input drag", input, buildingStep);
-  };
+  // const updateDomPosition = useCallback(ref => {
+  //   console.log("ref", ref.getBoundingClientRect());
+  // }, []);
 
-  const updateDomPosition = useCallback(ref => {
-    console.log("ref", ref.getBoundingClientRect());
-  }, []);
+  // const setTempNull = () => {
+  //   setTempItem(null);
+  // };
 
-  const setTempNull = () => {
-    setTempItem(null);
-  };
+  // const handleActiveItem = () => {};
 
-  const handleActiveItem = () => {};
+  // const buildingRows = useMemo(() => {
+  //   if (!data) return null;
+  //   const buildingRows = data.reduce((total, buildingStep) => {
+  //     const arr = total[buildingStep.ver] || [];
+  //     arr.push(buildingStep);
+  //     total[buildingStep.ver] = arr;
+  //     return total;
+  //   }, {});
+  //   Object.keys(buildingRows).forEach(key => {
+  //     buildingRows[key].sort((a, b) => a.hor - b.hor);
+  //   });
 
-  const buildingRows = useMemo(() => {
-    if (!data) return null;
-    const buildingRows = data.reduce((total, buildingStep) => {
-      const arr = total[buildingStep.ver] || [];
-      arr.push(buildingStep);
-      total[buildingStep.ver] = arr;
-      return total;
-    }, {});
-    Object.keys(buildingRows).forEach(key => {
-      buildingRows[key].sort((a, b) => a.hor - b.hor);
-    });
-
-    const renderBuildingRows = Object.keys(buildingRows).map(key => (
-      <BuildingRow
-        data={buildingRows[key]}
-        recipes={recipes}
-        key={key}
-        dispatch={dispatch}
-        inputDrag={onInputDrag}
-        updateDomPosition={updateDomPosition}
-        tempStep={tempItem?.row === parseInt(key) ? tempItem : null}
-        setTempPosition={i => setTempPosition(i)}
-        setTempNull={setTempNull}
-        activeItem={activeItem}
-        setActiveItem={handleActiveItem}
-      />
-    ));
-    if (tempItem && !buildingRows[tempItem.row]) {
-      renderBuildingRows.push(
-        <BuildingRow
-          tempStep={tempItem}
-          data={[]}
-          setTempPosition={i => setTempPosition(i)}
-        />
-      );
-    }
-    return renderBuildingRows;
-  }, [data, dispatch, tempItem, updateDomPosition, activeItem, recipes]);
+  //   const renderBuildingRows = Object.keys(buildingRows).map(key => (
+  //     <BuildingRow
+  //       data={buildingRows[key]}
+  //       recipes={recipes}
+  //       key={key}
+  //       dispatch={dispatch}
+  //       inputDrag={onInputDrag}
+  //       updateDomPosition={updateDomPosition}
+  //       tempStep={tempItem?.row === parseInt(key) ? tempItem : null}
+  //       setTempPosition={i => setTempPosition(i)}
+  //       setTempNull={setTempNull}
+  //       activeItem={activeItem}
+  //       setActiveItem={handleActiveItem}
+  //     />
+  //   ));
+  //   if (tempItem && !buildingRows[tempItem.row]) {
+  //     renderBuildingRows.push(
+  //       <BuildingRow
+  //         tempStep={tempItem}
+  //         data={[]}
+  //         setTempPosition={i => setTempPosition(i)}
+  //       />
+  //     );
+  //   }
+  //   return renderBuildingRows;
+  // }, [data, dispatch, tempItem, updateDomPosition, activeItem, recipes]);
 
   useEffect(() => {
     window.addEventListener("mouseup", onMouseUp);
@@ -116,8 +122,8 @@ const Map = ({ data, recipes, dispatch }) => {
     };
   }, [onMouseUp, onMouseMove]);
 
-  if (typeof data !== "object") return null;
-  if (data.length < 1) return null;
+  // if (typeof data !== "object") return null;
+  // if (data.length < 1) return null;
 
   const preventScroll = () => {
     window.addEventListener("scroll", preventScrollListener);
@@ -142,96 +148,80 @@ const Map = ({ data, recipes, dispatch }) => {
     }
   };
 
-  const onDragOver = e => {
-    e.preventDefault();
-    // console.log("e", e);
-    try {
-      const dragData = e.dataTransfer.getData("text/plain");
-      const item = JSON.parse(dragData);
-      if (item.fromInput)
-        setTempItem({ ...item, position: { x: e.clientX, y: e.clientY } });
-    } catch (error) {
-      setTempItem(null);
-    }
-  };
+  // const onDragOver = e => {
+  //   e.preventDefault();
+  //   // console.log("e", e);
+  //   try {
+  //     const dragData = e.dataTransfer.getData("text/plain");
+  //     const item = JSON.parse(dragData);
+  //     if (item.fromInput)
+  //       setTempItem({ ...item, position: { x: e.clientX, y: e.clientY } });
+  //   } catch (error) {
+  //     setTempItem(null);
+  //   }
+  // };
 
-  const onDragLeave = e => {
-    // setTempItem(null);
-  };
+  // const onDragLeave = e => {
+  //   // setTempItem(null);
+  // };
 
-  const onDrop = e => {
-    e.preventDefault();
-    try {
-      const dragData = e.dataTransfer.getData("text/plain");
-      const parsedData = JSON.parse(dragData);
-      if (parsedData.fromInput) {
-        e.stopPropagation();
-        handleInputDrop(parsedData);
-      }
-      if (parsedData.fromByProduct) {
-        const { clientX, clientY } = e;
-        const { offsetLeft, offsetTop } = e.target;
-        handleByProductDrop(parsedData, {
-          x: clientX - offsetLeft,
-          y: clientY - offsetTop,
-        });
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  // const onDrop = e => {
+  //   e.preventDefault();
+  //   try {
+  //     const dragData = e.dataTransfer.getData("text/plain");
+  //     const parsedData = JSON.parse(dragData);
+  //     if (parsedData.fromInput) {
+  //       e.stopPropagation();
+  //       handleInputDrop(parsedData);
+  //     }
+  //     if (parsedData.fromByProduct) {
+  //       const { clientX, clientY } = e;
+  //       const { offsetLeft, offsetTop } = e.target;
+  //       handleByProductDrop(parsedData, {
+  //         x: clientX - offsetLeft,
+  //         y: clientY - offsetTop,
+  //       });
+  //     }
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+  // };
 
-  const handleInputDrop = inputData => {
-    // const buildingStep = data.find(
-    //   buildingStep => buildingStep.id === inputData.buildingStepId
-    // );
-    // const { item } = buildingStep.inputs.find(
-    //   input => input.id === inputData.inputId
-    // );
-    console.log("!!!!", inputData);
-    const type = INPUT_DROPPED_ON_MAP;
-    // const output = {
-    //   item,
-    //   qty: inputData.qty,
-    //   id: inputData.inputId,
-    //   buildingStep,
-    //   type: "step",
-    // };
-    const payload = {
-      inputData,
-      // output,
-      // options: { output, item, hor: tempPosition, imported: true },
-    };
-    dispatch({ type, payload });
-    setTempItem(null);
-  };
+  // const handleInputDrop = inputData => {
+  //   const type = INPUT_DROPPED_ON_MAP;
+  //   const payload = {
+  //     inputData,
+  //   };
+  //   dispatch({ type, payload });
+  //   setTempItem(null);
+  // };
 
-  const handleByProductDrop = (byProductData, location) => {
-    const { itemId, buildingStepId } = byProductData;
-    const relevantRecipes = recipes.filter(recipe => {
-      const recipeItems = recipe.RecipeItems.filter(recipeItem => {
-        return (
-          recipeItem.direction === "input" &&
-          recipeItem.item.itemId === parseInt(byProductData.itemId)
-        );
-      });
-      return recipeItems.length > 0;
-    });
-    console.log("by product data", byProductData);
-    // byProductRef.current = { buildingStepId, itemId };
-    setUpstreamRecipeSelector({ recipes: relevantRecipes, location, byProductData });
-  };
+  // const handleByProductDrop = (byProductData, location) => {
+  //   const { itemId, buildingStepId } = byProductData;
+  //   const relevantRecipes = recipes.filter(recipe => {
+  //     const recipeItems = recipe.RecipeItems.filter(recipeItem => {
+  //       return (
+  //         recipeItem.direction === "input" &&
+  //         recipeItem.item.itemId === parseInt(byProductData.itemId)
+  //       );
+  //     });
+  //     return recipeItems.length > 0;
+  //   });
+  //   console.log("by product data", byProductData);
+  //   // byProductRef.current = { buildingStepId, itemId };
+  //   setUpstreamRecipeSelector({ recipes: relevantRecipes, location, byProductData });
+  // };
 
-  const handleByProductUpstream = (recipe, byProduct) => {
-    // console.log("handler", things);
-    const type = BYPRODUCT_DROPPED_ON_MAP;
-    const payload = {
-      // ...byProductRef.current,
-      ...byProduct,
-      recipe,
-    };
-    dispatch({ type, payload });
-  };
+  // const handleByProductUpstream = (recipe, byProduct) => {
+  //   // console.log("handler", things);
+  //   const type = BYPRODUCT_DROPPED_ON_MAP;
+  //   const payload = {
+  //     // ...byProductRef.current,
+  //     ...byProduct,
+  //     recipe,
+  //   };
+  //   dispatch({ type, payload });
+  // };
 
   const onDragEnterScroll = direction => {
     scrollRef.current = setInterval(
@@ -292,9 +282,9 @@ const Map = ({ data, recipes, dispatch }) => {
 
   const style = () => {
     return {
-      left: "50%",
-      top: "0",
-      transform: `translate(-50%, 0) translate(${mapOffset.h}px, ${mapOffset.v}px) scale(${zoom})`,
+      // left: "50%",
+      // top: "0",
+      transform: `translate(-50%, -50%) translate(${mapOffset.h}px, ${mapOffset.v}px) scale(${zoom})`,
     };
   };
 
@@ -311,9 +301,9 @@ const Map = ({ data, recipes, dispatch }) => {
         onMouseLeave={enableScroll}
         onMouseDown={onMouseDown}
         onWheel={onWheel}
-        onDragOver={onDragOver}
-        onDragLeave={onDragLeave}
-        onDrop={onDrop}
+        // onDragOver={onDragOver}
+        // onDragLeave={onDragLeave}
+        // onDrop={onDrop}
       >
         {/* {tempItem && <div>{tempItem.itemName}</div>} */}
         <div
@@ -353,22 +343,17 @@ const Map = ({ data, recipes, dispatch }) => {
         >
           {centreIcon(36)}
         </div>
-        {upstreamRecipeSelector && (
-          <RecipeSelector
-            recipes={upstreamRecipeSelector.recipes}
-            forwardingData={upstreamRecipeSelector.byProductData}
-            location={upstreamRecipeSelector.location}
-            selectionHandler={handleByProductUpstream}
-            close={() => setUpstreamRecipeSelector(null)}
-          />
-        )}
-        <div
-          className={"grid"}
-          style={style()}
-
-          // onMouseUp={onMouseUp}
-        >
-          {buildingRows}
+        <div className={"map-content"} style={style()}>
+          {mapState === "build" && (
+            <FactoryLayout data={data} recipes={recipes} dispatch={dispatch} />
+          )}
+          {mapState === "locate" && (
+            <FactoryLocations
+              factories={factories}
+              activeFactory={activeFactory}
+              setActiveFactory={setActiveFactory}
+            />
+          )}
         </div>
       </div>
     </>

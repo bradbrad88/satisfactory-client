@@ -12,23 +12,47 @@
 
 .map,
 .ui {
-  border: 1px solid white;
-  border-radius: 0.5rem;
+  border: 2px solid white;
+  border-radius: 0.3rem;
   /* padding: 1rem; */
   /* overflow: hidden; */
-  height: 80vh;
-  margin: 2rem 1rem;
+  height: 83vh;
+  margin: 4rem 1rem 1rem;
   position: relative;
 }
 
+.map-content {
+  position: relative;
+  left: 50%;
+  top: 50%;
+  transform-origin: center center;
+  /* background-color: rgba(133, 43, 43, 0.116); */
+  width: fit-content;
+  height: fit-content;
+}
+
+.factory-layout {
+  background-color: rgba(0, 0, 0, 0.178);
+  padding: 50rem 100rem;
+  border: dashed rgba(255, 255, 255, 0.199) 2px;
+}
+
 .ui {
-  display: inline-block;
+  display: flex;
+  flex-direction: column;
   min-width: fit-content;
-  overflow-y: auto;
+  /* overflow-y: auto;
+   */
+  overflow: hidden;
 }
 
 .ui-component {
+  /* position: relative; */
   padding: 1rem;
+  /* bottom: 0; */
+  /* top: 0; */
+  overflow-y: auto;
+  flex-basis: 1;
 }
 
 .map {
@@ -43,14 +67,11 @@
 
 .ui-switches {
   display: flex;
+  flex-shrink: 0;
   flex-direction: row;
   position: relative;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3rem;
-  /* justify-content: space-around; */
-  /* flex-grow: 1; */
+  height: 3.5rem;
+  background-color: rgb(39, 39, 39);
 }
 
 .ui-switch {
@@ -77,16 +98,13 @@
 
 .ui-switch:hover {
   background-color: rgba(255, 255, 255, 0.212);
-  /* box-shadow: 0 0 5px rgba(255, 255, 255, 0.705); */
 }
 
 .grid {
   position: relative;
   display: grid;
   transform-origin: center top;
-  /* background-color: thistle; */
   width: fit-content;
-  /* transition: 0.2s; */
 }
 
 .cell {
@@ -228,7 +246,6 @@ button.new-step:hover .icon.new-step {
 }
 
 .item-output.by-product {
-  /* border-color: rgb(243, 171, 16); */
 }
 
 .item-output.by-product.left-over {
@@ -410,12 +427,128 @@ button.new-step:hover .icon.new-step {
 .recipe-selector > button:hover {
   background-color: var(--accent-color);
 }
-/* .alt-outputs > input:read-only {
-  background-color: rgba(255, 255, 255, 0.123);
-  width: min-content;
-  border: 1px solid white;
-  outline: none;
+
+.factories {
+  display: flex;
+  flex-direction: column;
+  /* justify-content: space-between; */
+  /* gap: 0.3rem; */
+}
+
+.factories > button {
   cursor: pointer;
-  padding: 0.5rem;
+  background-color: rgba(255, 255, 255, 0.158);
+  margin: 0.4rem;
+  box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.178);
+  padding: 1rem 1rem;
+  border: none;
+  font-size: 2rem;
+  font-family: inherit;
+  font-weight: bold;
   color: white;
-} */
+  border-radius: 0.3rem;
+  transition: 0.2s;
+}
+
+.factories > button:hover {
+  color: var(--accent-color);
+  background-color: rgba(255, 255, 255, 0.74);
+}
+
+.factories__list-item {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  cursor: pointer;
+  background-color: rgba(255, 255, 255, 0.041);
+  margin: 0.4rem;
+  box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.178);
+  padding: 0 1rem;
+  border-radius: 0.3rem;
+  height: 3.5rem;
+  transition: 0.2s;
+  /* align-content: center; */
+  /* gap: 0.3rem; */
+}
+
+.factories__list-item:hover {
+  background-color: rgba(255, 255, 255, 0.103);
+}
+
+.factories__list-item > h2 {
+  display: inline-block;
+  user-select: none;
+  align-self: center;
+}
+
+.factories > button > .icon {
+  margin: 0 1rem;
+  fill: white;
+}
+
+.factories > button:hover > .icon {
+  fill: var(--accent-color);
+}
+
+.factories__list-item > button {
+  position: relative;
+  background: none;
+  outline: none;
+  border: none;
+  cursor: pointer;
+}
+
+.factories__list-item > input {
+  font-family: inherit;
+  font-size: 1.4rem;
+  font-weight: bold;
+  height: max-content;
+  align-self: center;
+  background: none;
+  border: none;
+  outline: none;
+  border-bottom: white 2px solid;
+  padding: 0.3rem;
+  max-width: 0;
+  min-width: fit-content;
+  color: white;
+}
+.factories__list-item > input::selection {
+  padding: 0.4rem;
+  color: white;
+  background-color: rgba(0, 0, 0, 0.308);
+}
+
+.factories__list-item > button > .icon.edit {
+  fill: white;
+}
+
+.factories__list-item > button:hover > .icon.edit {
+  fill: var(--accent-color);
+}
+
+.factories__list-item.active {
+  background-color: var(--accent-color);
+}
+
+.factory-locations {
+  position: relative;
+}
+
+.factory-locations > img {
+}
+
+.map-label {
+  position: absolute;
+  padding: 0.5rem 1rem;
+  background-color: rgb(65, 65, 65);
+  border: rgb(221, 221, 221) 2px solid;
+  user-select: none;
+  cursor: pointer;
+  z-index: auto;
+}
+
+.map-label.active {
+  background-color: var(--accent-color);
+  z-index: 2;
+}

@@ -26,7 +26,7 @@ const Input = ({ inputData, inputDrag, setTempNull, dispatch }) => {
 
   const onMouseDown = e => {
     e.stopPropagation();
-    inputDrag(inputData, buildingStep);
+    // inputDrag(inputData, buildingStep);
   };
 
   const onMouseUp = () => {};

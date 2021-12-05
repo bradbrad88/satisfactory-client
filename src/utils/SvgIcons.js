@@ -30,13 +30,18 @@ export const building = (size = 24) => (
   <svg
     className={"icon building"}
     xmlns="http://www.w3.org/2000/svg"
+    enable-background="new 0 0 24 24"
     height={`${size}px`}
     viewBox="0 0 24 24"
     width={`${size}px`}
     fill="#000000"
   >
-    <path d="M0 0h24v24H0V0z" fill="none" />
-    <path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z" />
+    <g>
+      <rect fill="none" height="24" width="24" />
+    </g>
+    <g>
+      <path d="M22,22H2V10l7-3v2l5-2l0,3h3l1-8h3l1,8V22z M12,9.95l-5,2V10l-3,1.32V20h16v-8h-8L12,9.95z M11,18h2v-4h-2V18z M7,18h2v-4 H7V18z M17,14h-2v4h2V14z" />
+    </g>
   </svg>
 );
 
@@ -129,5 +134,19 @@ export const centreMap = (size = 24) => (
   >
     <path d="M0 0h24v24H0z" fill="none" />
     <path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm-7 7H3v4c0 1.1.9 2 2 2h4v-2H5v-4zM5 5h4V3H5c-1.1 0-2 .9-2 2v4h2V5zm14-2h-4v2h4v4h2V5c0-1.1-.9-2-2-2zm0 16h-4v2h4c1.1 0 2-.9 2-2v-4h-2v4z" />
+  </svg>
+);
+
+export const edit = (size = 24) => (
+  <svg
+    className={"icon edit"}
+    xmlns="http://www.w3.org/2000/svg"
+    height={`${size}px`}
+    viewBox="0 0 24 24"
+    width={`${size}px`}
+    fill="#000000"
+  >
+    <path d="M0 0h24v24H0V0z" fill="none" />
+    <path d="M14.06 9.02l.92.92L5.92 19H5v-.92l9.06-9.06M17.66 3c-.25 0-.51.1-.7.29l-1.83 1.83 3.75 3.75 1.83-1.83c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.2-.2-.45-.29-.71-.29zm-3.6 3.19L3 17.25V21h3.75L17.81 9.94l-3.75-3.75z" />
   </svg>
 );

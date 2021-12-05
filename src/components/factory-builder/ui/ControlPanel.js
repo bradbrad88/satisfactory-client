@@ -7,17 +7,37 @@ const USER_INPUT = "USER_INPUT";
 const ANALYSIS = "ANALYSIS";
 const FACTORIES = "FACTORIES";
 
-const ControlPanel = ({ items, data, dispatch }) => {
+const ControlPanel = ({
+  factories,
+  activeFactory,
+  setActiveFactory,
+  // addNewFactory,
+  items,
+  data,
+  dispatch,
+  setMapState,
+}) => {
   const [tab, setTab] = useState(USER_INPUT);
 
   const componentSelector = () => {
     switch (tab) {
       case USER_INPUT:
+        setMapState("build");
         return <UserInput items={items} data={data} dispatch={dispatch} />;
       case ANALYSIS:
+        setMapState("build");
         return <FactoryAnalysis data={data} />;
       case FACTORIES:
-        return <Factories />;
+        setMapState("locate");
+        return (
+          <Factories
+            factories={factories}
+            dispatch={dispatch}
+            activeFactory={activeFactory}
+            setActiveFactory={setActiveFactory}
+            // addNewFactory={addNewFactory}
+          />
+        );
 
       default:
         return null;

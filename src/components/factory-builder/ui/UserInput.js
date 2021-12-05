@@ -51,20 +51,20 @@ const UserInput = ({ items, data, dispatch }) => {
     <div className={"ui-component"}>
       <Category
         className={"field"}
-        label={"Select an item"}
+        label={"Select Item"}
         options={itemOptions}
         value={item?.itemId}
         onChange={handleItem}
         style={style()}
       />
-      <NumberInput
+      {/* <NumberInput
         className={"field"}
         label={"Quantity"}
         placeholder={"Items/min..."}
         handleInputChange={handleQuantity}
         value={qty}
         style={style()}
-      />
+      /> */}
       <div className="field">
         <button style={{ width: "10rem" }} onClick={handleAddNewItem}>
           Add New Item

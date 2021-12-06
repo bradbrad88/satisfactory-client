@@ -7,8 +7,8 @@ import {
 } from "reducers/buildingStepsReducer";
 import { FactoryManagerContext } from "contexts/FactoryManagerContext";
 
-const FactoryLayout = ({ data, recipes, dispatch }) => {
-  const { activeFactory } = useContext(FactoryManagerContext);
+const FactoryLayout = () => {
+  const { activeFactory, recipes, dispatch } = useContext(FactoryManagerContext);
   const [tempItem, setTempItem] = useState(null);
   const [tempPosition, setTempPosition] = useState(0);
   const [upstreamRecipeSelector, setUpstreamRecipeSelector] = useState(null);
@@ -20,12 +20,15 @@ const FactoryLayout = ({ data, recipes, dispatch }) => {
 
   const buildingRows = useMemo(() => {
     if (!activeFactory) return null;
-    const buildingRows = activeFactory.reduce((total, buildingStep) => {
-      const arr = total[buildingStep.ver] || [];
-      arr.push(buildingStep);
-      total[buildingStep.ver] = arr;
-      return total;
-    }, {});
+    const buildingRows = activeFactory.buildingSteps.reduce(
+      (total, buildingStep) => {
+        const arr = total[buildingStep.ver] || [];
+        arr.push(buildingStep);
+        total[buildingStep.ver] = arr;
+        return total;
+      },
+      {}
+    );
     Object.keys(buildingRows).forEach(key => {
       buildingRows[key].sort((a, b) => a.hor - b.hor);
     });

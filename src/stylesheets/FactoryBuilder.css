@@ -536,16 +536,19 @@ button.new-step:hover .icon.new-step {
 }
 
 .factory-locations > img {
+  box-sizing: border-box;
 }
 
 .map-label {
   position: absolute;
+  box-sizing: border-box;
   padding: 0.5rem 1rem;
   background-color: rgb(65, 65, 65);
   border: rgb(221, 221, 221) 2px solid;
   user-select: none;
   cursor: pointer;
   z-index: auto;
+  transition: 0.02s;
 }
 
 .map-label.active {

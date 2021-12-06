@@ -4,7 +4,7 @@ import SearchProvider from "contexts/SearchContext";
 import Header from "./system/Header";
 import Admin from "./admin/Admin";
 import "../stylesheets/Main.css";
-import FactoryBuilder from "./factory-builder/FactoryBuilder";
+import UiController from "./factory-builder/UiController";
 import FactoryManagerProvider from "contexts/FactoryManagerContext";
 
 const App = () => {
@@ -14,7 +14,7 @@ const App = () => {
         <Header />
         <Route path={"/admin"} component={Admin} />
         <FactoryManagerProvider>
-          <Route path={"/"} exact component={FactoryBuilder} />
+          <Route path={"/"} exact component={UiController} />
         </FactoryManagerProvider>
       </Router>
     </SearchProvider>

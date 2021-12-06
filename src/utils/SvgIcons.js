@@ -30,7 +30,7 @@ export const building = (size = 24) => (
   <svg
     className={"icon building"}
     xmlns="http://www.w3.org/2000/svg"
-    enable-background="new 0 0 24 24"
+    enableBackground="new 0 0 24 24"
     height={`${size}px`}
     viewBox="0 0 24 24"
     width={`${size}px`}

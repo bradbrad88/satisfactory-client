@@ -1,12 +1,14 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useContext } from "react";
 import BuildingRow from "./BuildingRow";
 import RecipeSelector from "./RecipeSelector";
 import {
   INPUT_DROPPED_ON_MAP,
   BYPRODUCT_DROPPED_ON_MAP,
 } from "reducers/buildingStepsReducer";
+import { FactoryManagerContext } from "contexts/FactoryManagerContext";
 
 const FactoryLayout = ({ data, recipes, dispatch }) => {
+  const { activeFactory } = useContext(FactoryManagerContext);
   const [tempItem, setTempItem] = useState(null);
   const [tempPosition, setTempPosition] = useState(0);
   const [upstreamRecipeSelector, setUpstreamRecipeSelector] = useState(null);
@@ -17,8 +19,8 @@ const FactoryLayout = ({ data, recipes, dispatch }) => {
   };
 
   const buildingRows = useMemo(() => {
-    if (!data) return null;
-    const buildingRows = data.reduce((total, buildingStep) => {
+    if (!activeFactory) return null;
+    const buildingRows = activeFactory.reduce((total, buildingStep) => {
       const arr = total[buildingStep.ver] || [];
       arr.push(buildingStep);
       total[buildingStep.ver] = arr;
@@ -34,13 +36,9 @@ const FactoryLayout = ({ data, recipes, dispatch }) => {
         recipes={recipes}
         key={key}
         dispatch={dispatch}
-        // inputDrag={onInputDrag}
-        // updateDomPosition={updateDomPosition}
         tempStep={tempItem?.row === parseInt(key) ? tempItem : null}
         setTempPosition={i => setTempPosition(i)}
         setTempNull={setTempNull}
-        // activeItem={activeItem}
-        // setActiveItem={handleActiveItem}
       />
     ));
     if (tempItem && !buildingRows[tempItem.row]) {
@@ -53,7 +51,7 @@ const FactoryLayout = ({ data, recipes, dispatch }) => {
       );
     }
     return renderBuildingRows;
-  }, [data, dispatch, tempItem, recipes]);
+  }, [activeFactory, dispatch, tempItem, recipes]);
 
   const onDragOver = e => {
     e.preventDefault();

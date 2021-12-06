@@ -8,16 +8,16 @@ const FactoryLocations = () => {
   const ref = useRef();
   const renderLocations = () => {
     if (!ref.current) return null;
-    const { height, width } = ref.current?.getBoundingClientRect();
+    const rect = ref.current?.getBoundingClientRect();
     return factories.map(factory => (
-      <MapLabel item={factory} mapDimensions={{ height, width }} />
+      <MapLabel item={factory} rect={rect} key={factory.id} />
     ));
   };
 
   return (
     <div ref={ref} className={"factory-locations"}>
       {renderLocations()}
-      <img src={map} draggable={false} />
+      <img src={map} draggable={false} alt={"game map"} />
     </div>
   );
 };

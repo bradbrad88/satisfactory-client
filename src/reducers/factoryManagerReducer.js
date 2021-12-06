@@ -2,6 +2,8 @@ import { v4 as uuidv4 } from "uuid";
 
 export const ADD_NEW_FACTORY = "ADD_NEW_FACTORY";
 export const SET_FACTORY_NAME = "SET_FACTORY_NAME";
+export const SET_FACTORY_LOCATION = "SET_FACTORY_LOCATION";
+
 const _getFactoryById = (state, factoryId) => {
   const factory = state.find(({ id }) => id === factoryId);
   if (!factory) return null;
@@ -10,7 +12,6 @@ const _getFactoryById = (state, factoryId) => {
 
 const addNewFactory = state => {
   const updatedState = [...state];
-  console.log("updated state beginning", [...updatedState]);
   const newFactory = {
     id: uuidv4(),
     factoryName: "New Factory",
@@ -18,7 +19,6 @@ const addNewFactory = state => {
     buildingSteps: [],
   };
   updatedState.push(newFactory);
-  console.log("updated state end", [...updatedState]);
   return updatedState;
 };
 
@@ -30,6 +30,14 @@ const setFactoryName = (state, payload) => {
   return updatedState;
 };
 
+const setFactoryLocation = (state, payload) => {
+  let updatedState = [...state];
+  const { factoryId, location } = payload;
+  const factory = _getFactoryById(updatedState, factoryId);
+  factory.location = location;
+  return updatedState;
+};
+
 const reducer = (state, action) => {
   const { type, payload } = action;
   switch (type) {
@@ -37,6 +45,8 @@ const reducer = (state, action) => {
       return setFactoryName(state, payload);
     case ADD_NEW_FACTORY:
       return addNewFactory(state);
+    case SET_FACTORY_LOCATION:
+      return setFactoryLocation(state, payload);
     default:
       return state;
   }

@@ -30,11 +30,17 @@ const FactoryManagerProvider = ({ children }) => {
     return factories.find(({ id }) => id === activeFactoryId);
   };
 
+  const handleDispatch = ({ type, payload = {} }) => {
+    const payloadWithActiveFactory = { ...payload };
+    payloadWithActiveFactory.factoryId = activeFactoryId;
+    dispatch({ type, payload: payloadWithActiveFactory });
+  };
+
   return (
     <FactoryManagerContext.Provider
       value={{
         factories,
-        dispatch,
+        dispatch: handleDispatch,
         activeFactory: activeFactory(),
         setActiveFactory: setActiveFactoryId,
         items,

@@ -1,4 +1,4 @@
-import React, { useState, useLayoutEffect, useRef } from "react";
+import React, { useState, useLayoutEffect, useRef, useContext } from "react";
 import Category from "components/elements/fields/Category";
 import InputEditor from "./InputEditor";
 import truncateDecimals from "utils/truncateDecimals";
@@ -14,16 +14,18 @@ import {
   SET_IMPORTED,
   SET_RECIPE,
   INPUT_DROPPED_ON_BUILDINGSTEP,
-} from "reducers/buildingStepsReducer";
+} from "reducers/factoryManagerReducer";
+import { FactoryManagerContext } from "contexts/FactoryManagerContext";
 
 const BuildingStep = ({
   data,
-  recipes,
-  dispatch,
+  // recipes,
+  // dispatch,
   updateDomPosition,
   inputDrag,
   setTempNull,
 }) => {
+  const { dispatch, recipes } = useContext(FactoryManagerContext);
   const [recipeSelector, setRecipeSelector] = useState(null);
   // const [showAutoBuild] = useState(true);
   const [highlight, setHightlight] = useState(false);

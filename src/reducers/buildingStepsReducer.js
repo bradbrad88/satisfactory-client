@@ -514,8 +514,8 @@ const _calcPosition = updatedState => {
   return updatedState;
 };
 
-const addNewItem = (state, options) => {
-  let updatedState = [...state];
+export const addNewItem = (buildingSteps, options) => {
+  let updatedState = [...buildingSteps];
   const newBuildingStep = _newBuildingStep(options);
   updatedState = [...updatedState, newBuildingStep];
   updatedState = _removeBuildingStepsWithNoIO(updatedState);
@@ -523,8 +523,8 @@ const addNewItem = (state, options) => {
   return updatedState;
 };
 
-const addNewOutput = (state, buildingStep, input) => {
-  let updatedState = [...state];
+export const addNewOutput = (buildingSteps, buildingStep, input) => {
+  let updatedState = [...buildingSteps];
   // BuildingStep refers to the targeted step to create a new output on
   // Input belongs to the parent buildingStep
   const parentBuildingStep = updatedState.find(bs =>
@@ -542,13 +542,9 @@ const addNewOutput = (state, buildingStep, input) => {
   return updatedState;
 };
 
-const addItemUpstream = (state, buildingStep, recipe) => {
-  let updatedState = [...state];
+export const addItemUpstream = (buildingSteps, buildingStep, recipe) => {
+  let updatedState = [...buildingSteps];
   const item = _findDefaultItem(recipe);
-  console.log("state", state);
-  console.log("buildingStep", buildingStep);
-  console.log("recipe", recipe);
-  console.log("item", item);
   const options = {
     imported: false,
     recipe: recipe,
@@ -578,8 +574,8 @@ const _getByProductUpstreamQty = () => {
 };
 
 // TODO
-const byProductDroppedOnMap = (state, payload) => {
-  let updatedState = [...state];
+export const byProductDroppedOnMap = (buildingSteps, payload) => {
+  let updatedState = [...buildingSteps];
   const { recipe, itemId, byProductId } = payload;
   // const buildingStep = _getBuildingStep(updatedState, buildingStepId);
   const byProduct = _getOutputFromStateById(updatedState, byProductId);
@@ -601,17 +597,17 @@ const byProductDroppedOnMap = (state, payload) => {
 };
 
 // TODO
-const byProductDroppedOnInput = (state, payload) => {
-  let updatedState = [...state];
+export const byProductDroppedOnInput = (buildingSteps, payload) => {
+  let updatedState = [...buildingSteps];
   const { byProductId, input } = payload;
-  const byProduct = _getOutputFromStateById(state, byProductId);
+  const byProduct = _getOutputFromStateById(updatedState, byProductId);
   _linkInputOutput(input, byProduct);
 
   return updatedState;
 };
 
-const setAltOutput = (state, output, buildingStep) => {
-  let updatedState = [...state];
+export const setAltOutput = (buildingSteps, output, buildingStep) => {
+  let updatedState = [...buildingSteps];
   const { type, qty } = output;
   const existingOutput = buildingStep.outputs.find(output => output.type === type);
 
@@ -630,22 +626,26 @@ const setAltOutput = (state, output, buildingStep) => {
   return updatedState;
 };
 
-const setOutputQty = (state, output, qty) => {
-  let updatedState = [...state];
+export const setOutputQty = (buildingSteps, output, qty) => {
+  let updatedState = [...buildingSteps];
   _editOutput(output, qty, true);
   output.locked = true;
   updatedState = _removeBuildingStepsWithNoIO(updatedState);
   return updatedState;
 };
 
-const inputDroppedOnBuildingStep = (state, buildingStep, inputData) => {
+export const inputDroppedOnBuildingStep = (
+  buildingSteps,
+  buildingStep,
+  inputData
+) => {
   // Update a child buildingStep with a new or adjusted output to correctly supply the parent input with correct amount of materials
 
   // Qty should never go below zero
 
   // If input has a surplus and there is already a connection then the buildingStep should reduce its qty to match
 
-  let updatedState = [...state];
+  let updatedState = [...buildingSteps];
   // see if connection exists already between the input and buildingStep
   const parentBuildingStep = _getBuildingStep(
     updatedState,
@@ -674,8 +674,8 @@ const inputDroppedOnBuildingStep = (state, buildingStep, inputData) => {
   return updatedState;
 };
 
-const inputDroppedOnMap = (state, inputData) => {
-  const updatedState = [...state];
+export const inputDroppedOnMap = (buildingSteps, inputData) => {
+  const updatedState = [...buildingSteps];
   const { inputId } = inputData;
   const input = _getInputFromStateById(updatedState, inputId);
   if (!input) {
@@ -702,8 +702,8 @@ const inputDroppedOnMap = (state, inputData) => {
   return updatedState;
 };
 
-const setImported = (state, buildingStep, toggle) => {
-  let updatedState = [...state];
+export const setImported = (buildingSteps, buildingStep, toggle) => {
+  let updatedState = [...buildingSteps];
   buildingStep.imported = toggle;
   if (buildingStep.recipes.length > 0) {
     const recipe = toggle ? null : buildingStep.recipes[0];
@@ -716,8 +716,8 @@ const setImported = (state, buildingStep, toggle) => {
   return updatedState;
 };
 
-const setRecipe = (state, buildingStep, options) => {
-  let updatedState = [...state];
+export const setRecipe = (buildingSteps, buildingStep, options) => {
+  let updatedState = [...buildingSteps];
   if (buildingStep.recipes < 1) {
     // TODO - No recipes available - ignore step??? - what are the follow-ons from here
     return;
@@ -735,8 +735,8 @@ const setRecipe = (state, buildingStep, options) => {
   return updatedState;
 };
 
-const autoBuildLayer = (state, buildingStep) => {
-  let updatedState = [...state];
+export const autoBuildLayer = (buildingSteps, buildingStep) => {
+  let updatedState = [...buildingSteps];
   // Check for inputs length
   if (buildingStep.inputs.length < 1) return;
   // Loop through each input
@@ -782,38 +782,38 @@ const autoBuildLayer = (state, buildingStep) => {
   return updatedState;
 };
 
-const reducer = (state, action) => {
-  const { type, payload } = action;
-  const { buildingStep, output, recipe, toggle, options, qty, inputData } = payload;
-  switch (type) {
-    case ADD_NEW_ITEM:
-      return addNewItem(state, options);
-    case ADD_ITEM_UPSTREAM:
-      return addItemUpstream(state, buildingStep, recipe);
-    case ADD_NEW_OUTPUT:
-      return state;
-    case SET_ALT_OUTPUT:
-      return setAltOutput(state, output, buildingStep);
-    case SET_OUTPUT_QTY:
-      return setOutputQty(state, output, qty);
-    case INPUT_DROPPED_ON_BUILDINGSTEP:
-      return inputDroppedOnBuildingStep(state, buildingStep, inputData);
-    case INPUT_DROPPED_ON_MAP:
-      return inputDroppedOnMap(state, inputData);
-    case BYPRODUCT_DROPPED_ON_MAP:
-      return byProductDroppedOnMap(state, payload);
-    case BYPRODUCT_DROPPED_ON_INPUT:
-      return byProductDroppedOnInput(state, payload);
-    case SET_IMPORTED:
-      return setImported(state, buildingStep, toggle);
-    case SET_RECIPE:
-      return setRecipe(state, buildingStep, options);
-    case AUTO_BUILD_LAYER:
-      return autoBuildLayer(state, buildingStep);
+// const reducer = (state, action) => {
+//   const { type, payload } = action;
+//   const { buildingStep, output, recipe, toggle, options, qty, inputData } = payload;
+//   switch (type) {
+//     case ADD_NEW_ITEM:
+//       return addNewItem(state, options);
+//     case ADD_ITEM_UPSTREAM:
+//       return addItemUpstream(state, buildingStep, recipe);
+//     case ADD_NEW_OUTPUT:
+//       return state;
+//     case SET_ALT_OUTPUT:
+//       return setAltOutput(state, output, buildingStep);
+//     case SET_OUTPUT_QTY:
+//       return setOutputQty(state, output, qty);
+//     case INPUT_DROPPED_ON_BUILDINGSTEP:
+//       return inputDroppedOnBuildingStep(state, buildingStep, inputData);
+//     case INPUT_DROPPED_ON_MAP:
+//       return inputDroppedOnMap(state, inputData);
+//     case BYPRODUCT_DROPPED_ON_MAP:
+//       return byProductDroppedOnMap(state, payload);
+//     case BYPRODUCT_DROPPED_ON_INPUT:
+//       return byProductDroppedOnInput(state, payload);
+//     case SET_IMPORTED:
+//       return setImported(state, buildingStep, toggle);
+//     case SET_RECIPE:
+//       return setRecipe(state, buildingStep, options);
+//     case AUTO_BUILD_LAYER:
+//       return autoBuildLayer(state, buildingStep);
 
-    default:
-      return state;
-  }
-};
+//     default:
+//       return state;
+//   }
+// };
 
-export default reducer;
+// export default reducer;

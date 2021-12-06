@@ -32,7 +32,7 @@ const FactoryListItem = ({ factory, setActiveFactory, activeFactory }) => {
   const setNewName = () => {
     console.log("setting new name", factoryName);
     const type = SET_FACTORY_NAME;
-    const payload = { factoryId: factory.id, factoryName };
+    const payload = { factoryName };
     dispatch({ type, payload });
     setEditMode(false);
   };

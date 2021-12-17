@@ -6,12 +6,12 @@ import {
   byProductDroppedOnInput,
   byProductDroppedOnMap,
   inputDroppedOnBuildingStep,
-  inputDroppedOnMap,
+  inputDroppedOnBuildingRow,
   setAltOutput,
   setImported,
   setOutputQty,
   setRecipe,
-} from "./buildingStepsReducer";
+} from "./buildingStepsLogic";
 
 export const ADD_NEW_FACTORY = "ADD_NEW_FACTORY";
 export const SET_FACTORY_NAME = "SET_FACTORY_NAME";
@@ -25,9 +25,17 @@ export const AUTO_BUILD_LAYER = "AUTO_BUILD_LAYER";
 export const SET_OUTPUT_QTY = "SET_OUTPUT_QTY";
 export const ADD_ITEM_UPSTREAM = "ADD_ITEM_UPSTREAM";
 export const INPUT_DROPPED_ON_BUILDINGSTEP = "INPUT_DROPPED_ON_BUILDINGSTEP";
-export const INPUT_DROPPED_ON_MAP = "INPUT_DROPPED_ON_MAP";
+export const INPUT_DROPPED_ON_BUILDING_ROW = "INPUT_DROPPED_ON_MAP";
 export const BYPRODUCT_DROPPED_ON_MAP = "BYPRODUCT_DROPPED_ON_MAP";
 export const BYPRODUCT_DROPPED_ON_INPUT = "BYPRODUCT_DROPPED_ON_INPUT";
+
+const _getLayoutDependant = buildingStep => {
+  const validBuildingSteps = buildingStep.outputs.filter(
+    output => !output.byProduct && output.type === "step"
+  );
+  if (validBuildingSteps.length === 1) return validBuildingSteps[0];
+  return null;
+};
 
 const _getFactoryById = (state, factoryId) => {
   const factory = state.find(({ id }) => id === factoryId);
@@ -42,6 +50,7 @@ const addNewFactory = state => {
     factoryName: "New Factory",
     location: { x: 20, y: 50 },
     buildingSteps: [],
+    layout: {},
   };
   updatedState.push(newFactory);
   return updatedState;
@@ -63,12 +72,25 @@ const setFactoryLocation = (state, payload) => {
   return updatedState;
 };
 
+const setBuildingStepLocation = (factory, buildingStep, location) => {
+  const { layout } = factory;
+  const { row, x } = location;
+  const dependant = _getLayoutDependant(buildingStep);
+  if (!layout[row]) layout[row] = new Map();
+  const layoutMap = layout[row];
+  layoutMap.set(buildingStep, { x, dependant });
+};
+
 const addNewItemHandler = (state, payload) => {
   let updatedState = [...state];
   const { factoryId, options } = payload;
   const factory = _getFactoryById(updatedState, factoryId);
-  const updatedBuildingSteps = addNewItem(factory.buildingSteps, options);
+  const [updatedBuildingSteps, newBuildingStep] = addNewItem(
+    factory.buildingSteps,
+    options
+  );
   factory.buildingSteps = updatedBuildingSteps;
+  setBuildingStepLocation(factory, newBuildingStep, options.location);
   return updatedState;
 };
 
@@ -176,12 +198,16 @@ const inputDroppedOnBuildingStepHandler = (state, payload) => {
   return updatedState;
 };
 
-const inputDroppedOnMapHandler = (state, payload) => {
+const inputDroppedOnBuildingRowHandler = (state, payload) => {
   let updatedState = [...state];
-  const { factoryId, inputData } = payload;
+  const { factoryId, inputData, location } = payload;
   const factory = _getFactoryById(updatedState, factoryId);
-  const updatedBuildingSteps = inputDroppedOnMap(factory.buildingSteps, inputData);
+  const [updatedBuildingSteps, newBuildingStep] = inputDroppedOnBuildingRow(
+    factory.buildingSteps,
+    inputData
+  );
   factory.buildingSteps = updatedBuildingSteps;
+  setBuildingStepLocation(factory, newBuildingStep, location);
   return updatedState;
 };
 
@@ -214,8 +240,8 @@ const reducer = (state, action) => {
       return byProductDroppedOnMapHandler(state, payload);
     case INPUT_DROPPED_ON_BUILDINGSTEP:
       return inputDroppedOnBuildingStepHandler(state, payload);
-    case INPUT_DROPPED_ON_MAP:
-      return inputDroppedOnMapHandler(state, payload);
+    case INPUT_DROPPED_ON_BUILDING_ROW:
+      return inputDroppedOnBuildingRowHandler(state, payload);
     default:
       return state;
   }

@@ -1,6 +1,6 @@
 import React, { useRef, useState } from "react";
 import OutsideAlerter from "utils/OutsideAlerter";
-import { SET_OUTPUT_QTY } from "reducers/buildingStepsReducer";
+import { SET_OUTPUT_QTY } from "reducers/factoryManagerReducer";
 // import { item } from "utils/SvgIcons";
 import { useEffect } from "react/cjs/react.development";
 import conveyor from "assets/conveyor.webp";

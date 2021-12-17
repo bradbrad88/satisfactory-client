@@ -35,6 +35,10 @@
   background-color: rgba(0, 0, 0, 0.178);
   padding: 50rem 100rem;
   border: dashed rgba(255, 255, 255, 0.199) 2px;
+  position: relative;
+  display: grid;
+  transform-origin: center top;
+  width: fit-content;
 }
 
 .ui {
@@ -100,12 +104,12 @@
   background-color: rgba(255, 255, 255, 0.212);
 }
 
-.grid {
+/* .grid {
   position: relative;
   display: grid;
   transform-origin: center top;
   width: fit-content;
-}
+} */
 
 .cell {
   padding: 1rem 2rem;
@@ -140,31 +144,52 @@
   grid-row: 2;
 }
 
-.row {
-  display: flex;
-  flex-direction: row;
+.grid-row {
+  /* display: flex; */
+  /* flex-direction: row; */
   justify-content: center;
-  gap: 1rem;
-  margin: 1rem;
+  /* gap: 1rem; */
+  /* margin: 1rem;  */
+  display: inline-block;
+  position: relative;
+  min-height: 400px;
+  min-width: 1000px;
+  min-width: fit-content;
+  padding: 0 30rem;
+}
+
+.grid-row:nth-child(odd) {
+  background-color: rgba(0, 0, 0, 0.219);
 }
 
 .container.building-step {
+  position: absolute;
   display: grid;
+  display: inline-block;
   background-color: rgba(255, 255, 255, 0.151);
   width: 25rem;
-  align-self: center;
+  /* align-self: center; */
   /* padding: 1rem; */
   /* margin: 1rem; */
   border-radius: 0.3rem;
   user-select: none;
   min-width: fit-content;
   border-radius: 0.3rem;
-  transition: 0.5s;
+  transition: 0.2s;
   grid-template-columns: repeat(2, auto);
   grid-template-rows: repeat(2, auto);
-  align-self: flex-start;
+  min-height: 300px;
+  /* align-self: flex-start; */
   /* gap: 1rem; */
 }
+
+.placeholder {
+  border: solid 2px red;
+  pointer-events: none;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+}
+
 .container.building-step.highlight {
   border: solid 1px var(--accent-color);
 }

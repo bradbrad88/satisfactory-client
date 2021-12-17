@@ -1,19 +1,6 @@
 import ByProduct from "components/factory-builder/map/ByProduct";
 import { v4 as uuidv4 } from "uuid";
 
-export const ADD_NEW_ITEM = "ADD_NEW_ITEM";
-export const ADD_NEW_OUTPUT = "ADD_NEW_OUTPUT";
-export const SET_ALT_OUTPUT = "SET_ALT_OUTPUT";
-export const SET_RECIPE = "SET_RECIPE";
-export const SET_IMPORTED = "SET_IMPORTED";
-export const AUTO_BUILD_LAYER = "AUTO_BUILD_LAYER";
-export const SET_OUTPUT_QTY = "SET_OUTPUT_QTY";
-export const ADD_ITEM_UPSTREAM = "ADD_ITEM_UPSTREAM";
-export const INPUT_DROPPED_ON_BUILDINGSTEP = "INPUT_DROPPED_ON_BUILDINGSTEP";
-export const INPUT_DROPPED_ON_MAP = "INPUT_DROPPED_ON_MAP";
-export const BYPRODUCT_DROPPED_ON_MAP = "BYPRODUCT_DROPPED_ON_MAP";
-export const BYPRODUCT_DROPPED_ON_INPUT = "BYPRODUCT_DROPPED_ON_INPUT";
-
 const _newBuildingStep = options => {
   const { input, output, recipe, item, imported, hor, ver, userAdded } = options;
   if (!item) return null;
@@ -144,9 +131,9 @@ const _getRecipeInputItems = buildingStep => {
 
 const _getRecipeByProducts = (recipe, item) => {
   return recipe.RecipeItems.filter(recipeItem => {
-    console.log("item", item.itemId);
-    console.log("recipe", recipeItem.item.itemId);
-    console.log("direction", recipeItem.direction);
+    // console.log("item", item.itemId);
+    // console.log("recipe", recipeItem.item.itemId);
+    // console.log("direction", recipeItem.direction);
     return (
       recipeItem.direction === "output" && recipeItem.item.itemId !== item.itemId
     );
@@ -520,7 +507,7 @@ export const addNewItem = (buildingSteps, options) => {
   updatedState = [...updatedState, newBuildingStep];
   updatedState = _removeBuildingStepsWithNoIO(updatedState);
   // updatedState = _calcPosition(updatedState);
-  return updatedState;
+  return [updatedState, newBuildingStep];
 };
 
 export const addNewOutput = (buildingSteps, buildingStep, input) => {
@@ -566,7 +553,7 @@ export const addItemUpstream = (buildingSteps, buildingStep, recipe) => {
   _addOutput(output);
   updatedState = [...updatedState, newBuildingStep];
   // updatedState = _calcPosition(updatedState);
-  return updatedState;
+  return [updatedState, newBuildingStep];
 };
 
 const _getByProductUpstreamQty = () => {
@@ -593,7 +580,7 @@ export const byProductDroppedOnMap = (buildingSteps, payload) => {
   const input = _getInputByItem(newBuildingStep, byProduct.item);
   _linkInputOutput(input, byProduct);
   updatedState.push(newBuildingStep);
-  return updatedState;
+  return [updatedState, newBuildingStep];
 };
 
 // TODO
@@ -674,7 +661,7 @@ export const inputDroppedOnBuildingStep = (
   return updatedState;
 };
 
-export const inputDroppedOnMap = (buildingSteps, inputData) => {
+export const inputDroppedOnBuildingRow = (buildingSteps, inputData) => {
   const updatedState = [...buildingSteps];
   const { inputId } = inputData;
   const input = _getInputFromStateById(updatedState, inputId);
@@ -699,7 +686,7 @@ export const inputDroppedOnMap = (buildingSteps, inputData) => {
   };
   const newBuildingStep = _newBuildingStep(options);
   updatedState.push(newBuildingStep);
-  return updatedState;
+  return [updatedState, newBuildingStep];
 };
 
 export const setImported = (buildingSteps, buildingStep, toggle) => {
@@ -764,7 +751,11 @@ export const autoBuildLayer = (buildingSteps, buildingStep) => {
         _editOutput(validBuildingStep, validOutput, remainingQty);
       }
     } else {
-      const options = { imported: true, item: input.item };
+      const options = {
+        imported: true,
+        item: input.item,
+        ver: buildingStep.ver + 1,
+      };
       const newBuildingStep = _newBuildingStep(options);
       const newOutput = {
         id: uuidv4(),
@@ -778,42 +769,5 @@ export const autoBuildLayer = (buildingSteps, buildingStep) => {
       updatedState = [...updatedState, newBuildingStep];
     }
   });
-  // updatedState = _calcPosition(updatedState);
   return updatedState;
 };
-
-// const reducer = (state, action) => {
-//   const { type, payload } = action;
-//   const { buildingStep, output, recipe, toggle, options, qty, inputData } = payload;
-//   switch (type) {
-//     case ADD_NEW_ITEM:
-//       return addNewItem(state, options);
-//     case ADD_ITEM_UPSTREAM:
-//       return addItemUpstream(state, buildingStep, recipe);
-//     case ADD_NEW_OUTPUT:
-//       return state;
-//     case SET_ALT_OUTPUT:
-//       return setAltOutput(state, output, buildingStep);
-//     case SET_OUTPUT_QTY:
-//       return setOutputQty(state, output, qty);
-//     case INPUT_DROPPED_ON_BUILDINGSTEP:
-//       return inputDroppedOnBuildingStep(state, buildingStep, inputData);
-//     case INPUT_DROPPED_ON_MAP:
-//       return inputDroppedOnMap(state, inputData);
-//     case BYPRODUCT_DROPPED_ON_MAP:
-//       return byProductDroppedOnMap(state, payload);
-//     case BYPRODUCT_DROPPED_ON_INPUT:
-//       return byProductDroppedOnInput(state, payload);
-//     case SET_IMPORTED:
-//       return setImported(state, buildingStep, toggle);
-//     case SET_RECIPE:
-//       return setRecipe(state, buildingStep, options);
-//     case AUTO_BUILD_LAYER:
-//       return autoBuildLayer(state, buildingStep);
-
-//     default:
-//       return state;
-//   }
-// };
-
-// export default reducer;

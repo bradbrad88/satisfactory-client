@@ -1,4 +1,4 @@
-import React, { useState, useLayoutEffect, useRef, useContext } from "react";
+import React, { useState, useRef, useContext, useLayoutEffect } from "react";
 import Category from "components/elements/fields/Category";
 import InputEditor from "./InputEditor";
 import truncateDecimals from "utils/truncateDecimals";
@@ -17,24 +17,20 @@ import {
 } from "reducers/factoryManagerReducer";
 import { FactoryManagerContext } from "contexts/FactoryManagerContext";
 
-const BuildingStep = ({
-  data,
-  // recipes,
-  // dispatch,
-  updateDomPosition,
-  inputDrag,
-  setTempNull,
-}) => {
-  const { dispatch, recipes } = useContext(FactoryManagerContext);
+const BuildingStep = ({ data, location, mapWidth, widthHandler }) => {
+  const { dispatch, recipes, activeFactory } = useContext(FactoryManagerContext);
   const [recipeSelector, setRecipeSelector] = useState(null);
-  // const [showAutoBuild] = useState(true);
   const [highlight, setHightlight] = useState(false);
+  const [displayLeft, setDisplayLeft] = useState(0);
   const { inputs, outputs } = data;
   const ref = useRef();
-
   useLayoutEffect(() => {
-    updateDomPosition(ref.current, data);
-  }, [data, updateDomPosition]);
+    const left = mapWidth / 2 + location.x;
+    console.log("map width", mapWidth);
+    setDisplayLeft(left);
+    widthHandler(data, location.x, ref.current?.clientWidth);
+  }, [mapWidth, location, data, widthHandler]);
+  console.log("item", data);
 
   const suppliedInputQty = input => {
     return input.outputs.reduce((total, output) => {
@@ -113,8 +109,6 @@ const BuildingStep = ({
   };
 
   const recipeSelectionHandler = recipe => {
-    console.log("recipe id", recipe);
-    // const recipe = recipes.find(recipe => recipe.recipeId === recipeId);
     const payload = { buildingStep: data, recipe };
     const type = ADD_ITEM_UPSTREAM;
     dispatch({ type, payload });
@@ -145,7 +139,6 @@ const BuildingStep = ({
   };
 
   const handleInputDrop = (inputData, e) => {
-    console.log("inputData", inputData);
     if (inputData.itemId !== data.item.itemId) {
       return;
     }
@@ -163,11 +156,9 @@ const BuildingStep = ({
         e.stopPropagation();
         e.preventDefault();
         setHightlight(true);
-        setTempNull();
       }
       if (inputs.some(input => item.inputId === input.id)) {
         e.stopPropagation();
-        setTempNull();
       }
     } catch (error) {
       console.log("drag-over data unusable");
@@ -182,40 +173,20 @@ const BuildingStep = ({
     return outputs
       .filter(output => !output.byProduct && output.input)
       .map(output => {
-        return (
-          <Output
-            outputData={output}
-            dispatch={dispatch}
-            key={data.id + output.id}
-            setTempNull={setTempNull}
-          />
-        );
+        return <Output outputData={output} key={data.id + output.id} />;
       });
   };
 
   const renderByProducts = () => {
     const byProducts = outputs.filter(output => output.byProduct);
     return byProducts.map(output => (
-      <ByProduct
-        byProductData={output}
-        dispatch={dispatch}
-        key={output.id}
-        setTempNull={setTempNull}
-      />
+      <ByProduct byProductData={output} key={output.id} />
     ));
   };
 
   const renderItemInputs = () => {
     return inputs.map(input => {
-      return (
-        <Input
-          inputData={input}
-          inputDrag={inputDrag}
-          key={input.id}
-          setTempNull={setTempNull}
-          dispatch={dispatch}
-        />
-      );
+      return <Input inputData={input} key={input.id} />;
     });
   };
 
@@ -259,9 +230,12 @@ const BuildingStep = ({
         onDragOver={onDragOver}
         onDragLeave={onDragLeave}
         onDrop={onDrop}
+        style={{ left: displayLeft + "px" }}
       >
         <div className="title cell">
-          <h1>{data.item.itemName}</h1>
+          <h1>
+            {data.item.itemName}: {location.x}
+          </h1>
           {!data.imported && (
             <button className={"build"} onClick={handleSetImport}>
               Import

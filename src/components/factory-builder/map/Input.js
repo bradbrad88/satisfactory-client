@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import truncateDecimals from "utils/truncateDecimals";
 import conveyor from "assets/conveyor.webp";
 import pipe from "assets/pipe.webp";
-import { BYPRODUCT_DROPPED_ON_INPUT } from "reducers/buildingStepsReducer";
+import { BYPRODUCT_DROPPED_ON_INPUT } from "reducers/factoryManagerReducer";
+import { FactoryManagerContext } from "contexts/FactoryManagerContext";
 
-const Input = ({ inputData, inputDrag, setTempNull, dispatch }) => {
+const Input = ({ inputData }) => {
+  const { dispatch } = useContext(FactoryManagerContext);
   const [dragImg, setDragImg] = useState(null);
   const [validDrag, setValidDrag] = useState(false);
   const { buildingStep } = inputData;
@@ -49,7 +51,7 @@ const Input = ({ inputData, inputDrag, setTempNull, dispatch }) => {
   };
 
   const onDragEnd = () => {
-    setTempNull();
+    // setTempNull();
   };
 
   const getDataFromDrop = e => {

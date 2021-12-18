@@ -6,7 +6,7 @@ import RecipeSelector from "./RecipeSelector";
 import Input from "./Input";
 import Output from "./Output";
 import ByProduct from "./ByProduct";
-import { newStep } from "utils/SvgIcons";
+import { dragHandle, newStep } from "utils/SvgIcons";
 import {
   ADD_ITEM_UPSTREAM,
   AUTO_BUILD_LAYER,
@@ -17,19 +17,19 @@ import {
 } from "reducers/factoryManagerReducer";
 import { FactoryManagerContext } from "contexts/FactoryManagerContext";
 
-const BuildingStep = ({ data, location, mapWidth, widthHandler }) => {
+const BuildingStep = ({ style, className, data, setDragState, ...props }, ref) => {
   const { dispatch, recipes, activeFactory } = useContext(FactoryManagerContext);
   const [recipeSelector, setRecipeSelector] = useState(null);
   const [highlight, setHightlight] = useState(false);
-  const [displayLeft, setDisplayLeft] = useState(0);
+  // const [displayLeft, setDisplayLeft] = useState(0);
   const { inputs, outputs } = data;
-  const ref = useRef();
-  useLayoutEffect(() => {
-    const left = mapWidth / 2 + location.x;
-    console.log("map width", mapWidth);
-    setDisplayLeft(left);
-    widthHandler(data, location.x, ref.current?.clientWidth);
-  }, [mapWidth, location, data, widthHandler]);
+  // const ref = useRef();
+  // useLayoutEffect(() => {
+  //   const left = mapWidth / 2 + location.x;
+  //   console.log("map width", mapWidth);
+  //   setDisplayLeft(left);
+  //   widthHandler(data, location.x, ref.current?.clientWidth);
+  // }, [mapWidth, location, data, widthHandler]);
   console.log("item", data);
 
   const suppliedInputQty = input => {
@@ -222,99 +222,115 @@ const BuildingStep = ({ data, location, mapWidth, widthHandler }) => {
     );
   };
 
-  return (
-    <>
-      <div
-        className={`container building-step ${highlight && "highlight"}`}
-        ref={ref}
-        onDragOver={onDragOver}
-        onDragLeave={onDragLeave}
-        onDrop={onDrop}
-        style={{ left: displayLeft + "px" }}
-      >
-        <div className="title cell">
-          <h1>
-            {data.item.itemName}: {location.x}
-          </h1>
-          {!data.imported && (
-            <button className={"build"} onClick={handleSetImport}>
-              Import
-            </button>
-          )}
-          {data.imported && !data.item.rawMaterial && (
-            <button className={"build"} onClick={handleSetImport}>
-              Build on site
-            </button>
-          )}
-          <button className={"new-step"} onClick={handleNewPotentialStep}>
-            {newStep(30)}
-          </button>
-        </div>
-        <div className="output cell">
-          <div className={"item-outputs"}>
-            <div className="main-product">
-              <h2>Outputs</h2>
-              <div className={"main-products"}>{renderItemOutputs()}</div>
-            </div>
-            {renderByProducts().length > 0 && (
-              <div className="by-product">
-                <h2>By Products</h2>
+  const onMouseEnter = () => {
+    console.log("mouse enter");
+    setDragState(true);
+  };
 
-                <div className={"by-products"}>{renderByProducts()}</div>
-              </div>
-            )}
+  const onMouseLeave = () => {
+    setDragState(false);
+  };
+
+  return (
+    <div
+      className={`${className} container building-step ${highlight && "highlight"}`}
+      ref={ref}
+      // onDragOver={onDragOver}
+      // onDragLeave={onDragLeave}
+      // onDrop={onDrop}
+      key={data.id}
+      style={style}
+      {...props}
+
+      // style={{ left: displayLeft + "px" }}
+    >
+      {/* <div
+        className="drag-handle"
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={() => setDragState(false)}
+      >
+        {dragHandle(35)}
+      </div> */}
+      <div className="title cell">
+        <h1>{data.item.itemName}</h1>
+        {!data.imported && (
+          <button className={"build"} onClick={handleSetImport}>
+            Import
+          </button>
+        )}
+        {data.imported && !data.item.rawMaterial && (
+          <button className={"build"} onClick={handleSetImport}>
+            Build on site
+          </button>
+        )}
+        <button className={"new-step"} onClick={handleNewPotentialStep}>
+          {newStep(30)}
+        </button>
+      </div>
+      <div className="output cell">
+        <div className={"item-outputs"}>
+          <div className="main-product">
+            <h2>Outputs</h2>
+            <div className={"main-products"}>{renderItemOutputs()}</div>
           </div>
-          <div className={"alt-outputs"}>
-            {renderStoreOutput()}
-            {renderSinkOutput()}
-          </div>
-        </div>
-        <div className="recipe cell">
-          {!data.imported && (
-            <>
-              <h3>
-                Recipe:{" "}
-                {data.recipe?.category === "standard"
-                  ? "Standard"
-                  : data.recipe?.recipeName}
-              </h3>
-              <div onMouseDown={preventPropagation}>
-                <Category
-                  options={processRecipeOptions()}
-                  onChange={onRecipeChange}
-                  value={data.recipe?.recipeId || ""}
-                />
-              </div>
-              <h3>
-                Requires: ({truncateDecimals(data.buildingCount, 4)})
-                {data.building?.title}
-              </h3>
-            </>
+          {renderByProducts().length > 0 && (
+            <div className="by-product">
+              <h2>By Products</h2>
+
+              <div className={"by-products"}>{renderByProducts()}</div>
+            </div>
           )}
         </div>
+        <div className={"alt-outputs"}>
+          {renderStoreOutput()}
+          {renderSinkOutput()}
+        </div>
+      </div>
+      <div className="recipe cell">
         {!data.imported && (
-          <div className="input cell">
-            <h2>Inputs</h2>
-            {shortfall() && (
-              <button className={"build"} onClick={handleAutoBuildRecipe}>
-                Auto Build
-              </button>
-            )}
-            <div className={"item-inputs"}>{renderItemInputs()}</div>
-          </div>
+          <>
+            <h3>
+              Recipe:{" "}
+              {data.recipe?.category === "standard"
+                ? "Standard"
+                : data.recipe?.recipeName}
+            </h3>
+            <div onMouseDown={preventPropagation}>
+              <Category
+                options={processRecipeOptions()}
+                onChange={onRecipeChange}
+                value={data.recipe?.recipeId || ""}
+              />
+            </div>
+            <h3>
+              Requires: ({truncateDecimals(data.buildingCount, 4)})
+              {data.building?.title}
+            </h3>
+          </>
         )}
       </div>
-      {/* Recipe Selector handles the recipes that can be continued on from the output */}
-      {recipeSelector && (
-        <RecipeSelector
-          recipes={recipeSelector.recipes}
-          location={recipeSelector.location}
-          selectionHandler={recipeSelectionHandler}
-          close={() => setRecipeSelector(null)}
-        />
+      {!data.imported && (
+        <div className="input cell">
+          <h2>Inputs</h2>
+          {shortfall() && (
+            <button className={"build"} onClick={handleAutoBuildRecipe}>
+              Auto Build
+            </button>
+          )}
+          <div className={"item-inputs"}>{renderItemInputs()}</div>
+        </div>
       )}
-    </>
+    </div>
+    // /* Recipe Selector handles the recipes that can be continued on from the output */
+    // {recipeSelector && (
+    //   <RecipeSelector
+    //     recipes={recipeSelector.recipes}
+    //     location={recipeSelector.location}
+    //     selectionHandler={recipeSelectionHandler}
+    //     close={() => setRecipeSelector(null)}
+    //   />
+    // )}
   );
 };
 
-export default BuildingStep;
+export default React.forwardRef(BuildingStep);

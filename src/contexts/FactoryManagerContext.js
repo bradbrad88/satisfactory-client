@@ -12,14 +12,14 @@ const dummyFactories = [
     factoryName: "Dune Factory",
     buildingSteps: [],
     location: { x: 20, y: 25 },
-    layout: {},
+    layout: [],
   },
   {
     id: uuidv4(),
     factoryName: "Iron Factory",
     buildingSteps: [],
     location: { x: 30, y: 25 },
-    layout: {},
+    layout: [],
   },
 ];
 

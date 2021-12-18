@@ -12,6 +12,7 @@
 
 .map,
 .ui {
+  box-sizing: border-box;
   border: 2px solid white;
   border-radius: 0.3rem;
   /* padding: 1rem; */
@@ -23,22 +24,26 @@
 
 .map-content {
   position: relative;
+  box-sizing: border-box;
   left: 50%;
   top: 50%;
   transform-origin: center center;
+  /* transform: translateX(50%); */
   /* background-color: rgba(133, 43, 43, 0.116); */
   width: fit-content;
   height: fit-content;
 }
 
 .factory-layout {
-  background-color: rgba(0, 0, 0, 0.178);
-  padding: 50rem 100rem;
-  border: dashed rgba(255, 255, 255, 0.199) 2px;
-  position: relative;
-  display: grid;
-  transform-origin: center top;
-  width: fit-content;
+  background-color: rgba(0, 0, 0, 0.137);
+  box-sizing: border-box;
+  /* padding: 50rem 100rem; */
+  /* border: dashed rgba(255, 255, 255, 0.199) 2px; */
+  /* position: relative; */
+  /* display: grid; */
+  /* transform-origin: center top; */
+  /* width: fit-content; */
+  /* user-select: none; */
 }
 
 .ui {
@@ -163,32 +168,32 @@
 }
 
 .container.building-step {
-  position: absolute;
+  /* position: absolute; */
   display: grid;
-  display: inline-block;
+  /* display: inline-block; */
   background-color: rgba(255, 255, 255, 0.151);
-  width: 25rem;
+  /* width: 25rem; */
   /* align-self: center; */
   /* padding: 1rem; */
   /* margin: 1rem; */
   border-radius: 0.3rem;
-  user-select: none;
-  min-width: fit-content;
+  /* user-select: none; */
+  /* min-width: fit-content; */
   border-radius: 0.3rem;
   transition: 0.2s;
   grid-template-columns: repeat(2, auto);
   grid-template-rows: repeat(2, auto);
-  min-height: 300px;
+  /* min-height: 300px; */
   /* align-self: flex-start; */
   /* gap: 1rem; */
 }
 
-.placeholder {
+/* .placeholder {
   border: solid 2px red;
   pointer-events: none;
   grid-template-columns: 1fr;
   grid-template-rows: 1fr;
-}
+} */
 
 .container.building-step.highlight {
   border: solid 1px var(--accent-color);
@@ -579,4 +584,17 @@ button.new-step:hover .icon.new-step {
 .map-label.active {
   background-color: var(--accent-color);
   z-index: 2;
+}
+
+.drag-handle {
+  position: absolute;
+  fill: white;
+}
+
+.drag-handle > .icon {
+  fill: white;
+}
+
+.react-draggable-dragging {
+  border: var(--accent-color) 2px solid;
 }

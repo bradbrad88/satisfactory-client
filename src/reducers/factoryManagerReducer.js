@@ -50,7 +50,7 @@ const addNewFactory = state => {
     factoryName: "New Factory",
     location: { x: 20, y: 50 },
     buildingSteps: [],
-    layout: {},
+    layout: [],
   };
   updatedState.push(newFactory);
   return updatedState;
@@ -73,12 +73,21 @@ const setFactoryLocation = (state, payload) => {
 };
 
 const setBuildingStepLocation = (factory, buildingStep, location) => {
-  const { layout } = factory;
-  const { row, x } = location;
-  const dependant = _getLayoutDependant(buildingStep);
-  if (!layout[row]) layout[row] = new Map();
-  const layoutMap = layout[row];
-  layoutMap.set(buildingStep, { x, dependant });
+  // const { layout } = factory;
+  // const { row, x } = location;
+  // const dependant = _getLayoutDependant(buildingStep);
+  // if (!layout[row]) layout[row] = new Map();
+  // const layoutMap = layout[row];
+  // layoutMap.set(buildingStep, { x, dependant });
+  const newLayoutItem = {
+    i: buildingStep.id,
+    x: 1,
+    y: 2,
+    h: 1,
+    w: 10,
+  };
+  console.log("factory layout", factory.layout);
+  factory.layout = [...factory.layout, newLayoutItem];
 };
 
 const addNewItemHandler = (state, payload) => {

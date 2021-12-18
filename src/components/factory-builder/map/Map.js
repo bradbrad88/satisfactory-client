@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import FactoryLayout from "./FactoryLayout";
 import FactoryLocations from "./FactoryLocations";
 import { centreMap as centreIcon } from "utils/SvgIcons";
+import ReactGridTest from "./ReactGridTest";
 
 const Map = ({ mapState }) => {
   const [dragging, setDragging] = useState(false);
@@ -183,7 +184,7 @@ const Map = ({ mapState }) => {
           {centreIcon(36)}
         </div>
         <div className={"map-content"} style={style()}>
-          {mapState === "build" && <FactoryLayout />}
+          {mapState === "build" && <FactoryLayout scale={zoom} />}
           {mapState === "locate" && <FactoryLocations />}
         </div>
       </div>

@@ -256,7 +256,6 @@ const forceLayoutRender = (state, payload) => {
   let updatedState = [...state];
   const { factoryId } = payload;
   const factory = _getFactoryById(state, factoryId);
-  console.log("force layout", factory.layout);
   factory.layout = [...factory.layout];
   return updatedState;
 };

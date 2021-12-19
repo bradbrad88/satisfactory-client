@@ -248,12 +248,20 @@ const BuildingStep = ({ style, className, data, setDragState, ...props }, ref) =
       <div className="title cell">
         <h1>{data.item.itemName}</h1>
         {!data.imported && (
-          <button className={"build"} onClick={handleSetImport}>
+          <button
+            className={"build"}
+            onClick={handleSetImport}
+            onMouseDown={e => e.stopPropagation()}
+          >
             Import
           </button>
         )}
         {data.imported && !data.item.rawMaterial && (
-          <button className={"build"} onClick={handleSetImport}>
+          <button
+            className={"build"}
+            onClick={handleSetImport}
+            onMouseDown={e => e.stopPropagation()}
+          >
             Build on site
           </button>
         )}

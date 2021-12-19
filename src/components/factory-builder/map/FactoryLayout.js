@@ -7,6 +7,8 @@ import { dragHandle } from "utils/SvgIcons";
 import {
   INPUT_DROPPED_ON_MAP,
   BYPRODUCT_DROPPED_ON_MAP,
+  SET_CANVAS_WIDTH,
+  UPDATE_LAYOUT_PROPS,
 } from "reducers/factoryManagerReducer";
 import {
   FactoryManagerContext,
@@ -16,14 +18,14 @@ import {
 import "../../../../node_modules/react-grid-layout/css/styles.css";
 import "../../../../node_modules/react-resizable/css/styles.css";
 
-const WIDTH = 1000;
+// const WIDTH = 1000;
 
 const FactoryLayout = ({ scale }) => {
-  const { activeFactory, layout } = useContext(FactoryManagerContext);
+  const { activeFactory, layout, canvasWidth, dispatch } =
+    useContext(FactoryManagerContext);
   const [dragState, setDragState] = useState(false);
   const [upstreamRecipeSelector, setUpstreamRecipeSelector] = useState(null);
   const ref = useRef();
-  console.log("layout ", layout);
   const renderBuildingSteps = useMemo(() => {
     if (!activeFactory) return null;
     const buildingSteps = activeFactory.buildingSteps.map(buildingStep => (
@@ -35,16 +37,15 @@ const FactoryLayout = ({ scale }) => {
     ));
     console.log("buildingSteps", buildingSteps);
     return buildingSteps;
-  }, [activeFactory?.buildingSteps]);
+  }, [activeFactory?.buildingSteps, scale]);
 
-  const onDragStart = (_, __, ___, ____, m) => {
-    console.log("drag start", m);
-    m.stopPropagation();
+  const onDragStart = (_, __, ___, ____, e) => {
+    e.stopPropagation();
   };
 
   const onDrop = (layout, oldItem, newItem, placeholder, event, element) => {
-    if (newItem.y === 0) {
-      console.log("layout", layout);
+    if (layout.some(layoutItem => layoutItem.y === 0)) {
+      // console.log("layout", layout);
       layout.forEach(layoutItem => {
         layoutItem.y += 1;
       });
@@ -52,18 +53,33 @@ const FactoryLayout = ({ scale }) => {
   };
 
   const onLayoutChange = layout => {
-    console.log("layout", layout);
+    const payload = { layout };
+    const type = UPDATE_LAYOUT_PROPS;
+    dispatch({ type, payload });
   };
 
-  const onDrag = () => {};
+  const extendCanvas = () => {
+    const type = SET_CANVAS_WIDTH;
+    const payload = { width: 2 * GRID_COL_WIDTH + canvasWidth };
+    dispatch({ type, payload });
+  };
+
+  const onDrag = (layout, oldItem, newItem, placeholder, event, element) => {
+    if (placeholder.x === 0) extendCanvas();
+    const maxCols = canvasWidth / GRID_COL_WIDTH;
+    if (placeholder.x + placeholder.w >= maxCols) extendCanvas();
+  };
 
   return (
     <GridLayout
       className="factory-layout layout"
-      style={{ minWidth: `${WIDTH}px` }}
+      style={{
+        minWidth: `${canvasWidth}px`,
+        paddingBottom: `${GRID_ROW_HEIGHT * 3}px`,
+      }}
       rowHeight={GRID_ROW_HEIGHT}
-      cols={WIDTH / GRID_COL_WIDTH}
-      width={WIDTH}
+      cols={canvasWidth / GRID_COL_WIDTH}
+      width={canvasWidth}
       resizeHandles={[]}
       layout={activeFactory?.layout}
       compactType={null}
@@ -73,6 +89,7 @@ const FactoryLayout = ({ scale }) => {
       transformScale={scale}
       onLayoutChange={onLayoutChange}
       onDrag={onDrag}
+      onLayoutChange={onLayoutChange}
     >
       {renderBuildingSteps}
     </GridLayout>

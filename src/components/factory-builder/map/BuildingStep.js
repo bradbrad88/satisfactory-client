@@ -32,10 +32,10 @@ const BuildingStep = ({ style, className, data, setDragState, ...props }, ref) =
   useLayoutEffect(() => {
     if (!ref.current) return;
     const w = Math.ceil(ref.current.clientWidth / GRID_COL_WIDTH);
-    console.log("w", w);
-    console.log("client width", ref.current.clientWidth);
     const layoutItem = layout.find(layoutItem => layoutItem.i === data.id);
-    console.log("existing w", layoutItem.w);
+    // console.log("w", w);
+    // console.log("client width", ref.current.clientWidth);
+    // console.log("existing w", layoutItem.w);
     if (layoutItem.w === w) return;
     const type = SET_BUILDING_STEP_WIDTH;
     const payload = { w, buildingStep: data };

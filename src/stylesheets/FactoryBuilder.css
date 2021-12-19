@@ -37,6 +37,7 @@
 .factory-layout {
   background-color: rgba(0, 0, 0, 0.137);
   box-sizing: border-box;
+  padding-bottom: 140rem;
   /* padding: 50rem 100rem; */
   /* border: dashed rgba(255, 255, 255, 0.199) 2px; */
   /* position: relative; */
@@ -179,6 +180,8 @@
   border-radius: 0.3rem;
   /* user-select: none; */
   min-width: fit-content;
+  max-width: fit-content;
+  min-height: fit-content;
   border-radius: 0.3rem;
   transition: 0.2s;
   grid-template-columns: repeat(2, auto);

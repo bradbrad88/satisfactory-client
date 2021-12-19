@@ -1,10 +1,14 @@
 import React, { useState, useMemo, useContext } from "react";
 import Category from "components/elements/fields/Category";
 import { ADD_NEW_ITEM } from "reducers/factoryManagerReducer";
-import { FactoryManagerContext } from "contexts/FactoryManagerContext";
+import {
+  FactoryManagerContext,
+  GRID_COL_WIDTH,
+} from "contexts/FactoryManagerContext";
 
 const UserInput = () => {
-  const { items, dispatch, activeFactory } = useContext(FactoryManagerContext);
+  const { items, dispatch, activeFactory, canvasWidth } =
+    useContext(FactoryManagerContext);
   const [item, setInitialItem] = useState(null);
 
   const itemOptions = useMemo(() => {
@@ -28,9 +32,9 @@ const UserInput = () => {
 
   const handleAddNewItem = () => {
     if (!item) return;
+    const x = canvasWidth / GRID_COL_WIDTH / 2 - 7;
     const location = {
-      row: 1,
-      x: 0,
+      x,
     };
     const options = {
       location,
@@ -49,6 +53,9 @@ const UserInput = () => {
 
   const handleTest = () => {
     console.log("test", activeFactory);
+    // const type = SET_CANVAS_WIDTH;
+    // const payload = { width: 2 * GRID_COL_WIDTH };
+    // dispatch({ type, payload });
   };
 
   const style = () => {

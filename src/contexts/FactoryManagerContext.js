@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from "uuid";
 import useData from "hooks/useData";
 
 export const GRID_COL_WIDTH = 30;
-export const GRID_ROW_HEIGHT = 400;
+export const GRID_ROW_HEIGHT = 450;
 
 export const FactoryManagerContext = React.createContext();
 
@@ -16,6 +16,7 @@ const dummyFactories = [
     buildingSteps: [],
     location: { x: 20, y: 25 },
     layout: [],
+    canvasWidth: 1500,
   },
   {
     id: uuidv4(),
@@ -23,6 +24,7 @@ const dummyFactories = [
     buildingSteps: [],
     location: { x: 30, y: 25 },
     layout: [],
+    canvasWidth: 1500,
   },
 ];
 
@@ -51,6 +53,7 @@ const FactoryManagerProvider = ({ children }) => {
         dispatch: handleDispatch,
         activeFactory,
         layout: activeFactory ? activeFactory.layout : null,
+        canvasWidth: activeFactory ? activeFactory.canvasWidth : 0,
         setActiveFactory: handleActiveFactory,
         items,
         recipes,

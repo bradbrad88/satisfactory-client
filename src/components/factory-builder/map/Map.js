@@ -1,10 +1,13 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef, useContext } from "react";
 import FactoryLayout from "./FactoryLayout";
 import FactoryLocations from "./FactoryLocations";
 import { centreMap as centreIcon } from "utils/SvgIcons";
 import ReactGridTest from "./ReactGridTest";
+import { FactoryManagerContext } from "contexts/FactoryManagerContext";
+import { FORCE_LAYOUT_RENDER } from "reducers/factoryManagerReducer";
 
 const Map = ({ mapState }) => {
+  const { dispatch } = useContext(FactoryManagerContext);
   const [dragging, setDragging] = useState(false);
   const [initialMouse, setInitialMouse] = useState({});
   const [mapOffset, setMapOffset] = useState({ v: 0, h: 0 });
@@ -15,6 +18,8 @@ const Map = ({ mapState }) => {
   const onMouseUp = useCallback(() => {
     setDragging(false);
     endOffset.current = mapOffset;
+    const type = FORCE_LAYOUT_RENDER;
+    dispatch({ type });
   }, [setDragging, mapOffset]);
 
   const onMouseDown = useCallback(

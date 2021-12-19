@@ -30,6 +30,9 @@ export const INPUT_DROPPED_ON_BUILDING_ROW = "INPUT_DROPPED_ON_MAP";
 export const BYPRODUCT_DROPPED_ON_MAP = "BYPRODUCT_DROPPED_ON_MAP";
 export const BYPRODUCT_DROPPED_ON_INPUT = "BYPRODUCT_DROPPED_ON_INPUT";
 export const SET_BUILDING_STEP_WIDTH = "SET_BUILDING_STEP_WIDTH";
+export const SET_CANVAS_WIDTH = "SET_CANVAS_WIDTH";
+export const UPDATE_LAYOUT_PROPS = "UPDATE_LAYOUT_PROPS";
+export const FORCE_LAYOUT_RENDER = "FORCE_LAYOUT_RENDER";
 
 const _getLayoutDependant = buildingStep => {
   const validBuildingSteps = buildingStep.outputs.filter(
@@ -53,6 +56,7 @@ const addNewFactory = state => {
     location: { x: 20, y: 50 },
     buildingSteps: [],
     layout: [],
+    canvasWidth: 1500,
   };
   updatedState.push(newFactory);
   return updatedState;
@@ -74,11 +78,19 @@ const setFactoryLocation = (state, payload) => {
   return updatedState;
 };
 
-const setBuildingStepLocation = (factory, buildingStep, location) => {
+const updateLayoutProps = (state, payload) => {
+  let updatedState = [...state];
+  const { factoryId, layout } = payload;
+  const factory = _getFactoryById(updatedState, factoryId);
+  factory.layout = layout;
+  return updatedState;
+};
+
+const setBuildingStepLocation = (factory, buildingStep, location = {}) => {
   const newLayoutItem = {
     i: buildingStep.id,
-    x: 1,
-    y: 2,
+    x: location.x || 0,
+    y: location.y || 1,
     h: 1,
     w: 1,
   };
@@ -232,6 +244,23 @@ const setBuildingStepWidthHandler = (state, payload) => {
   return updatedState;
 };
 
+const setCanvasWidthHandler = (state, payload) => {
+  let updatedState = [...state];
+  const { factoryId, width } = payload;
+  const factory = _getFactoryById(state, factoryId);
+  factory.canvasWidth = width;
+  return updatedState;
+};
+
+const forceLayoutRender = (state, payload) => {
+  let updatedState = [...state];
+  const { factoryId } = payload;
+  const factory = _getFactoryById(state, factoryId);
+  console.log("force layout", factory.layout);
+  factory.layout = [...factory.layout];
+  return updatedState;
+};
+
 const reducer = (state, action) => {
   const { type, payload } = action;
   switch (type) {
@@ -265,6 +294,12 @@ const reducer = (state, action) => {
       return inputDroppedOnBuildingRowHandler(state, payload);
     case SET_BUILDING_STEP_WIDTH:
       return setBuildingStepWidthHandler(state, payload);
+    case SET_CANVAS_WIDTH:
+      return setCanvasWidthHandler(state, payload);
+    case UPDATE_LAYOUT_PROPS:
+      return updateLayoutProps(state, payload);
+    case FORCE_LAYOUT_RENDER:
+      return forceLayoutRender(state, payload);
     default:
       return state;
   }

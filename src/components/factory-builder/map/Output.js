@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useContext } from "react";
 import OutsideAlerter from "utils/OutsideAlerter";
 import { SET_OUTPUT_QTY } from "reducers/factoryManagerReducer";
 // import { item } from "utils/SvgIcons";
@@ -6,9 +6,11 @@ import { useEffect } from "react/cjs/react.development";
 import conveyor from "assets/conveyor.webp";
 import pipe from "assets/pipe.webp";
 import truncateDecimals from "utils/truncateDecimals";
+import { FactoryManagerContext } from "contexts/FactoryManagerContext";
 
-const Output = ({ outputData, dispatch }) => {
+const Output = ({ outputData }) => {
   const { qty, buildingStep } = outputData;
+  const { dispatch } = useContext(FactoryManagerContext);
   const [active, setActive] = useState(false);
   const [dragImg, setDragImg] = useState(null);
   const [newValue, setNewValue] = useState("");
@@ -57,6 +59,19 @@ const Output = ({ outputData, dispatch }) => {
     e.dataTransfer.setDragImage(dragImg, 0, 0);
   };
 
+  const goingTo = () => {
+    switch (outputData.type) {
+      case "step":
+        return outputData.input.buildingStep.item.itemName;
+      case "sink":
+        return "a resource sink";
+      case "export":
+        return "another factory";
+      default:
+        break;
+    }
+  };
+
   return (
     <OutsideAlerter onClickOutside={onClickOutside} onClickInside={onClickInside}>
       <div
@@ -77,7 +92,7 @@ const Output = ({ outputData, dispatch }) => {
         <p style={{ display: active ? "none" : "block" }}>
           {truncateDecimals(qty, 3)}
         </p>
-        <p>Going to {outputData.input.buildingStep.item.itemName}</p>
+        <p>Going to {goingTo()}</p>
         {/* <p>{active ? "active" : "not active"}</p> */}
       </div>
     </OutsideAlerter>

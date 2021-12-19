@@ -24,8 +24,20 @@ const _newBuildingStep = options => {
     if (output.input) _linkInputOutput(output.input, output);
     if (!output.id) output.id = uuidv4();
   }
+  if (!buildingStep.outputs.some(output => output.type === "sink"))
+    _insertNullSinkOutput(buildingStep);
   if (recipe) _setRecipe(buildingStep, recipe);
   return buildingStep;
+};
+
+const _insertNullSinkOutput = buildingStep => {
+  const output = {
+    buildingStep,
+    item: buildingStep.item,
+    qty: 0,
+    type: "sink",
+  };
+  _addOutput(output);
 };
 
 const _getInputById = (buildingStep, inputId) => {

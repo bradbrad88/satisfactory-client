@@ -177,7 +177,7 @@ const BuildingStep = ({ style, className, data, setDragState, ...props }, ref) =
 
   const renderItemOutputs = () => {
     return outputs
-      .filter(output => !output.byProduct && output.input)
+      .filter(output => !output.byProduct)
       .map(output => {
         return <Output outputData={output} key={data.id + output.id} />;
       });
@@ -284,8 +284,8 @@ const BuildingStep = ({ style, className, data, setDragState, ...props }, ref) =
           )}
         </div>
         <div className={"alt-outputs"}>
-          {renderStoreOutput()}
-          {renderSinkOutput()}
+          {/* {renderStoreOutput()}
+          {renderSinkOutput()} */}
         </div>
       </div>
       <div className="recipe cell">

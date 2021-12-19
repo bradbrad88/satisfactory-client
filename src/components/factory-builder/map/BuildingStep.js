@@ -16,10 +16,14 @@ import {
   INPUT_DROPPED_ON_BUILDINGSTEP,
   SET_BUILDING_STEP_WIDTH,
 } from "reducers/factoryManagerReducer";
-import { FactoryManagerContext } from "contexts/FactoryManagerContext";
+import {
+  FactoryManagerContext,
+  GRID_COL_WIDTH,
+} from "contexts/FactoryManagerContext";
 
 const BuildingStep = ({ style, className, data, setDragState, ...props }, ref) => {
-  const { dispatch, recipes, activeFactory } = useContext(FactoryManagerContext);
+  const { dispatch, recipes, activeFactory, layout } =
+    useContext(FactoryManagerContext);
   const [recipeSelector, setRecipeSelector] = useState(null);
   const [highlight, setHightlight] = useState(false);
   // const [displayLeft, setDisplayLeft] = useState(0);
@@ -27,10 +31,16 @@ const BuildingStep = ({ style, className, data, setDragState, ...props }, ref) =
   // const ref = useRef();
   useLayoutEffect(() => {
     if (!ref.current) return;
+    const w = Math.ceil(ref.current.clientWidth / GRID_COL_WIDTH);
+    console.log("w", w);
+    console.log("client width", ref.current.clientWidth);
+    const layoutItem = layout.find(layoutItem => layoutItem.i === data.id);
+    console.log("existing w", layoutItem.w);
+    if (layoutItem.w === w) return;
     const type = SET_BUILDING_STEP_WIDTH;
-    const payload = { width: ref.current.clientWidth, buildingStep: data };
+    const payload = { w, buildingStep: data };
     dispatch({ type, payload });
-  }, [ref.current?.clientWidth]);
+  }, [data, dispatch, ref]);
 
   const suppliedInputQty = input => {
     return input.outputs.reduce((total, output) => {
@@ -165,10 +175,6 @@ const BuildingStep = ({ style, className, data, setDragState, ...props }, ref) =
     }
   };
 
-  const onDragLeave = e => {
-    setHightlight(false);
-  };
-
   const renderItemOutputs = () => {
     return outputs
       .filter(output => !output.byProduct && output.input)
@@ -235,22 +241,10 @@ const BuildingStep = ({ style, className, data, setDragState, ...props }, ref) =
     <div
       className={`${className} container building-step ${highlight && "highlight"}`}
       ref={ref}
-      // onDragOver={onDragOver}
-      // onDragLeave={onDragLeave}
-      // onDrop={onDrop}
       key={data.id}
       style={style}
       {...props}
-
-      // style={{ left: displayLeft + "px" }}
     >
-      {/* <div
-        className="drag-handle"
-        onMouseEnter={onMouseEnter}
-        onMouseLeave={() => setDragState(false)}
-      >
-        {dragHandle(35)}
-      </div> */}
       <div className="title cell">
         <h1>{data.item.itemName}</h1>
         {!data.imported && (
@@ -321,15 +315,6 @@ const BuildingStep = ({ style, className, data, setDragState, ...props }, ref) =
         </div>
       )}
     </div>
-    // /* Recipe Selector handles the recipes that can be continued on from the output */
-    // {recipeSelector && (
-    //   <RecipeSelector
-    //     recipes={recipeSelector.recipes}
-    //     location={recipeSelector.location}
-    //     selectionHandler={recipeSelectionHandler}
-    //     close={() => setRecipeSelector(null)}
-    //   />
-    // )}
   );
 };
 

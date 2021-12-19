@@ -219,12 +219,11 @@ const inputDroppedOnBuildingRowHandler = (state, payload) => {
 // TODO - handle
 const setBuildingStepWidthHandler = (state, payload) => {
   let updatedState = [...state];
-  const { width, buildingStep, factoryId } = payload;
+  const { w, buildingStep, factoryId } = payload;
   const factory = _getFactoryById(state, factoryId);
   const layoutItem = factory.layout.find(
     layoutItem => layoutItem.i === buildingStep.id
   );
-  const w = 2000 || Math.ceil(width / GRID_COL_WIDTH);
   const updatedLayoutItem = { ...layoutItem, w };
   factory.layout = [
     ...factory.layout.filter(l => l !== layoutItem),

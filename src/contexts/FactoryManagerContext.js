@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from "uuid";
 import useData from "hooks/useData";
 
 export const GRID_COL_WIDTH = 30;
-export const GRID_ROW_HEIGHT = 300;
+export const GRID_ROW_HEIGHT = 400;
 
 export const FactoryManagerContext = React.createContext();
 

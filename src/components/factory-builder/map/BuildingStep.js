@@ -14,6 +14,7 @@ import {
   SET_IMPORTED,
   SET_RECIPE,
   INPUT_DROPPED_ON_BUILDINGSTEP,
+  SET_BUILDING_STEP_WIDTH,
 } from "reducers/factoryManagerReducer";
 import { FactoryManagerContext } from "contexts/FactoryManagerContext";
 
@@ -24,13 +25,12 @@ const BuildingStep = ({ style, className, data, setDragState, ...props }, ref) =
   // const [displayLeft, setDisplayLeft] = useState(0);
   const { inputs, outputs } = data;
   // const ref = useRef();
-  // useLayoutEffect(() => {
-  //   const left = mapWidth / 2 + location.x;
-  //   console.log("map width", mapWidth);
-  //   setDisplayLeft(left);
-  //   widthHandler(data, location.x, ref.current?.clientWidth);
-  // }, [mapWidth, location, data, widthHandler]);
-  console.log("item", data);
+  useLayoutEffect(() => {
+    if (!ref.current) return;
+    const type = SET_BUILDING_STEP_WIDTH;
+    const payload = { width: ref.current.clientWidth, buildingStep: data };
+    dispatch({ type, payload });
+  }, [ref.current?.clientWidth]);
 
   const suppliedInputQty = input => {
     return input.outputs.reduce((total, output) => {

@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
+import { GRID_COL_WIDTH, GRID_ROW_HEIGHT } from "../contexts/FactoryManagerContext";
 import {
   addNewItem,
   addItemUpstream,
@@ -28,6 +29,7 @@ export const INPUT_DROPPED_ON_BUILDINGSTEP = "INPUT_DROPPED_ON_BUILDINGSTEP";
 export const INPUT_DROPPED_ON_BUILDING_ROW = "INPUT_DROPPED_ON_MAP";
 export const BYPRODUCT_DROPPED_ON_MAP = "BYPRODUCT_DROPPED_ON_MAP";
 export const BYPRODUCT_DROPPED_ON_INPUT = "BYPRODUCT_DROPPED_ON_INPUT";
+export const SET_BUILDING_STEP_WIDTH = "SET_BUILDING_STEP_WIDTH";
 
 const _getLayoutDependant = buildingStep => {
   const validBuildingSteps = buildingStep.outputs.filter(
@@ -73,18 +75,12 @@ const setFactoryLocation = (state, payload) => {
 };
 
 const setBuildingStepLocation = (factory, buildingStep, location) => {
-  // const { layout } = factory;
-  // const { row, x } = location;
-  // const dependant = _getLayoutDependant(buildingStep);
-  // if (!layout[row]) layout[row] = new Map();
-  // const layoutMap = layout[row];
-  // layoutMap.set(buildingStep, { x, dependant });
   const newLayoutItem = {
     i: buildingStep.id,
     x: 1,
     y: 2,
     h: 1,
-    w: 10,
+    w: 1,
   };
   console.log("factory layout", factory.layout);
   factory.layout = [...factory.layout, newLayoutItem];
@@ -220,6 +216,23 @@ const inputDroppedOnBuildingRowHandler = (state, payload) => {
   return updatedState;
 };
 
+// TODO - handle
+const setBuildingStepWidthHandler = (state, payload) => {
+  let updatedState = [...state];
+  const { width, buildingStep, factoryId } = payload;
+  const factory = _getFactoryById(state, factoryId);
+  const layoutItem = factory.layout.find(
+    layoutItem => layoutItem.i === buildingStep.id
+  );
+  const w = 2000 || Math.ceil(width / GRID_COL_WIDTH);
+  const updatedLayoutItem = { ...layoutItem, w };
+  factory.layout = [
+    ...factory.layout.filter(l => l !== layoutItem),
+    updatedLayoutItem,
+  ];
+  return updatedState;
+};
+
 const reducer = (state, action) => {
   const { type, payload } = action;
   switch (type) {
@@ -251,6 +264,8 @@ const reducer = (state, action) => {
       return inputDroppedOnBuildingStepHandler(state, payload);
     case INPUT_DROPPED_ON_BUILDING_ROW:
       return inputDroppedOnBuildingRowHandler(state, payload);
+    case SET_BUILDING_STEP_WIDTH:
+      return setBuildingStepWidthHandler(state, payload);
     default:
       return state;
   }

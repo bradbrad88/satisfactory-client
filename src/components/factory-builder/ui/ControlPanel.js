@@ -8,15 +8,7 @@ const USER_INPUT = "USER_INPUT";
 const ANALYSIS = "ANALYSIS";
 const FACTORIES = "FACTORIES";
 
-const ControlPanel = ({
-  // factories,
-  // activeFactory,
-  // setActiveFactory,
-  // items,
-  // data,
-  // dispatch,
-  setMapState,
-}) => {
+const ControlPanel = ({ setMapState }) => {
   const [tab, setTab] = useState(FACTORIES);
 
   useEffect(() => {
@@ -38,13 +30,10 @@ const ControlPanel = ({
   const componentSelector = () => {
     switch (tab) {
       case USER_INPUT:
-        // setMapState("build");
         return <UserInput />;
       case ANALYSIS:
-        // setMapState("build");
         return <FactoryAnalysis />;
       case FACTORIES:
-        // setMapState("locate");
         return <Factories />;
 
       default:

@@ -728,6 +728,7 @@ export const setRecipe = (buildingSteps, buildingStep, options) => {
   } else {
     buildingStep.recipe = buildingStep.recipes[0];
   }
+  console.log("building step here", buildingStep.recipe);
   _setNewInputs(buildingStep);
   _setByProduct(buildingStep);
   updatedState = _removeBuildingStepsWithNoIO(updatedState);

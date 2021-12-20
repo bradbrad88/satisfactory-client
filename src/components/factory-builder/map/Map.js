@@ -20,7 +20,7 @@ const Map = ({ mapState }) => {
     endOffset.current = mapOffset;
     const type = FORCE_LAYOUT_RENDER;
     dispatch({ type });
-  }, [setDragging, mapOffset]);
+  }, [setDragging, mapOffset, dispatch]);
 
   const onMouseDown = useCallback(
     e => {

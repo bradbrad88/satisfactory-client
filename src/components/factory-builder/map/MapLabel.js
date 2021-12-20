@@ -33,7 +33,7 @@ const MapLabel = ({ item, rect }) => {
       const payload = { location, factoryId: item.id };
       dispatch({ type, payload });
     },
-    [dragging]
+    [dispatch, item.id, offset, rect, dragging]
   );
 
   useEffect(() => {

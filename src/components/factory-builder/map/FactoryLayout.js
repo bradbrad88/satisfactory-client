@@ -27,6 +27,8 @@ const FactoryLayout = ({ scale }) => {
   const [upstreamRecipeSelector, setUpstreamRecipeSelector] = useState(null);
   const ref = useRef();
   const renderBuildingSteps = useMemo(() => {
+    if (scale) {
+    }
     if (!activeFactory) return null;
     const buildingSteps = activeFactory.buildingSteps.map(buildingStep => (
       <BuildingStep
@@ -35,9 +37,8 @@ const FactoryLayout = ({ scale }) => {
         setDragState={e => setDragState(e)}
       />
     ));
-    console.log("buildingSteps", buildingSteps);
     return buildingSteps;
-  }, [activeFactory?.buildingSteps, scale]);
+  }, [activeFactory, scale]);
 
   const onDragStart = (_, __, ___, ____, e) => {
     e.stopPropagation();
@@ -89,7 +90,6 @@ const FactoryLayout = ({ scale }) => {
       transformScale={scale}
       onLayoutChange={onLayoutChange}
       onDrag={onDrag}
-      onLayoutChange={onLayoutChange}
     >
       {renderBuildingSteps}
     </GridLayout>

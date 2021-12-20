@@ -10,6 +10,7 @@ const UserInput = () => {
   const { items, dispatch, activeFactory, canvasWidth } =
     useContext(FactoryManagerContext);
   const [item, setInitialItem] = useState(null);
+  const [testValue, setTestValue] = useState("");
 
   const itemOptions = useMemo(() => {
     if (!items) return [];
@@ -24,15 +25,18 @@ const UserInput = () => {
   }, [items]);
 
   const handleItem = e => {
+    console.log("e", e);
     const newItem = items.find(
       item => parseInt(item.itemId) === parseInt(e.target.value)
     );
+    console.log("new item", newItem);
     setInitialItem(newItem);
   };
 
   const handleAddNewItem = () => {
     if (!item) return;
     const x = canvasWidth / GRID_COL_WIDTH / 2 - 7;
+    console.log("x", x);
     const location = {
       x,
     };
@@ -48,6 +52,7 @@ const UserInput = () => {
         options,
       },
     };
+    console.log("action", action);
     dispatch(action);
   };
 
@@ -62,6 +67,11 @@ const UserInput = () => {
     return { width: "11rem", fontSize: "0.8rem" };
   };
 
+  const onTestChange = e => {
+    console.log("e", e.target.value);
+    setTestValue(e.target.value);
+  };
+
   return (
     <div className={"ui-component"}>
       {activeFactory ? (
@@ -73,6 +83,7 @@ const UserInput = () => {
             value={item?.itemId}
             onChange={handleItem}
             style={style()}
+            id={"item-select"}
           />
           <div className="field">
             <button style={{ width: "10rem" }} onClick={handleAddNewItem}>

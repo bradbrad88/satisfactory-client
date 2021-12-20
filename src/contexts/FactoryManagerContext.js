@@ -30,7 +30,6 @@ const dummyFactories = [
 
 const FactoryManagerProvider = ({ children }) => {
   const [factories, dispatch] = useReducer(factoryManagerReducer, dummyFactories);
-  const [activeFactoryId, setActiveFactoryId] = useState(null);
   const [activeFactory, setActiveFactory] = useState(null);
   const { items, recipes } = useData();
 

@@ -94,7 +94,6 @@ const setBuildingStepLocation = (factory, buildingStep, location = {}) => {
     h: 1,
     w: 1,
   };
-  console.log("factory layout", factory.layout);
   factory.layout = [...factory.layout, newLayoutItem];
 };
 
@@ -158,6 +157,7 @@ const setOutputQtyHandler = (state, payload) => {
 const setRecipeHandler = (state, payload) => {
   let updatedState = [...state];
   const { factoryId, buildingStep, options } = payload;
+  console.log("setting recipe", options);
   const factory = _getFactoryById(updatedState, factoryId);
   const updatedBuildingSteps = setRecipe(
     factory.buildingSteps,

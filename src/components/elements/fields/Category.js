@@ -1,15 +1,15 @@
 import React from "react";
 import Select from "../Select";
 
-const Category = ({ item, value, onChange, options, label, style }) => {
+const Category = ({ item, value, onChange, options, label, style, id }) => {
   return (
     <div className="field">
-      <label htmlFor={`category${item && "update"}`}>{label}</label>
+      <label htmlFor={id}>{label}</label>
       <Select
         title={"CATEGORY"}
         value={value}
         onChange={onChange}
-        id={`category${item && "update"}`}
+        id={id}
         options={options}
         style={style}
       />

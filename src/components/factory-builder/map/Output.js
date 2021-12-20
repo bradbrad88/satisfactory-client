@@ -73,29 +73,29 @@ const Output = ({ outputData }) => {
   };
 
   return (
-    <OutsideAlerter onClickOutside={onClickOutside} onClickInside={onClickInside}>
-      <div
-        className={`item-output ${outputData.byProduct && "by-product"}`}
-        // onClickCapture={onClickInside}
-        onMouseDown={e => e.stopPropagation()}
-        draggable
-        onDragStart={onDragStart}
-      >
-        <input
-          ref={ref}
-          type={"number"}
-          value={newValue}
-          onKeyDown={onKeyDown}
-          onChange={e => setNewValue(e.target.value)}
-          style={{ display: active ? "block" : "none" }}
-        />
-        <p style={{ display: active ? "none" : "block" }}>
-          {truncateDecimals(qty, 3)}
-        </p>
-        <p>Going to {goingTo()}</p>
-        {/* <p>{active ? "active" : "not active"}</p> */}
-      </div>
-    </OutsideAlerter>
+    // <OutsideAlerter onClickOutside={onClickOutside} onClickInside={onClickInside}>
+    <div
+      className={`item-output ${outputData.byProduct && "by-product"}`}
+      // onClickCapture={onClickInside}
+      onMouseDown={e => e.stopPropagation()}
+      draggable
+      onDragStart={onDragStart}
+    >
+      <input
+        ref={ref}
+        type={"number"}
+        value={newValue}
+        onKeyDown={onKeyDown}
+        onChange={e => setNewValue(e.target.value)}
+        style={{ display: active ? "block" : "none" }}
+      />
+      <p style={{ display: active ? "none" : "block" }}>
+        {truncateDecimals(qty, 3)}
+      </p>
+      <p>Going to {goingTo()}</p>
+      {/* <p>{active ? "active" : "not active"}</p> */}
+    </div>
+    // </OutsideAlerter>
   );
 };
 

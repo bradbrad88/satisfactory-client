@@ -22,8 +22,7 @@ import {
 } from "contexts/FactoryManagerContext";
 
 const BuildingStep = ({ style, className, data, setDragState, ...props }, ref) => {
-  const { dispatch, recipes, activeFactory, layout } =
-    useContext(FactoryManagerContext);
+  const { dispatch, recipes, layout } = useContext(FactoryManagerContext);
   const [recipeSelector, setRecipeSelector] = useState(null);
   const [highlight, setHightlight] = useState(false);
   // const [displayLeft, setDisplayLeft] = useState(0);
@@ -129,6 +128,7 @@ const BuildingStep = ({ style, className, data, setDragState, ...props }, ref) =
   };
 
   const onRecipeChange = e => {
+    console.log("e", e.target.value);
     const recipe = data.recipes.find(
       r => parseInt(r.recipeId) === parseInt(e.target.value)
     );

@@ -85,6 +85,7 @@ button.delete:hover {
   background-color: white;
   border-radius: 0.2rem;
   text-transform: uppercase;
+  /* user-select: all; */
 }
 
 .field.slider > label {

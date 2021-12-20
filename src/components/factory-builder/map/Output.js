@@ -80,6 +80,8 @@ const Output = ({ outputData }) => {
       onMouseDown={e => e.stopPropagation()}
       draggable
       onDragStart={onDragStart}
+      onClick={onClickInside}
+      onBlur={onClickOutside}
     >
       <input
         ref={ref}

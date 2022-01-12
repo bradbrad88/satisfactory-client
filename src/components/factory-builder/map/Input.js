@@ -37,18 +37,18 @@ const Input = ({ inputData }) => {
   const className = shortfall < 0 ? "over" : shortfall > 0 ? "under" : "";
 
   const onDragStart = e => {
-    // const data = {
-    //   fromInput: true,
-    //   inputId: inputData.id,
-    //   itemId: inputData.item.itemId,
-    //   itemName: inputData.item.itemName,
-    //   qty: shortfall < 0 ? 0 : shortfall,
-    //   row: buildingStep.ver + 1,
-    //   buildingStepId: buildingStep.id,
-    // };
-    // // e.dataTransfer.setDragImage(dragImg, 0, 0);
-    // // e.dataTransfer.setData("text/plain", JSON.stringify(data));
-    // e.dataTransfer.effectAllowed = "copy";
+    const data = {
+      fromInput: true,
+      inputId: inputData.id,
+      // itemId: inputData.item.itemId,
+      // itemName: inputData.item.itemName,
+      // qty: shortfall < 0 ? 0 : shortfall,
+      // row: buildingStep.ver + 1,
+      // buildingStepId: buildingStep.id,
+    };
+    // e.dataTransfer.setDragImage(dragImg, 0, 0);
+    e.dataTransfer.setData("text/plain", JSON.stringify(data));
+    e.dataTransfer.effectAllowed = "copy";
     // e.dataTransfer.setData("text/plain", "");
   };
 

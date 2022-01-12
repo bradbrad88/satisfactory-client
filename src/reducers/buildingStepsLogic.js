@@ -673,7 +673,7 @@ export const inputDroppedOnBuildingStep = (
   return updatedState;
 };
 
-export const inputDroppedOnBuildingRow = (buildingSteps, inputData) => {
+export const inputDroppedOnLayout = (buildingSteps, inputData) => {
   const updatedState = [...buildingSteps];
   const { inputId } = inputData;
   const input = _getInputFromStateById(updatedState, inputId);

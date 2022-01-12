@@ -7,7 +7,7 @@ import {
   byProductDroppedOnInput,
   byProductDroppedOnMap,
   inputDroppedOnBuildingStep,
-  inputDroppedOnBuildingRow,
+  inputDroppedOnLayout,
   setAltOutput,
   setImported,
   setOutputQty,
@@ -26,7 +26,7 @@ export const AUTO_BUILD_LAYER = "AUTO_BUILD_LAYER";
 export const SET_OUTPUT_QTY = "SET_OUTPUT_QTY";
 export const ADD_ITEM_UPSTREAM = "ADD_ITEM_UPSTREAM";
 export const INPUT_DROPPED_ON_BUILDINGSTEP = "INPUT_DROPPED_ON_BUILDINGSTEP";
-export const INPUT_DROPPED_ON_BUILDING_ROW = "INPUT_DROPPED_ON_MAP";
+export const INPUT_DROPPED_ON_LAYOUT = "INPUT_DROPPED_ON_LAYOUT";
 export const BYPRODUCT_DROPPED_ON_MAP = "BYPRODUCT_DROPPED_ON_MAP";
 export const BYPRODUCT_DROPPED_ON_INPUT = "BYPRODUCT_DROPPED_ON_INPUT";
 export const SET_BUILDING_STEP_WIDTH = "SET_BUILDING_STEP_WIDTH";
@@ -218,16 +218,16 @@ const inputDroppedOnBuildingStepHandler = (state, payload) => {
   return updatedState;
 };
 
-const inputDroppedOnBuildingRowHandler = (state, payload) => {
+const inputDroppedOnLayoutHandler = (state, payload) => {
   let updatedState = [...state];
-  const { factoryId, inputData, location } = payload;
+  const { factoryId, inputData, layoutItem } = payload;
   const factory = _getFactoryById(updatedState, factoryId);
-  const [updatedBuildingSteps, newBuildingStep] = inputDroppedOnBuildingRow(
+  const [updatedBuildingSteps, newBuildingStep] = inputDroppedOnLayout(
     factory.buildingSteps,
     inputData
   );
   factory.buildingSteps = updatedBuildingSteps;
-  setBuildingStepLocation(factory, newBuildingStep, location);
+  setBuildingStepLocation(factory, newBuildingStep, layoutItem);
   return updatedState;
 };
 
@@ -295,8 +295,8 @@ const reducer = (state, action) => {
       return byProductDroppedOnMapHandler(state, payload);
     case INPUT_DROPPED_ON_BUILDINGSTEP:
       return inputDroppedOnBuildingStepHandler(state, payload);
-    case INPUT_DROPPED_ON_BUILDING_ROW:
-      return inputDroppedOnBuildingRowHandler(state, payload);
+    case INPUT_DROPPED_ON_LAYOUT:
+      return inputDroppedOnLayoutHandler(state, payload);
     case SET_BUILDING_STEP_WIDTH:
       return setBuildingStepWidthHandler(state, payload);
     case SET_CANVAS_WIDTH:

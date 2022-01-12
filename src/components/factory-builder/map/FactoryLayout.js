@@ -5,7 +5,7 @@ import BuildingStep from "./BuildingStep";
 import RecipeSelector from "./RecipeSelector";
 import { dragHandle } from "utils/SvgIcons";
 import {
-  INPUT_DROPPED_ON_MAP,
+  INPUT_DROPPED_ON_LAYOUT,
   BYPRODUCT_DROPPED_ON_MAP,
   SET_CANVAS_WIDTH,
   UPDATE_LAYOUT_PROPS,
@@ -71,27 +71,34 @@ const FactoryLayout = ({ scale }) => {
     console.log("stopping the dragon");
   };
 
-  const onDrop = (layout, layoutItem, _event) => {
-    handleTopEdge(layout);
+  const onDrop = (layout, layoutItem, e) => {
+    const { dataTransfer } = e;
     setDisableScale(false);
+    try {
+      const { dataTransfer } = e;
+      const data = JSON.parse(dataTransfer.getData("text/plain"));
+      if (data.fromInput) {
+        handleInputDrop(data, layoutItem);
+      }
+    } catch (error) {}
+  };
+
+  const handleInputDrop = (inputData, layoutItem) => {
+    const type = INPUT_DROPPED_ON_LAYOUT;
+    const payload = { inputData, layoutItem };
+    dispatch({ type, payload });
   };
 
   const onDropDragOver = e => {
-    console.log("onDropDragOver", droppable);
     if (!droppable) {
       console.log("returning false");
       return false;
     }
-    // e.stopPropagation();
-    // return { w: 5, h: 1 };
-    // console.log("target", e.target);
   };
 
   const onLayoutChange = layout => {
-    console.log("layout change here", layout);
     const payload = { layout };
     const type = UPDATE_LAYOUT_PROPS;
-    // dispatch({ type, payload });
   };
 
   const extendCanvas = () => {

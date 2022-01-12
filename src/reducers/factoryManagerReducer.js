@@ -82,7 +82,10 @@ const updateLayoutProps = (state, payload) => {
   let updatedState = [...state];
   const { factoryId, layout } = payload;
   const factory = _getFactoryById(updatedState, factoryId);
+  // if (!layout.some(layoutItem => layoutItem.i === "outside"))
+  //   layout.push({ i: "outside", h: 1, w: 5 });
   factory.layout = layout;
+  console.log("layout in reducer", layout);
   return updatedState;
 };
 
@@ -236,7 +239,9 @@ const setBuildingStepWidthHandler = (state, payload) => {
   const layoutItem = factory.layout.find(
     layoutItem => layoutItem.i === buildingStep.id
   );
+  console.log("layout set bs width", layoutItem);
   const updatedLayoutItem = { ...layoutItem, w };
+  console.log("updated layout set bs width", updatedLayoutItem);
   factory.layout = [
     ...factory.layout.filter(l => l !== layoutItem),
     updatedLayoutItem,
@@ -257,6 +262,7 @@ const forceLayoutRender = (state, payload) => {
   const { factoryId } = payload;
   const factory = _getFactoryById(state, factoryId);
   factory.layout = [...factory.layout];
+  console.log("factory layout", factory.layout);
   return updatedState;
 };
 

@@ -95,6 +95,9 @@ const UserInput = () => {
               Test
             </button>
           </div>
+          <div draggable onDragStart={e => e.dataTransfer.setData("text/plain", "")}>
+            Draggable
+          </div>
         </>
       ) : (
         <p className={"select-factory"}>

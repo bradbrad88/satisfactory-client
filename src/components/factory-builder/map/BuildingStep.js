@@ -21,7 +21,10 @@ import {
   GRID_COL_WIDTH,
 } from "contexts/FactoryManagerContext";
 
-const BuildingStep = ({ style, className, data, setDragState, ...props }, ref) => {
+const BuildingStep = (
+  { style, className, data, setDragState, handleDragOver, setDroppable, ...props },
+  ref
+) => {
   const { dispatch, recipes, layout } = useContext(FactoryManagerContext);
   const [recipeSelector, setRecipeSelector] = useState(null);
   const [highlight, setHightlight] = useState(false);
@@ -159,20 +162,28 @@ const BuildingStep = ({ style, className, data, setDragState, ...props }, ref) =
   };
 
   const onDragOver = e => {
-    try {
-      const dragData = e.dataTransfer.getData("text/plain");
-      const item = JSON.parse(dragData);
-      if (item.itemId === data.item.itemId) {
-        e.stopPropagation();
-        e.preventDefault();
-        setHightlight(true);
-      }
-      if (inputs.some(input => item.inputId === input.id)) {
-        e.stopPropagation();
-      }
-    } catch (error) {
-      console.log("drag-over data unusable");
-    }
+    console.log("dragging over");
+    // // handleDragOver();
+    // setDroppable(false);
+    // return;
+    // try {
+    //   const dragData = e.dataTransfer.getData("text/plain");
+    //   const item = JSON.parse(dragData);
+    //   if (item.itemId === data.item.itemId) {
+    //     e.stopPropagation();
+    //     e.preventDefault();
+    //     setHightlight(true);
+    //   }
+    //   if (inputs.some(input => item.inputId === input.id)) {
+    //     e.stopPropagation();
+    //   }
+    // } catch (error) {
+    //   console.log("drag-over data unusable");
+    // }
+  };
+
+  const onDragLeave = () => {
+    setDroppable(true);
   };
 
   const renderItemOutputs = () => {
@@ -243,6 +254,8 @@ const BuildingStep = ({ style, className, data, setDragState, ...props }, ref) =
       ref={ref}
       key={data.id}
       style={style}
+      onDragOver={onDragOver}
+      onDragLeave={onDragLeave}
       {...props}
     >
       <div className="title cell">

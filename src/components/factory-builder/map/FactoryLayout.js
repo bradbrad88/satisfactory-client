@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useContext, useRef, useCallback } from "react";
-import GridLayout from "react-grid-layout";
+import GridLayout from "brad-grid-layout";
 // import BuildingRow from "./BuildingRow";
 import BuildingStep from "./BuildingStep";
 import RecipeSelector from "./RecipeSelector";
@@ -9,23 +9,29 @@ import {
   BYPRODUCT_DROPPED_ON_MAP,
   SET_CANVAS_WIDTH,
   UPDATE_LAYOUT_PROPS,
+  FORCE_LAYOUT_RENDER,
 } from "reducers/factoryManagerReducer";
 import {
   FactoryManagerContext,
   GRID_COL_WIDTH,
   GRID_ROW_HEIGHT,
 } from "contexts/FactoryManagerContext";
-import "../../../../node_modules/react-grid-layout/css/styles.css";
-import "../../../../node_modules/react-resizable/css/styles.css";
-
-// const WIDTH = 1000;
+// import "../../../../node_modules/brad-grid-layout/css/styles.css";
+// import "../../../../node_modules/react-resizable/css/styles.css";
 
 const FactoryLayout = ({ scale }) => {
   const { activeFactory, layout, canvasWidth, dispatch } =
     useContext(FactoryManagerContext);
   const [dragState, setDragState] = useState(false);
   const [upstreamRecipeSelector, setUpstreamRecipeSelector] = useState(null);
+  // react-grid-layout needs its scale disabled when dealing with items dragged in from outside
+  const [disableScale, setDisableScale] = useState(false);
+  const [droppable, setDroppable] = useState(false);
   const ref = useRef();
+
+  const dragOverBuildingStep = useCallback(() => {
+    dispatch({ type: FORCE_LAYOUT_RENDER });
+  });
   const renderBuildingSteps = useMemo(() => {
     if (scale) {
     }
@@ -35,28 +41,57 @@ const FactoryLayout = ({ scale }) => {
         key={buildingStep.id}
         data={buildingStep}
         setDragState={e => setDragState(e)}
+        handleDragOver={dragOverBuildingStep}
+        setDroppable={setDroppable}
       />
     ));
     return buildingSteps;
-  }, [activeFactory, scale]);
+  }, [activeFactory, scale, layout]);
 
-  const onDragStart = (_, __, ___, ____, e) => {
+  const onDragStart = (layout, oldItem, newItem, placeholder, e) => {
     e.stopPropagation();
+    if (oldItem.i === "outside") setDisableScale(true);
+    console.log("layout", layout);
+    console.log("old item", oldItem);
+    console.log("new item", newItem);
+    console.log("placeholder", placeholder);
   };
 
-  const onDrop = (layout, oldItem, newItem, placeholder, event, element) => {
+  const handleTopEdge = layout => {
     if (layout.some(layoutItem => layoutItem.y === 0)) {
-      // console.log("layout", layout);
       layout.forEach(layoutItem => {
+        console.log("handle top edge", layoutItem);
         layoutItem.y += 1;
       });
     }
   };
 
+  const onDragStop = (layout, oldItem, newItem, placeholder, event, element) => {
+    handleTopEdge(layout);
+    console.log("stopping the dragon");
+  };
+
+  const onDrop = (layout, layoutItem, _event) => {
+    handleTopEdge(layout);
+    setDisableScale(false);
+  };
+
+  const onDropDragOver = e => {
+    console.log("onDropDragOver", droppable);
+    if (!droppable) {
+      console.log("returning false");
+      return false;
+    }
+    // e.stopPropagation();
+    // return { w: 5, h: 1 };
+    // console.log("target", e.target);
+  };
+
   const onLayoutChange = layout => {
+    console.log("layout change here", layout);
     const payload = { layout };
     const type = UPDATE_LAYOUT_PROPS;
-    dispatch({ type, payload });
+    // dispatch({ type, payload });
   };
 
   const extendCanvas = () => {
@@ -85,11 +120,17 @@ const FactoryLayout = ({ scale }) => {
       layout={activeFactory?.layout}
       compactType={null}
       isDraggable={true}
-      onDragStop={onDrop}
+      onDragStop={onDragStop}
       onDragStart={onDragStart}
-      transformScale={scale}
+      transformScale={disableScale ? 1 : scale}
       onLayoutChange={onLayoutChange}
       onDrag={onDrag}
+      onDropDragOver={onDropDragOver}
+      isDroppable={true}
+      onDrop={onDrop}
+      droppingItem={{ i: "outside", h: 1, w: 25, transformScale: scale }}
+
+      // draggableCancel=".building-step"
     >
       {renderBuildingSteps}
     </GridLayout>

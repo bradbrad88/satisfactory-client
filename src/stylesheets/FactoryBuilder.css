@@ -186,7 +186,8 @@
 } */
 
 .container.building-step.highlight {
-  border: solid 1px var(--accent-color);
+  /* border: solid 1px var(--accent-color); */
+  box-shadow: 0 0 25px var(--accent-color);
 }
 
 .building-step.temp {

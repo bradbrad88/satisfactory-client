@@ -645,12 +645,16 @@ export const inputDroppedOnBuildingStep = (
   // If input has a surplus and there is already a connection then the buildingStep should reduce its qty to match
 
   let updatedState = [...buildingSteps];
+  const { inputId } = inputData;
+  // get input
+  const input = _getInputFromStateById(updatedState, inputId);
+
   // see if connection exists already between the input and buildingStep
-  const parentBuildingStep = _getBuildingStep(
-    updatedState,
-    inputData.buildingStepId
-  );
-  const input = _getInputById(parentBuildingStep, inputData.inputId);
+  // const parentBuildingStep = _getBuildingStep(
+  //   updatedState,
+  //   inputData.buildingStepId
+  // );
+  // const input = _getInputById(parentBuildingStep, inputData.inputId);
   const existingOutput = input.outputs.find(
     output => output.buildingStep === buildingStep
   );

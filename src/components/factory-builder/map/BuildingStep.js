@@ -22,22 +22,30 @@ import {
 } from "contexts/FactoryManagerContext";
 
 const BuildingStep = (
-  { style, className, data, setDragState, handleDragOver, setDroppable, ...props },
+  {
+    style,
+    className,
+    data,
+    setDragState,
+    handleDragOver,
+    setDroppable,
+    dropDisplay,
+    setDropDisplay,
+    setHidePlaceholder,
+    setDisableScale,
+    ...props
+  },
   ref
 ) => {
   const { dispatch, recipes, layout } = useContext(FactoryManagerContext);
   const [recipeSelector, setRecipeSelector] = useState(null);
   const [highlight, setHightlight] = useState(false);
-  // const [displayLeft, setDisplayLeft] = useState(0);
   const { inputs, outputs } = data;
-  // const ref = useRef();
+
   useLayoutEffect(() => {
     if (!ref.current) return;
     const w = Math.ceil(ref.current.clientWidth / GRID_COL_WIDTH);
     const layoutItem = layout.find(layoutItem => layoutItem.i === data.id);
-    // console.log("w", w);
-    // console.log("client width", ref.current.clientWidth);
-    // console.log("existing w", layoutItem.w);
     if (layoutItem.w === w) return;
     const type = SET_BUILDING_STEP_WIDTH;
     const payload = { w, buildingStep: data };
@@ -141,28 +149,42 @@ const BuildingStep = (
   };
 
   const onDrop = e => {
-    setHightlight(false);
-    try {
-      const dragData = e.dataTransfer.getData("text/plain");
-      const parsedItem = JSON.parse(dragData);
-      if (parsedItem.fromInput) handleInputDrop(parsedItem, e);
-    } catch (error) {
-      console.error(error);
+    if (dropDisplay[data.id]) {
+      e.stopPropagation();
+      setHidePlaceholder(false);
+      setDisableScale(false);
+      setDropDisplay({});
+      try {
+        const data = e.dataTransfer.getData("text/plain");
+        const parsedData = JSON.parse(data);
+        if (parsedData.fromInput) handleInputDrop(parsedData);
+        return false;
+      } catch (error) {}
     }
+    // setHightlight(false);
+    // try {
+    //   const dragData = e.dataTransfer.getData("text/plain");
+    //   const parsedItem = JSON.parse(dragData);
+    //   if (parsedItem.fromInput) handleInputDrop(parsedItem, e);
+    // } catch (error) {
+    //   console.error(error);
+    // }
   };
 
-  const handleInputDrop = (inputData, e) => {
-    if (inputData.itemId !== data.item.itemId) {
-      return;
-    }
-    e.stopPropagation();
+  const handleInputDrop = inputData => {
     const type = INPUT_DROPPED_ON_BUILDINGSTEP;
     const payload = { inputData, buildingStep: data };
     dispatch({ type, payload });
   };
 
   const onDragOver = e => {
-    console.log("dragging over");
+    e.stopPropagation();
+    e.preventDefault();
+    setHidePlaceholder(true);
+    e.dataTransfer.dropEffect = "none";
+    if (dropDisplay[data.id]) {
+      e.dataTransfer.dropEffect = "link";
+    }
     // // handleDragOver();
     // setDroppable(false);
     // return;
@@ -183,7 +205,8 @@ const BuildingStep = (
   };
 
   const onDragLeave = () => {
-    setDroppable(true);
+    // setDroppable(true);
+    setHidePlaceholder(false);
   };
 
   const renderItemOutputs = () => {
@@ -203,7 +226,14 @@ const BuildingStep = (
 
   const renderItemInputs = () => {
     return inputs.map(input => {
-      return <Input inputData={input} key={input.id} />;
+      return (
+        <Input
+          inputData={input}
+          key={input.id}
+          dropDisplay={dropDisplay}
+          setDropDisplay={setDropDisplay}
+        />
+      );
     });
   };
 
@@ -248,14 +278,21 @@ const BuildingStep = (
     setDragState(false);
   };
 
+  const getHighlightClass = () => {
+    return dropDisplay[data.id] ? "highlight" : "";
+  };
+
   return (
     <div
-      className={`${className} container building-step ${highlight && "highlight"}`}
+      className={`${className} container building-step ${
+        highlight && "highlight"
+      } ${getHighlightClass()}`}
       ref={ref}
       key={data.id}
       style={style}
       onDragOver={onDragOver}
       onDragLeave={onDragLeave}
+      onDrop={onDrop}
       {...props}
     >
       <div className="title cell">

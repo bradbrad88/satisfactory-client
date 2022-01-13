@@ -4,9 +4,10 @@ import conveyor from "assets/conveyor.webp";
 import pipe from "assets/pipe.webp";
 import { BYPRODUCT_DROPPED_ON_INPUT } from "reducers/factoryManagerReducer";
 import { FactoryManagerContext } from "contexts/FactoryManagerContext";
+import { getInputDropDisplay } from "utils/dropDisplay";
 
-const Input = ({ inputData }) => {
-  const { dispatch } = useContext(FactoryManagerContext);
+const Input = ({ inputData, dropDisplay, setDropDisplay }) => {
+  const { dispatch, activeFactory } = useContext(FactoryManagerContext);
   const [dragImg, setDragImg] = useState(null);
   const [validDrag, setValidDrag] = useState(false);
   const { buildingStep } = inputData;
@@ -37,6 +38,11 @@ const Input = ({ inputData }) => {
   const className = shortfall < 0 ? "over" : shortfall > 0 ? "under" : "";
 
   const onDragStart = e => {
+    const dropDisplayData = getInputDropDisplay(
+      activeFactory.buildingSteps,
+      inputData
+    );
+    setDropDisplay(dropDisplayData);
     const data = {
       fromInput: true,
       inputId: inputData.id,
@@ -48,12 +54,13 @@ const Input = ({ inputData }) => {
     };
     // e.dataTransfer.setDragImage(dragImg, 0, 0);
     e.dataTransfer.setData("text/plain", JSON.stringify(data));
-    e.dataTransfer.effectAllowed = "copy";
+    e.dataTransfer.effectAllowed = "all";
     // e.dataTransfer.setData("text/plain", "");
   };
 
   const onDragEnd = () => {
     // setTempNull();
+    setDropDisplay({});
   };
 
   const getDataFromDrop = e => {

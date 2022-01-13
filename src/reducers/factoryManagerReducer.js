@@ -215,6 +215,8 @@ const inputDroppedOnBuildingStepHandler = (state, payload) => {
     inputData
   );
   factory.buildingSteps = updatedBuildingSteps;
+  factory.layout = [...factory.layout];
+  console.log("reducer", factory);
   return updatedState;
 };
 

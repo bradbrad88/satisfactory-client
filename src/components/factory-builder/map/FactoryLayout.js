@@ -1,9 +1,7 @@
 import React, { useState, useMemo, useContext, useRef, useCallback } from "react";
 import GridLayout from "brad-grid-layout";
-// import BuildingRow from "./BuildingRow";
 import BuildingStep from "./BuildingStep";
 import RecipeSelector from "./RecipeSelector";
-import { dragHandle } from "utils/SvgIcons";
 import {
   INPUT_DROPPED_ON_LAYOUT,
   BYPRODUCT_DROPPED_ON_MAP,
@@ -16,8 +14,6 @@ import {
   GRID_COL_WIDTH,
   GRID_ROW_HEIGHT,
 } from "contexts/FactoryManagerContext";
-// import "../../../../node_modules/brad-grid-layout/css/styles.css";
-// import "../../../../node_modules/react-resizable/css/styles.css";
 
 const FactoryLayout = ({ scale }) => {
   const { activeFactory, layout, canvasWidth, dispatch } =
@@ -26,7 +22,8 @@ const FactoryLayout = ({ scale }) => {
   const [upstreamRecipeSelector, setUpstreamRecipeSelector] = useState(null);
   // react-grid-layout needs its scale disabled when dealing with items dragged in from outside
   const [disableScale, setDisableScale] = useState(false);
-  const [droppable, setDroppable] = useState(false);
+  const [dropDisplay, setDropDisplay] = useState({});
+  const [hidePlaceholder, setHidePlaceholder] = useState(false);
   const ref = useRef();
 
   const dragOverBuildingStep = useCallback(() => {
@@ -42,19 +39,18 @@ const FactoryLayout = ({ scale }) => {
         data={buildingStep}
         setDragState={e => setDragState(e)}
         handleDragOver={dragOverBuildingStep}
-        setDroppable={setDroppable}
+        dropDisplay={dropDisplay}
+        setDropDisplay={setDropDisplay}
+        setHidePlaceholder={setHidePlaceholder}
+        setDisableScale={setDisableScale}
       />
     ));
     return buildingSteps;
-  }, [activeFactory, scale, layout]);
+  }, [activeFactory, scale, layout, dropDisplay]);
 
   const onDragStart = (layout, oldItem, newItem, placeholder, e) => {
     e.stopPropagation();
     if (oldItem.i === "outside") setDisableScale(true);
-    console.log("layout", layout);
-    console.log("old item", oldItem);
-    console.log("new item", newItem);
-    console.log("placeholder", placeholder);
   };
 
   const handleTopEdge = layout => {
@@ -68,7 +64,6 @@ const FactoryLayout = ({ scale }) => {
 
   const onDragStop = (layout, oldItem, newItem, placeholder, event, element) => {
     handleTopEdge(layout);
-    console.log("stopping the dragon");
   };
 
   const onDrop = (layout, layoutItem, e) => {
@@ -87,13 +82,6 @@ const FactoryLayout = ({ scale }) => {
     const type = INPUT_DROPPED_ON_LAYOUT;
     const payload = { inputData, layoutItem };
     dispatch({ type, payload });
-  };
-
-  const onDropDragOver = e => {
-    if (!droppable) {
-      console.log("returning false");
-      return false;
-    }
   };
 
   const onLayoutChange = layout => {
@@ -132,12 +120,10 @@ const FactoryLayout = ({ scale }) => {
       transformScale={disableScale ? 1 : scale}
       onLayoutChange={onLayoutChange}
       onDrag={onDrag}
-      onDropDragOver={onDropDragOver}
       isDroppable={true}
       onDrop={onDrop}
       droppingItem={{ i: "outside", h: 1, w: 25, transformScale: scale }}
-
-      // draggableCancel=".building-step"
+      hidePlaceholder={hidePlaceholder}
     >
       {renderBuildingSteps}
     </GridLayout>

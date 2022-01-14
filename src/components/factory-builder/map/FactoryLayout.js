@@ -25,10 +25,19 @@ const FactoryLayout = ({ scale }) => {
   const [dropDisplay, setDropDisplay] = useState({});
   const [hidePlaceholder, setHidePlaceholder] = useState(false);
   const ref = useRef();
+  // A ref used to make sure a drop event only occurs on the intended element.
+  // StopPropation() unable to be used on grid item as it prevents placeholder cleanup
+  const singleFireRef = useRef();
 
   const dragOverBuildingStep = useCallback(() => {
     dispatch({ type: FORCE_LAYOUT_RENDER });
   });
+
+  // A hacky solution to prevent onDrop firing for both a buildingStep and map drop
+  const disarmSingleFireRef = useCallback(() => {
+    singleFireRef.current = false;
+  });
+
   const renderBuildingSteps = useMemo(() => {
     if (scale) {
     }
@@ -43,6 +52,7 @@ const FactoryLayout = ({ scale }) => {
         setDropDisplay={setDropDisplay}
         setHidePlaceholder={setHidePlaceholder}
         setDisableScale={setDisableScale}
+        disarmSingleFireRef={disarmSingleFireRef}
       />
     ));
     return buildingSteps;
@@ -50,23 +60,35 @@ const FactoryLayout = ({ scale }) => {
 
   const onDragStart = (layout, oldItem, newItem, placeholder, e) => {
     e.stopPropagation();
-    if (oldItem.i === "outside") setDisableScale(true);
-  };
-
-  const handleTopEdge = layout => {
-    if (layout.some(layoutItem => layoutItem.y === 0)) {
-      layout.forEach(layoutItem => {
-        console.log("handle top edge", layoutItem);
-        layoutItem.y += 1;
-      });
+    if (oldItem.i === "outside") {
+      singleFireRef.current = true;
+      setDisableScale(true);
     }
   };
 
+  const handleTopEdge = layout => {
+    console.log("handling top edge");
+    if (layout.some(layoutItem => layoutItem.y === 0)) {
+      const newLayout = layout.map(layoutItem => ({
+        ...layoutItem,
+        y: (layoutItem.y += 1),
+      }));
+      return newLayout;
+    }
+    return layout;
+  };
+
   const onDragStop = (layout, oldItem, newItem, placeholder, event, element) => {
-    handleTopEdge(layout);
+    setDisableScale(false);
+    const type = UPDATE_LAYOUT_PROPS;
+    const payload = { layout };
+    dispatch({ type, payload });
   };
 
   const onDrop = (layout, layoutItem, e) => {
+    console.log("single fire ref", singleFireRef.current);
+    if (singleFireRef.current === false) return;
+    disarmSingleFireRef();
     const { dataTransfer } = e;
     setDisableScale(false);
     try {
@@ -85,8 +107,13 @@ const FactoryLayout = ({ scale }) => {
   };
 
   const onLayoutChange = layout => {
-    const payload = { layout };
-    const type = UPDATE_LAYOUT_PROPS;
+    console.log("on layout change");
+    const updatedLayout = handleTopEdge(layout);
+    if (updatedLayout !== layout) {
+      const payload = { layout: updatedLayout };
+      const type = UPDATE_LAYOUT_PROPS;
+      dispatch({ type, payload });
+    }
   };
 
   const extendCanvas = () => {
@@ -115,14 +142,14 @@ const FactoryLayout = ({ scale }) => {
       layout={activeFactory?.layout}
       compactType={null}
       isDraggable={true}
-      onDragStop={onDragStop}
       onDragStart={onDragStart}
+      onDragStop={onDragStop}
       transformScale={disableScale ? 1 : scale}
       onLayoutChange={onLayoutChange}
-      onDrag={onDrag}
       isDroppable={true}
+      onDrag={onDrag}
       onDrop={onDrop}
-      droppingItem={{ i: "outside", h: 1, w: 25, transformScale: scale }}
+      droppingItem={{ i: "outside", h: 3, w: 25, transformScale: scale }}
       hidePlaceholder={hidePlaceholder}
     >
       {renderBuildingSteps}

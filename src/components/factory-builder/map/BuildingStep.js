@@ -33,6 +33,7 @@ const BuildingStep = (
     setDropDisplay,
     setHidePlaceholder,
     setDisableScale,
+    disarmSingleFireRef,
     ...props
   },
   ref
@@ -149,8 +150,9 @@ const BuildingStep = (
   };
 
   const onDrop = e => {
+    disarmSingleFireRef();
     if (dropDisplay[data.id]) {
-      e.stopPropagation();
+      // e.stopPropagation();
       setHidePlaceholder(false);
       setDisableScale(false);
       setDropDisplay({});
@@ -158,7 +160,6 @@ const BuildingStep = (
         const data = e.dataTransfer.getData("text/plain");
         const parsedData = JSON.parse(data);
         if (parsedData.fromInput) handleInputDrop(parsedData);
-        return false;
       } catch (error) {}
     }
     // setHightlight(false);

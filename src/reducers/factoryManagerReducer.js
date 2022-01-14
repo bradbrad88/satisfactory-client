@@ -80,6 +80,7 @@ const setFactoryLocation = (state, payload) => {
 
 const updateLayoutProps = (state, payload) => {
   let updatedState = [...state];
+  console.log("updating layout props");
   const { factoryId, layout } = payload;
   const factory = _getFactoryById(updatedState, factoryId);
   // if (!layout.some(layoutItem => layoutItem.i === "outside"))
@@ -94,7 +95,7 @@ const setBuildingStepLocation = (factory, buildingStep, location = {}) => {
     i: buildingStep.id,
     x: location.x || 0,
     y: location.y || 1,
-    h: 1,
+    h: 3,
     w: 1,
   };
   factory.layout = [...factory.layout, newLayoutItem];
@@ -181,6 +182,7 @@ const setImportedHandler = (state, payload) => {
     toggle
   );
   factory.buildingSteps = updatedBuildingSteps;
+  factory.layout = [...factory.layout];
   return updatedState;
 };
 
@@ -215,6 +217,7 @@ const inputDroppedOnBuildingStepHandler = (state, payload) => {
     inputData
   );
   factory.buildingSteps = updatedBuildingSteps;
+  console.log("CHECKING GLITCH HERE", factory.layout);
   factory.layout = [...factory.layout];
   console.log("reducer", factory);
   return updatedState;
